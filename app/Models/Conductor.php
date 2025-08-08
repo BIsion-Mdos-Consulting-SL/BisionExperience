@@ -6,6 +6,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * 
  * @property int $id
  * @property string|null $cif
- * @property string $nombre
+ * @property string|null $nombre
  * @property string|null $apellido
  * @property string|null $email
  * @property string|null $telefono
@@ -28,6 +29,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $asiste
  * @property string|null $dni
  * @property bool $proteccion_datos
+ * @property Carbon|null $carnet_caducidad
  *
  * @package App\Models
  */
@@ -38,7 +40,8 @@ class Conductor extends Model
 
 	protected $casts = [
 		'asiste' => 'int',
-		'proteccion_datos' => 'bool'
+		'proteccion_datos' => 'bool',
+		'carnet_caducidad' => 'date'
 	];
 
 	protected $fillable = [

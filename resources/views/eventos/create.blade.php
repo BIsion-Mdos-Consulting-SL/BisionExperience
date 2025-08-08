@@ -22,18 +22,18 @@
     </div>
 
     <!---FORMULARIO CREAR EVENTO-->
-    <form method="POST" action="{{ route('eventos.store')}}" class="m-auto mt-5 mb-5 d-block d-sm-block d-md-block" style="width: 70%;" enctype="multipart/form-data">
+    <form method="POST" id="form" action="{{ route('eventos.store')}}" class="m-auto mt-5 mb-5 d-block d-sm-block d-md-block" style="width: 70%;" enctype="multipart/form-data">
         @csrf
         <!-- NOMBRE -->
         <div class="mb-3">
             <label for="nombre" class="form-label fw-bold ">Nombre*</label>
-            <input type="text" class="form-control" name="nombre" placeholder="Nombre">
+            <input type="text" class="form-control validar" name="nombre" placeholder="Nombre">
         </div>
 
         <!-- MARCA -->
         <div class="mb-3">
             <label for="marca" class="fw-bold mb-2">Marca* (Para seleccionar más de una opción, pulsa la tecla Control)</label>
-            <select class="form-select" name="marca[]" multiple>
+            <select class="form-select validar" name="marca[]" multiple>
                 @if(isset($marcas))
                 @foreach($marcas->sortBy('nombre') as $marca)
                 <option value="{{$marca->id}}">{{$marca->nombre}}</option>
@@ -46,13 +46,13 @@
         <div class="d-block d-sm-flex flex-wrap justify-content-between gap-1">
             <div class="mb-3 col-12 col-sm-6">
                 <label for="fecha" class="form-label fw-bold ">Fecha*</label>
-                <input type="date" class="form-control" name="fecha">
+                <input type="date" class="form-control validar" name="fecha">
             </div>
 
             <!-- HORA -->
             <div class="col-12 col-sm-5 mb-3">
                 <label for="hora" class="form-label fw-bold ">Hora*</label>
-                <select class="form-select" name="hora">
+                <select class="form-select validar" name="hora">
                     <option value="" disabled selected>Selecciona hora</option>
                     <option value="09:00">09:00</option>
                     <option value="09:30">09:30</option>
@@ -67,13 +67,13 @@
         <div class="d-flex flex-wrap justify-content-between gap-1">
             <div class="mb-3 col-12 col-sm-6">
                 <label for="lugar_evento" class="form-label fw-bold ">Lugar del evento*</label>
-                <input type="text" class="form-control" name="lugar_evento" placeholder="Lugar del evento">
+                <input type="text" class="form-control validar" name="lugar_evento" placeholder="Lugar del evento">
             </div>
 
             <!-- TIPO EVENTO -->
             <div class="col-12 col-sm-5 mb-3">
                 <label for="tipo_evento" class="form-label fw-bold ">Tipo evento*</label>
-                <select class="form-select" name="tipo_evento">
+                <select class="form-select validar" name="tipo_evento">
                     <option value="" disabled selected>Selecciona tipo evento</option>
                     @foreach($tipo_evento->sortBy('nombre') as $tipo)
                     <option value="{{ $tipo->nombre }}">{{ $tipo->nombre }}</option>
@@ -88,7 +88,7 @@
                 <label for="coste_evento" class="form-label fw-bold ">Coste evento* (Los decimales deben indicarse con un punto. Ej: 23.17)</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-currency-euro"></i></span>
-                    <input type="text" id="coste_evento" class="form-control" name="coste_evento" placeholder="Coste evento" oninput="calcular_media()">
+                    <input type="text" id="coste_evento" class="form-control validar" name="coste_evento" placeholder="Coste evento" oninput="calcular_media()">
                 </div>
             </div>
 
@@ -97,7 +97,7 @@
                 <label for="aforo" class="form-label fw-bold">Aforo máximo*</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-person-raised-hand"></i></span>
-                    <input type="text" id="aforo_maximo" class="form-control" name="aforo" placeholder="Aforo máximo" oninput="calcular_media()">
+                    <input type="text" id="aforo_maximo" class="form-control validar" name="aforo" placeholder="Aforo máximo" oninput="calcular_media()">
                 </div>
             </div>
         </div>
@@ -147,14 +147,14 @@
         <!-- IMAGEN -->
         <div class="mb-3">
             <label for="imagen" class="form-label fw-bold ">Imagen (JPG, PNG)*</label>
-            <input type="file" class="form-control" name="imagen" accept=".jpg, .png" placeholder="Selecciona imagen">
+            <input type="file" class="form-control validar" name="imagen" accept=".jpg, .png" placeholder="Selecciona imagen">
         </div>
 
         <!-- TEXTO INVITACIÓN -->
         <div class="w-100">
             <label for="texto_invitacion" class="form-label fw-bold ">Texto invitación*</label>
             <br>
-            <textarea name="texto_invitacion" class="form-control mb-3"></textarea>
+            <textarea name="texto_invitacion" class="form-control validar mb-3"></textarea>
         </div>
 
         <div class="text-end">
@@ -171,3 +171,37 @@
     <img class="m-auto" src="{{asset('images/footer_bision.png')}}" style="width: 200px;">
 </footer>
 @endsection
+
+<script>
+    //FUNCION VALIDACION
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById("form");
+        const inputs = document.querySelectorAll(".validar");
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            let valido = true;
+            inputs.forEach(function(input) {
+                if (!input.value || input.value.trim() === "") {
+                    input.classList.add("validacion-mal");
+                    valido = false;
+                } else {
+                    input.classList.remove("validacion-mal");
+                    input.classList.add("validacion-bien");
+                }
+            });
+            
+            if(valido){
+                form.submit();
+            }
+        });
+
+        inputs.forEach(input =>{
+            input.addEventListener('input' , function(){
+                if(input.value.trim() !== ""){
+                    input.classList.remove("validacion-mal");
+                }
+            })
+        })
+    });
+</script>

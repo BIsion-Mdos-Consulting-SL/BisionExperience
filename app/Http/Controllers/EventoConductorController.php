@@ -34,11 +34,12 @@ class EventoConductorController extends Controller
         $url = url('/evento-confirmacion/' . $token); //Se crea url.
 
         //Manda email de confirmacion.
-        Mail::to($conductor->email)->send(new ConfirmacionEventoMail($url));
         $evento = Evento::find($evento_id); //Pasar el evento_id que se coghe por parametro para ver boton volver.
+        Mail::to($conductor->email)->send(new ConfirmacionEventoMail($url , $evento)); // Pasar el evento para coger el nombre y demas datos.
+
 
         //Pasamos el evento que se pasara en la vista $evento.
-        return view('emails.mensaje' , ['evento' => $evento]);
+        return view('emails.mensaje', ['evento' => $evento]);
     }
 
     public function mostrarFormulario($token)
@@ -69,8 +70,26 @@ class EventoConductorController extends Controller
             return redirect('/')->with('error', 'Invitado no encontrado');
         }
 
-        if($request->hasFile('carnet')){
-            $carnetPath = $request->file('carnet')->store('carnets' , 'public');
+        $request->validate([
+            'nombre' => 'required|string|max:255',
+            'apellido' => 'required|string|max:255',
+            'email' => 'required|email',
+            'telefono' => 'required|string|max:9',
+            'empresa' => 'required|string|max:255',
+            'cif' => 'required|string|max:20',
+            'dni' => 'required|string|max:9',
+            'vehiculo_prop' => 'nullable|in:si,no',
+            'vehiculo_emp' => 'nullable|in:si,no',
+            'etiqueta' => 'nullable|in:B,C,ECO,0',
+            'carnet' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048',
+            'carnet_caducidad' => 'required|date',
+            'intolerancia' => 'nullable|string|max:255',
+            'preferencia' => 'required|in:carne,pescado',
+            'proteccion_datos' => 'required|in:1'
+        ]);
+
+        if ($request->hasFile('carnet')) {
+            $carnetPath = $request->file('carnet')->store('carnets', 'public');
         }
 
         Conductor::where('email', $request->input('email'))->update([
@@ -95,7 +114,7 @@ class EventoConductorController extends Controller
         //Busca el evento que pasamos por parametro y recoge el evento_id.
         $evento = Evento::find($registro->evento_id);
         //Envia correo al adminstrador.
-        Mail::to('gestion@bi-sion.es')->send(new ClienteRegistrado($conductor , $evento));
+        Mail::to('gestion@bi-sion.es')->send(new ClienteRegistrado($conductor, $evento));
 
         // Invalidamos el token en evento_conductor , para que el usaurio pueda acceder una sola vez.
         DB::table('evento_conductor')

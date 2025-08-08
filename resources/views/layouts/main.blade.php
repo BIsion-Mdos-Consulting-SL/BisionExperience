@@ -1,6 +1,5 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -96,6 +95,14 @@
   .valido {
     color: rgba(0, 128, 0, 1) !important;
     font-weight: bold !important;
+  }
+
+  .validacion-mal{
+    border: 1px solid red !important;
+  }
+
+  .validacion-bien{
+    border: 1px solid  green !important;
   }
 
   .footer {

@@ -28,10 +28,10 @@ class CochesController extends Controller
         $total = $coches->count();
 
         //Despues de crear la relacion eloquent lo implementamos en el compact y le damos el conteo.
-        $llaves = $evento->coches()->where('asiste' , 1)->count();
-        $no_llaves = $evento->coches()->where('asiste' , 0)->count();
+        $llaves = $coches->filter(fn($coche) => $coche->asiste == 1)->count();
+        $no_llaves = $coches->filter(fn($coche) => $coche->asiste == 0 || is_null($coche->asiste))->count();
 
-        return view('coches.index', compact('coches', 'evento', 'total' , 'llaves' , 'no_llaves'));
+        return view('coches.index', compact('coches', 'evento', 'total', 'llaves', 'no_llaves'));
     }
 
     public function create($id)
@@ -43,12 +43,12 @@ class CochesController extends Controller
 
     public function store(Request $request, $evento_id)
     {
-        // Validar si ya existe esa matrícula
+        // Validacion si ya existe esa matrícula
         if (Coch::where('matricula', $request->matricula)->exists()) {
             return redirect()
                 ->back()
-                ->withInput() // mantiene lo que ya llenó el usuario
-                ->with('error', 'La matrícula '. $request->matricula.' ya existe. ');
+                ->withInput()
+                ->with('error', 'La matrícula ' . $request->matricula . ' ya existe. ');
         }
 
         $request->validate([
@@ -57,13 +57,27 @@ class CochesController extends Controller
             'modelo' => 'required',
             'version' => 'required',
             'kam' => 'required',
+            'asiste' => 'nullable|in:0,1',
+            'seguro' => 'required|in:0,1',
+            'documento_seguro' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048',
+            'foto_vehiculo' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048'
         ], [
             'matricula.unique' => 'La matrícula ya existe',
             'matricula.required' => 'La matrícula es obligatoria',
-            // puedes agregar más mensajes personalizados aquí
         ]);
 
-        // Crear el coche
+        //Subida de archivos
+        $documentoSeguroPath = null;
+        $fotoVehiculoPath = null;
+
+        if ($request->hasFile('documento_seguro')) {
+            $documentoSeguroPath = $request->file('documento_seguro')->store('documentos_seguros', 'public');
+        }
+
+        if ($request->hasFile('foto_vehiculo')) {
+            $fotoVehiculoPath = $request->file('foto_vehiculo')->store('fotos_vehiculos', 'public');
+        }
+
         Coch::create([
             'marca' => $request->marca,
             'modelo' => $request->modelo,
@@ -72,6 +86,9 @@ class CochesController extends Controller
             'kam' => $request->kam,
             'asiste' => $request->input('asiste', 0),
             'evento_id' => $evento_id,
+            'seguro' => $request->input('seguro', 0),
+            'documento_seguro' => $documentoSeguroPath,
+            'foto_vehiculo' => $fotoVehiculoPath
         ]);
 
         return redirect()
@@ -128,7 +145,10 @@ class CochesController extends Controller
             'version' => 'required',
             'matricula' => 'required',
             'kam' => 'required',
-            'asiste' => 'nullable|in:0,1'
+            'asiste' => 'nullable|in:0,1',
+            'seguro' => 'required|in:0,1',
+            'documento_seguro' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048',
+            'foto_vehiculo' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:2048'
         ]);
 
         try {
@@ -138,8 +158,21 @@ class CochesController extends Controller
             $coche->matricula = $request->matricula;
             $coche->kam = $request->kam;
             $coche->asiste = $request->input('asiste', 0);
-            $coche->save();
+            $coche->seguro = $request->input('seguro', 0);
 
+            // Subir documento del seguro si hay nuevo
+            if ($request->hasFile('documento_seguro')) {
+                $documentoPath = $request->file('documento_seguro')->store('documentos_seguros', 'public');
+                $coche->documento_seguro = $documentoPath;
+            }
+
+            // Subir nueva foto si hay
+            if ($request->hasFile('foto_vehiculo')) {
+                $fotoPath = $request->file('foto_vehiculo')->store('fotos_vehiculos', 'public');
+                $coche->foto_vehiculo = $fotoPath;
+            }
+
+            $coche->save();
             //Realizamos la condicion ternaria para que no nos salga el error de null al actualizar (muy importante).
             return redirect()->route('coches.index', $evento ? $evento->id : null)->with('success', 'Coche actualizado correctamente');
         } catch (Exception $e) {
@@ -197,26 +230,24 @@ class CochesController extends Controller
 
     public function importarCoches(Request $request, $id)
     {
-        //Busca el evento pro el id.
         $evento = Evento::find($id);
 
         try {
-            //Genera una importacion de ese mismo evento(por eso se le apsa el id).
-            Excel::import(new CochImport($evento->id), $request->file('file'));
+            $import = new CochImport($evento->id);
+            Excel::import($import, $request->file('file'));
 
-            // Si la importación es exitosa, redirige a la vista que muestra los coches del evento
-            // y muestra un mensaje de éxito.
+            $duplicados = $import->getDuplicados();
+
             return redirect()
                 ->route('coches.show', $evento->id)
-                ->with('success', 'Coches importados correctamente');
+                ->with('success', 'Coches importados correctamente. Duplicados ignorados: ' . $duplicados);
         } catch (Exception $e) {
-            // Si ocurre algún error durante la importación,
-            // redirige a la página anterior y muestra un mensaje de error con la causa.
             return redirect()
                 ->back()
                 ->withErrors(['error' => 'Hubo un error al importar los coches: ' . $e->getMessage()]);
         }
     }
+
 
     /* public function validarMatricula(Request $request)
     {

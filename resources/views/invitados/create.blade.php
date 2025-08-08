@@ -13,49 +13,49 @@
 
     <!--FORMULARIO NUEVO INVITADO-->
     <form method="POST" action="{{route('invitados.store' , $evento->id)}}" enctype="multipart/form-data"
-        class="m-auto mt-5 mb-5 d-flex flex-wrap justify-content-between gap-3" style="width: 70%;">
+        class="m-auto mt-5 mb-5 d-flex flex-wrap justify-content-between gap-3" style="width: 70%;" id="formulario">
         @csrf
         <div class="col-12 col-sm-5">
             <!--NOMBRE-->
             <div class="mb-3">
                 <label for="nombre" class="form-label fw-bold">Nombre*</label>
-                <input type="text" class="form-control" name="nombre" value="{{ old('nombre')}}">
+                <input type="text" class="form-control" name="nombre" id="nombre" value="{{ old('nombre')}}">
             </div>
 
             <!--APELLIDO-->
             <div class="mb-3">
                 <label for="apellido" class="form-label fw-bold">Apellidos*</label>
-                <input type="text" class="form-control" name="apellido" value="{{ old('apellido')}}">
+                <input type="text" class="form-control" name="apellido" id="apellido" value="{{ old('apellido')}}">
             </div>
 
             <!--EMAIL-->
             <div class="mb-3">
                 <label for="email" class="form-label fw-bold">Email*</label>
-                <input type="email" class="form-control" name="email" aria-describedby="emailHelp" value="{{ old('email')}}">
+                <input type="email" class="form-control" name="email" aria-describedby="emailHelp" id="email" value="{{ old('email')}}">
             </div>
 
             <!--TELEFONO-->
             <div class="mb-3">
-                <label for="telefono" class="form-label fw-bold">Telefono*</label>
+                <label for="telefono" class="form-label fw-bold">Telefono</label>
                 <input type="text" class="form-control" name="telefono" value="{{ old('telefono')}}">
             </div>
 
             <!--EMPRESA-->
             <div class="mb-3">
-                <label for="empresa" class="form-label fw-bold">Empresa*</label>
+                <label for="empresa" class="form-label fw-bold">Empresa</label>
                 <input type="text" class="form-control" name="empresa" value="{{ old('empresa')}}">
             </div>
 
             <!--CIF-->
             <div class="mb-3">
-                <label for="cif" class="form-label fw-bold">CIF*</label>
+                <label for="cif" class="form-label fw-bold">CIF</label>
                 <input type="text" class="form-control" name="cif" value="{{ old('cif')}}">
             </div>
 
             <!--DNI-->
             <div class="mb-3">
-                <label for="dni" class="form-label fw-bold">Dni*</label>
-                <input type="text" class="form-control" name="dni" value="{{ old('dni')}}">
+                <label for="dni" class="form-label fw-bold">DNI*</label>
+                <input type="text" class="form-control" name="dni" id="dni" value="{{ old('dni')}}">
             </div>
 
             <!--MENSAJE DE ERROR-->
@@ -159,33 +159,27 @@
                 })
             </script>
 
-            <!--CARNET DE CONDUCIR-->
-            <div class="mb-3">
-                <label for="carnet" class="form-label fw-bold">Carnet de conducir (.pdf, .doc, .docx, .jpg, .png)</label>
-                <input type="file" class="form-control" name="carnet" accept=".pdf, .doc, .docx, .jpg, .png" value="{{ old('carnet')}}">
-            </div>
-
             <!---FECHA CARNET DE CONDUCIR--->
             <div class="mb-3">
                 <label for="carnet_caducidad" class="form-label fw-bold">Fecha caducidad carnet conducir*</label>
-                <input type="date" class="form-control" name="carnet_caducidad" value="{{ old('carnet_caducidad')}}">
+                <input type="date" class="form-control" name="carnet_caducidad" id="carnet" value="{{ old('carnet_caducidad')}}">
             </div>
 
             <!---KAM--->
             <div class="mb-3">
-                <label for="kam" class="form-label fw-bold">KAM*</label>
+                <label for="kam" class="form-label fw-bold">KAM</label>
                 <input type="text" class="form-control" name="kam" value="{{ old('kam')}}">
             </div>
 
             <!---INTOLERANCIA ALIMENTARIA--->
             <div class="mb-3">
-                <label for="intolerancia" class="form-label fw-bold">¿Cuenta con alguna intolerancia alimentaria?*</label>
+                <label for="intolerancia" class="form-label fw-bold">¿Cuenta con alguna intolerancia alimentaria?</label>
                 <input type="text" class="form-control" name="intolerancia" value="{{ old('intolerancia')}}">
             </div>
 
             <!--PREFERENCIAS-->
             <div class="mb-5">
-                <label for="preferencia" class="form-label fw-bold">¿Cuál es su preferencia?*</label>
+                <label for="preferencia" class="form-label fw-bold">¿Cuál es su preferencia?</label>
                 <div class="d-flex flex-wrap gap-5 justify-content-center">
                     <div class="form-check">
                         <input class="form-check-input" type="radio" value="carne" name="preferencia" {{ old('preferencia') == 'carne' ? 'checked' : '' }}>
@@ -202,13 +196,13 @@
             <div class="form-check mb-3 gap-2" style="display: flex; justify-content: flex-end;">
                 <input class="form-check-input" type="checkbox" value="1" name="proteccion_datos" id="proteccion_datos" {{ old('proteccion_datos') ? 'checked' : '' }} required>
                 <label class="form-check-label" for="proteccion_datos">
-                    <a href="#" data-bs-toggle="modal" data-bs-target="#modalDatos">Protección de Datos + Newsletter</a>
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#modalDatos">Protección de Datos</a>
                 </label>
             </div>
 
             <div style="display: flex; justify-content: flex-end;" class="gap-2">
                 <!--BOTON GUARDA EVENTO-->
-                <button type="submit" class="btn_color">Guardar</button>
+                <button type="submit" id="btn_enviar" class="btn_color">Guardar</button>
                 <!--BOTON VUELVE DASHBOARD-->
                 <a href="{{route('invitados.index' , $evento->id)}}" class="btn_secundario text-decoration-none">Volver</a>
             </div>
@@ -222,3 +216,77 @@
 </footer>
 @include('invitados.proteccion_datos')
 @endsection
+
+<!---VALIDACION FORMULARIO--->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById("formulario");
+        const nombre = document.getElementById("nombre");
+        const apellido = document.getElementById("apellido");
+        const email = document.getElementById("email");
+        const dni = document.getElementById("dni");
+        const carnet = document.getElementById("carnet");
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            let valido = true;
+
+            //NOMBRE
+            if (nombre.value.trim() === "") {
+                nombre.classList.add("validacion-mal")
+                valido = false;
+            } else {
+                nombre.classList.remove("validacion-mal");
+                nombre.classList.add('validacion-bien')
+            }
+
+            //APELLIDO
+            if(apellido.value.trim() === ""){
+                apellido.classList.add("validacion-mal");
+                valido = false;
+            } else{
+                apellido.classList.remove("validacion-mal");
+                apellido.classList.add("validacion-bien");
+            }
+
+            //EMAIL
+            if(email.value.trim() === ""){
+                email.classList.add("validacion-mal");
+                valido = false;
+            } else{
+                email.classList.remove("validacion-mal");
+                email.classList.add("validacion-bien");
+            }
+
+            //DNI
+            if(dni.value.trim() === ""){
+                dni.classList.add("validacion-mal");
+                valido = false;
+            } else{
+                dni.classList.remove("validacion-mal");
+                dni.classList.add("validacion-bien");
+            }
+
+            //CARNET DE CONDUCIR
+            if(carnet.value.trim() === ""){
+                carnet.classList.add("validacion-mal");
+                valido = false;
+            } else{
+                carnet.classList.remove("validacion-mal");
+                carnet.classList.add("validacion-bien");
+            }
+
+            if(valido){
+                form.submit();
+            }
+        });
+
+        [nombre , apellido , email , dni , carnet].forEach(input =>{
+            input.addEventListener('input' , function(){
+                if(input.value.trim() !== ""){
+                    input.classList.remove("validacion-mal");
+                }
+            })
+        });
+    })
+</script>

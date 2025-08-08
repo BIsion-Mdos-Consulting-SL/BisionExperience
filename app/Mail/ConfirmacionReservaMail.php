@@ -9,20 +9,17 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class ConfirmacionEventoMail extends Mailable
+class ConfirmacionReservaMail extends Mailable
 {
     use Queueable, SerializesModels;
 
     public $url;
-    public $evento;//Ponerlo ay que tenemso que recoger los datos del evento.
-
     /**
-     * Creamos una nueva jinstancia del mailable.
+     * Create a new message instance.
      */
-    public function __construct($url , $evento)
+    public function __construct($url)
     {
         $this->url = $url;
-        $this->evento = $evento; //Pasamos ambos que tenemos por parametro.
     }
 
     /**
@@ -31,7 +28,7 @@ class ConfirmacionEventoMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Confirmacion Evento Mail',
+            subject: 'Confirmacion Reserva Mail',
         );
     }
 
@@ -40,10 +37,9 @@ class ConfirmacionEventoMail extends Mailable
      */
     public function build()
     {
-        return $this->subject('Confirmación de Evento')
-            ->view('emails.confirmacion')
-            ->with(['url' => $this->url,
-                    'evento' => $this->evento]);//Pasar el evento.
+        return $this->subject('Confirmación de Reserva')
+            ->view('emails.confirmacion_reserva')
+            ->with(['url' => $this->url]);
     }
 
     /**

@@ -1,6 +1,7 @@
 <x-guest-layout>
     <div class="mb-4 text-sm text-gray-600">
-        {{ __('¿Olvidaste tu contraseña? No hay problema. Solo indícanos tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña y podrás elegir una nueva.') }}
+        <p class="mb-2">¿Olvido la contraseña?</p>
+        <p>Introduce tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña y podrás elegir una nueva.</p>
     </div>
 
     <!-- Session Status -->
@@ -18,8 +19,11 @@
 
         <div class="flex items-center justify-end mt-4">
             <x-primary-button style="background-color: #05072e;">
-                {{ __('Reestablecer contraseña') }}
+                {{ __('ENVIAR') }}
             </x-primary-button>
         </div>
     </form>
 </x-guest-layout>
+<script>
+
+</script>

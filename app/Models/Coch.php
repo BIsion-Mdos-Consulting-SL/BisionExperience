@@ -6,6 +6,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -19,6 +20,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $kam
  * @property bool $asiste
  * @property int|null $evento_id
+ * 
+ * @property Collection|Reserva[] $reservas
  *
  * @package App\Models
  */
@@ -39,11 +42,19 @@ class Coch extends Model
 		'matricula',
 		'kam',
 		'asiste',
-		'evento_id'
+		'evento_id',
+		'seguro',
+		'documento_seguro',
+		'foto_vehiculo'
 	];
+
+	public function reservas()
+	{
+		return $this->hasMany(Reserva::class, 'coche_id');
+	}
 
 	public function evento()
 	{
-		return $this->belongsTo(Evento::class);
+		return $this->belongsTo(Evento::class, 'evento_id');
 	}
 }

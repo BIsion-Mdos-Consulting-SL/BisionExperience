@@ -32,6 +32,14 @@
         padding: 10px;
     }
 
+    .validacion-mal {
+        border: 1px solid red !important;
+    }
+
+    .validacion-bien {
+        border: 1px solid green !important;
+    }
+
     .footer {
         background-color: #05072e;
         height: 80px;

@@ -69,7 +69,7 @@ class Evento extends Model
 	}
 
 	public function coches()
-	{
-		return $this->hasMany(Coch::class, 'evento_id');
-	}
+{
+    return $this->hasMany(Coch::class, 'evento_id');
+}
 }

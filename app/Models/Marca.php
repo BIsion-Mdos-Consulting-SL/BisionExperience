@@ -25,7 +25,6 @@ class Marca extends Model
 		'nombre'
 	];
 
-
 	public function eventos()
 	{
 		return $this->belongsToMany(Evento::class, 'eventos_marca', 'marca_id', 'evento_id');

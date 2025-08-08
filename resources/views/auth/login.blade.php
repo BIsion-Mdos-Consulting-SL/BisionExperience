@@ -30,7 +30,7 @@
                     </div>
                     <x-input-error :messages="$errors->get('password')" class="mt-2" />
                 </div>
-
+ 
                 <!----FUNCION PARA MOSTRAR/OCULTAR CONTRASEÑA(JS)---->
                 <script>
                     const inputPassword = document.getElementById('password');

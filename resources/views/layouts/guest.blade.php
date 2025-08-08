@@ -11,6 +11,8 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -19,7 +21,7 @@
 <body class="font-sans text-gray-900 antialiased" style="background-color:#0A0D40;">
     <div class="min-h-screen flex flex-col justify-center items-center p-sm-5 pb-24">
         <div>
-            <a href="/">
+            <a href="{{ route('login')}}">
                 <img class="w-20 h-15 fill-current text-gray-500" src="{{ asset('/images/header_logo.png') }}" alt="">
             </a>
         </div>

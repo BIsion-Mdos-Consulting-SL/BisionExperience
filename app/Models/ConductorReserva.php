@@ -21,13 +21,12 @@ use Illuminate\Database\Eloquent\Model;
  */
 class EventoConductor extends Model
 {
-	protected $table = 'evento_conductor';
+	protected $table = 'conductor_reserva';
 	public $timestamps = false;
 
 	protected $casts = [
 		'evento_id' => 'int',
 		'conductor_id' => 'int',
-		'confirmado' => 'bool'
 	];
 
 	protected $hidden = [
@@ -37,7 +36,6 @@ class EventoConductor extends Model
 	protected $fillable = [
 		'evento_id',
 		'conductor_id',
-		'confirmado',
 		'token'
 	];
 

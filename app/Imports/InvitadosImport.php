@@ -58,7 +58,7 @@ class InvitadosImport implements ToModel, WithHeadingRow
                     'preferencia' => $this->valorOrNull($row['preferencia'] ?? null),
                     'carnet' => $this->valorOrNull($row['carnet'] ?? null),
                     'etiqueta' => $this->valorOrNull($row['etiqueta'] ?? null),
-                    'proteccion_datos' => $this->valorOrNull($row['proteccion_datos'] ?? null),
+                    'proteccion_datos' => ($row['proteccion_datos'] === '-' || $row['proteccion_datos'] === '' || strtolower($row['proteccion_datos']) === 'no') ? 0 : 1,
                     'carnet_caducidad' => $this->valorOrNull($row['carnet_caducidad'] ?? null),
                 ]
             );
@@ -78,14 +78,17 @@ class InvitadosImport implements ToModel, WithHeadingRow
         }
     }
 
-    private function valorOrNull($value)
+    private function valorOrNull($value, $key = null)
     {
         $val = strtolower(trim((string) $value));
+
         $invalidos = ['', '-', '--', '---', 'n/a', 'sin info', 'ninguna', 'null', 'na', 'n/a.', 'n.d.', 's/n'];
 
-        // Si es un número y está en el rango típico de fechas de Excel
+        if ($key === 'proteccion_datos' && $val === '-') {
+            return 'nn'; // o 'no'
+        }
+
         if (is_numeric($value) && $value > 20000 && $value < 60000) {
-            // Convierte el número de Excel a fecha Y-m-d
             $fecha = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value);
             return $fecha->format('Y-m-d');
         }

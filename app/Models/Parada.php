@@ -7,6 +7,7 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -17,6 +18,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $conductor
  * @property Carbon|null $hora_inicio
  * @property Carbon|null $hora_fin
+ * @property string|null $nombre
+ * 
+ * @property Collection|Reserva[] $reservas
  *
  * @package App\Models
  */
@@ -34,6 +38,12 @@ class Parada extends Model
 		'nombre_vehiculo',
 		'conductor',
 		'hora_inicio',
-		'hora_fin'
+		'hora_fin',
+		'nombre'
 	];
+
+	public function reservas()
+	{
+		return $this->hasMany(Reserva::class);
+	}
 }

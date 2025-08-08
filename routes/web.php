@@ -6,6 +6,7 @@ use App\Http\Controllers\EventoConductorController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\EventosController;
 use App\Http\Controllers\InvitadosController;
+use App\Http\Controllers\ReservaController;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Route;
@@ -83,24 +84,43 @@ Route::middleware(['auth', CheckRole::class . ':cliente'])->group(function () {
 Route::get('/', [EventosController::class, 'index'])->name('eventos.index');
 
 //RUTA DE AGRADECIMIENTO
-Route::get('/gracias' , function() {
+Route::get('/gracias', function () {
     return view('emails.agradecimiento');
 })->name('emails.agradecimiento');
+
+
+//RUTA PARA BUSCAR MARCAS.
+Route::get('/clientes/marcas', [ReservaController::class, 'buscarMarcas']);
+
+//RUTA PARA BUSCAR MODELOS.
+Route::get('/clientes/modelos', [ReservaController::class, 'buscarModelos']);
 
 /**** -------------------------------------ENVIO DE CORREOS---------------------------------------- */
 
 //RUTAS PARA EL ENVIO DE URL.
 Route::get('/evento-confirmacion/{token}', [EventoConductorController::class, 'mostrarFormulario'])->name('evento.confirmacion');
 
-//RUTA PARA ENVIAR FORMULARIO (PROCESADO).
+//RUTA PARA ENVIAR FORMULARIO (PROCESADO).  
 Route::post('/evento-confirmacion/{token}', [EventoConductorController::class, 'enviarFormulario'])->name('evento.enviar');
 
 //RUTA PARA ENVIAR EMAIL AL INVITADO.
 Route::get('/evento/{evento_id}/invitado/{conductor_id}/confirmacion', [EventoConductorController::class, 'enviarEmail'])->name('invitados.enviarEmail');
 
-Mail::raw('Correo de prueba', function ($message) {
+/***-----------------ENVIO DE PARADAS------------------------------ */
+
+//RUTAS PARA EL ENVIO DE URL (RESERVA-PARADAS).
+Route::get('/reservas-confirmacion/{token}', [ReservaController::class, 'mostrarFormulario'])->name('reserva.confirmacion');
+
+Route::post('/reserva-confirmacion/{paradaId}', [ReservaController::class, 'guardarReserva'])->name('reserva.guardar');
+
+
+//RUTA PARA ENVIAR EMAIL AL INVITADO.
+Route::get('/reserva/{evento_id}/invitado/{conductor_id}/confirmacion', [ReservaController::class, 'enviarEmail'])
+    ->name('reserva.enviarEmail');
+
+/* Mail::raw('Correo de prueba', function ($message) {
     $message->to('aarongutierrez@bision.es')->subject('Correo de prueba');
-});
+}); */
 
 /**** --------------------------------------------------------------------------------------------- */
 

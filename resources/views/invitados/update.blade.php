@@ -21,50 +21,50 @@
     </div>
 
     <!--FORMULARIO NUEVO INVITADO-->
-    <form method="POST" action="{{isset($edicion) && $edicion ? route('evento.enviar' , $token) : route('invitados.update' , $evento->id)}}" enctype="multipart/form-data"
+    <form method="POST" id="formulario" action="{{isset($edicion) && $edicion ? route('evento.enviar' , $token) : route('invitados.update' , $evento->id)}}" enctype="multipart/form-data"
         class="m-auto mt-5 mb-5 d-flex flex-wrap justify-content-between gap-3" style="width: 70%;">
         @csrf
         <div class="col-12 col-sm-5">
             <!--NOMBRE-->
             <div class="mb-3">
                 <label for="nombre" class="form-label fw-bold">Nombre*</label>
-                <input type="text" class="form-control" name="nombre">
+                <input type="text" class="form-control validar" name="nombre">
             </div>
 
             <!--APELLIDO-->
             <div class="mb-3">
                 <label for="apellido" class="form-label fw-bold">Apellidos*</label>
-                <input type="text" class="form-control" name="apellido">
+                <input type="text" class="form-control validar" name="apellido">
             </div>
 
             <!--EMAIL-->
             <div class="mb-3">
                 <label for="email" class="form-label fw-bold">Email*</label>
-                <input type="email" class="form-control" name="email" aria-describedby="emailHelp">
+                <input type="email" class="form-control validar" name="email" aria-describedby="emailHelp">
             </div>
 
             <!--TELEFONO-->
             <div class="mb-3">
                 <label for="telefono" class="form-label fw-bold">Telefono*</label>
-                <input type="text" class="form-control" name="telefono">
+                <input type="text" class="form-control validar" name="telefono">
             </div>
 
             <!--EMPRESA-->
             <div class="mb-3">
                 <label for="empresa" class="form-label fw-bold">Empresa*</label>
-                <input type="text" class="form-control" name="empresa">
+                <input type="text" class="form-control validar" name="empresa">
             </div>
 
             <!--CIF-->
             <div class="mb-3">
                 <label for="cif" class="form-label fw-bold">CIF*</label>
-                <input type="text" class="form-control" name="cif">
+                <input type="text" class="form-control validar" name="cif">
             </div>
 
             <!--DNI-->
             <div class="mb-3">
-                <label for="dni" class="form-label fw-bold">Dni*</label>
-                <input type="text" class="form-control" name="dni">
+                <label for="dni" class="form-label fw-bold">DNI*</label>
+                <input type="text" class="form-control validar" name="dni">
             </div>
         </div>
 
@@ -161,14 +161,14 @@
 
             <!--CARNET DE CONDUCIR-->
             <div class="mb-3">
-                <label for="carnet" class="form-label fw-bold">Carnet de conducir*</label>
-                <input type="file" class="form-control" name="carnet" accept=".pdf, .doc, .docx, .jpg, .png">
+                <label for="carnet" class="form-label fw-bold">Carnet de conducir* (.pdf, .doc, .docx, .jpg, .png)</label>
+                <input type="file" class="form-control validar" name="carnet" accept=".pdf, .doc, .docx, .jpg, .png">
             </div>
 
             <!---FECHA CARNET DE CONDUCIR--->
             <div class="mb-3">
                 <label for="carnet_caducidad" class="form-label fw-bold">Fecha caducidad carnet conducir*</label>
-                <input type="date" class="form-control" name="carnet_caducidad">
+                <input type="date" class="form-control validar" name="carnet_caducidad">
             </div>
 
             <!---KAM--->
@@ -180,7 +180,7 @@
             <!---INTOLERANCIA ALIMENTARIA--->
             <div class="mb-3">
                 <label for="intolerancia" class="form-label fw-bold">¿Cuenta con alguna intolerancia alimentaria?*</label>
-                <input type="text" class="form-control" name="intolerancia">
+                <input type="text" class="form-control validar" name="intolerancia">
             </div>
 
             <!--PREFERENCIAS-->
@@ -202,7 +202,7 @@
             <div class="form-check mb-3 gap-2" style="display: flex; justify-content: flex-end;">
                 <input class="form-check-input" type="checkbox" value="1" name="proteccion_datos" id="proteccion_datos" required>
                 <label class="form-check-label" for="proteccion_datos">
-                    <a href="#" data-bs-toggle="modal" data-bs-target="#modalDatos">Protección de Datos + Newsletter</a>
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#modalDatos">Protección de Datos</a>
                 </label>
             </div>
 
@@ -222,3 +222,37 @@
 </footer>
 @include('invitados.proteccion_datos')
 @endsection
+
+<script>
+    document.addEventListener('DOMContentLoaded' , function(){
+        const form = document.getElementById("formulario");
+        const inputs = document.querySelectorAll(".validar");
+
+        form.addEventListener('submit' , function(e){
+            e.preventDefault();
+            let valido = true;
+
+            inputs.forEach(function (input) {
+                if(!input.value || input.value.trim() === ""){
+                    input.classList.add("validacion-mal");
+                    valido = false;
+                } else{
+                    input.classList.remove("validacion-mal");
+                    input.classList.add("validacion-bien");
+                }
+            });
+
+            if(valido){
+                form.submit();
+            }
+        });
+
+        inputs.forEach(input => {
+            input.addEventListener('input' , function(){
+                if(input.value.trim() === ""){
+                    input.classList.remove("validacion-mal");
+                }
+            })
+        })
+    })
+</script>

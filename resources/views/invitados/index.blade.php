@@ -96,7 +96,7 @@
                                             <form action="{{route('invitados.delete', $invitado->id)}}" method="POST">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button name="delete" id_delete="{{$invitado->id}}" type="submit" style="background:none;border:none;color:#05072e;">
+                                                <button name="delete" id_delete="{{$invitado->id}}" type="submit" style="background:none;border:none;color:#05072e;" title="Eliminar">
                                                     <i class="bi bi-trash3-fill"></i>
                                                 </button>
                                             </form>
@@ -104,17 +104,25 @@
                                             <!---BOTON EDITAR---->
                                             <form action="{{route('invitados.edit', $invitado->id)}}" method="GET">
                                                 @csrf
-                                                <button type="submit" style="background:none;border:none;color:#05072e;">
+                                                <button type="submit" style="background:none;border:none;color:#05072e;" title="Editar">
                                                     <i class="bi bi-pencil-square"></i>
                                                 </button>
                                             </form>
 
                                             <!---BOTON ENVIAR EMAIL CONFIRMACION--->
                                             <form action="{{route('invitados.enviarEmail', ['evento_id' => $evento->id , 'conductor_id' => $invitado->id])}}" method="GET">
-                                                <button type="submit" style="background:none;border:none;color:#05072e;">
+                                                @csrf
+                                                <button type="submit" style="background:none;border:none;color:#05072e;" title="Enviar Correo">
                                                     <i class="bi bi-envelope-fill"></i>
                                                 </button>
                                             </form>
+
+                                            <!----BOTON RESERVA COCHES----->
+                                            <!-- <form action="{{ route('reserva.enviarEmail', ['evento_id' => $evento->id, 'conductor_id' => $invitado->id]) }}" method="GET">
+                                                <button type="submit" style="background:none;border:none;color:#05072e;" title="Reservar Coche">
+                                                    <i class="bi bi-car-front-fill"></i>
+                                                </button>
+                                            </form> -->
                                         </div>
                                     </div>
                                 </div>
@@ -131,7 +139,7 @@
                                         <th>CIF</th>
                                         <th>Nombre</th>
                                         <th>Apellidos</th>
-                                        <th>Dni</th>
+                                        <th>DNI</th>
                                         <th>Fecha Carnet de conducir</th>
                                         <th>Telefono</th>
                                         <th>Email</th>
@@ -194,6 +202,14 @@
                                                     <i class="bi bi-envelope-fill"></i>
                                                 </button>
                                             </form>
+
+                                            <!----BOTON RESERVA COCHES----->
+                                            <!-- <form action="{{ route('reserva.enviarEmail', ['evento_id' => $evento->id, 'conductor_id' => $invitado->id]) }}">
+                                                @csrf
+                                                <button type="submit" style="background:none;border:none;color:#05072e;" title="Reservar Coche">
+                                                <i class="bi bi-car-front-fill"></i>
+                                                </button>
+                                            </form> -->
                                         </td>
                                     </tr>
                                     @endforeach

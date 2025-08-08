@@ -24,11 +24,13 @@ class InvitadosController extends Controller
         //Paginacion de 50.
         $invitados = $evento->invitados()->paginate(50);
         //Me cuenta el total de invitados dentro de cada evento.
-        $total = $invitados->count();
+        $total = $evento->invitados()->count();
 
         //Contador de asistencia.
         $asisten = $evento->invitados()->where('asiste', 1)->count();
-        $no_asiste = $evento->invitados()->where('asiste', 0)->count();
+        $no_asiste = $evento->invitados()->where(function ($query) {
+            $query->where('asiste', 0)->orWhereNull('asiste');
+        })->count();
         //Pasamos en el compact todo lo que vamos a mostrar.
         return view('invitados.index', ['id' => $evento], compact('evento', 'invitados', 'total', 'asisten', 'no_asiste'));
     }
@@ -63,8 +65,7 @@ class InvitadosController extends Controller
             'vehiculo_emp' => 'nullable',
             'intolerancia' => 'nullable',
             'preferencia' => 'nullable',
-            'carnet_caducidad' => 'nullable|date',
-            'carnet' => 'nullable|file',
+            'carnet_caducidad' => 'required|date',
             'kam' => 'nullable',
             'dni' => 'nullable|unique:conductor,dni',
             'etiqueta' => 'required_if:vehiculo_prop,si',
@@ -163,14 +164,13 @@ class InvitadosController extends Controller
             'nombre' => 'required',
             'apellido' => 'required',
             'email' => 'required',
-            'telefono' => 'required',
-            'empresa' => 'required',
+            'telefono' => 'nullable',
+            'empresa' => 'nullable',
             'vehiculo_prop' => 'nullable',
             'vehiculo_emp' => 'nullable',
-            'intolerancia' => 'required',
-            'preferencia' => 'required',
-            'carnet_caducidad' => 'nullable',
-            'carnet' => 'nullable',
+            'intolerancia' => 'nullable',
+            'preferencia' => 'nullable',
+            'carnet_caducidad' => 'required',
             'kam' => 'nullable',
             'dni' => 'nullable',
             'etiqueta' => 'required_if:vehiculo_prop,si',
@@ -188,7 +188,6 @@ class InvitadosController extends Controller
             $invitados->intolerancia = $request->intolerancia;
             $invitados->preferencia = $request->preferencia;
             $invitados->carnet_caducidad = $request->carnet_caducidad;
-            $invitados->carnet = $request->carnet;
             $invitados->kam = $request->kam;
             $invitados->dni = $request->dni;
 
@@ -225,7 +224,7 @@ class InvitadosController extends Controller
             //Mantiene la paginacion aun realizando el filtrado.
             ->appends(['buscador' => $query]);
 
-        $total = $invitados->count(); //Total de invitados por evento.
+        $total = $invitados->total(); //Total de invitados por evento.
         return view('invitados.index', compact('invitados', 'total', 'evento'));
     }
 
@@ -257,7 +256,7 @@ class InvitadosController extends Controller
             Excel::import(new InvitadosImport($evento->id), $request->file('file'));
 
             return redirect()
-                ->route('invitados.show', $evento->id)
+                ->route('invitados.index', $evento->id)
                 ->with('success', 'Invitados importados correctamente');
         } catch (Exception $e) {
             return redirect()
