@@ -5,16 +5,28 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('eventos.index') }}">
-                        <img class="header_logo" src="{{asset('/images/header_logo.png')}}" alt="" style="width: 50px;">
+                    @php
+                    $user = auth()->user();
+                    // compara contra tu campo 'rol' (sin Spatie)
+                    $isAdmin = $user && strtolower($user->rol) === 'admin';
+                    @endphp
+
+                    <a href="{{ $isAdmin ? route('dashboard') : route('cliente.dashboard') }}">
+                        <img class="header_logo" src="{{ asset('/images/header_logo.png') }}" alt="Logo" style="width: 50px;">
                     </a>
                 </div>
 
                 <!-- Navigation Links -->
-                <div class=" space-x-8 sm:-my-px sm:ms-10 sm:flex mt-3 mt-md-0 mt-lg-0 mt-xl-0">
-                    <x-nav-link :href="route('eventos.index')" :active="request()->routeIs('dashboard')">
+                <div class="space-x-8 sm:-my-px sm:ms-10 sm:flex mt-3 mt-md-0 mt-lg-0 mt-xl-0">
+                    @if ($isAdmin)
+                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    @else
+                    <x-nav-link :href="route('cliente.dashboard')" :active="request()->routeIs('cliente.dashboard')">
+                        {{ __('Dashboard') }}
+                    </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -22,15 +34,37 @@
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                            <div>{{ Auth::user()->name }}</div>
+                        <div class="flex items-center gap-3">
+                            <!----ICONO DE ATRAS---->
+                            <a href="#">
+                                <i class="d-block d-sm-block fw-bold bi bi-arrow-left text-white" title="Back" id="back_btn"></i>
+                            </a>
+                            <!---FUNCION PARA VOLVER ATRAS CON TODAS LAS PAGINAS.--->
+                            <script>
+                                document.addEventListener('DOMContentLoaded', () => {
+                                    const btn_salir = document.getElementById('back_btn');
 
-                            <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                        </button>
+                                    btn_salir.addEventListener('click', () => {
+                                        window.history.back(); //Retorna siempre una pagina atras.
+                                    })
+
+                                })
+                            </script>
+                            <!-- Icono de Casa -->
+                            <a href="{{ $isAdmin ? route('dashboard') : route('cliente.dashboard') }}">
+                                <i class="d-block d-sm-block fw-bold bi bi-house-door-fill text-white" title="Home"></i>
+                            </a>
+
+                            <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
+                                <div>{{ Auth::user()->name }}</div>
+
+                                <div class="ms-1">
+                                    <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                            </button>
+                        </div>
                     </x-slot>
 
                     <x-slot name="content">
@@ -43,7 +77,7 @@
                             @csrf
 
                             <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
+                                onclick="event.preventDefault();
                                                 this.closest('form').submit();">
                                 {{ __('Cerrar sesion') }}
                             </x-dropdown-link>
@@ -89,7 +123,7 @@
                     @csrf
 
                     <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
+                        onclick="event.preventDefault();
                                         this.closest('form').submit();">
                         {{ __('Log Out') }}
                     </x-responsive-nav-link>

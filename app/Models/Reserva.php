@@ -33,13 +33,17 @@ class Reserva extends Model
 	protected $casts = [
 		'user_id' => 'int',
 		'coche_id' => 'int',
-		'parada_id' => 'int'
+		'parada_id' => 'int',
+		'evento_id' => 'int',
+		'hora_inicio' => 'string',
+		'hora_fin' => 'string'
 	];
 
 	protected $fillable = [
 		'user_id',
 		'coche_id',
 		'parada_id',
+		'evento_id',
 		'tipo'
 	];
 
@@ -50,11 +54,15 @@ class Reserva extends Model
 
 	public function parada()
 	{
-		return $this->belongsTo(Parada::class);
+		return $this->belongsTo(Parada::class , 'parada_id');
 	}
 
 	public function user()
 	{
-		return $this->belongsTo(User::class);
+		return $this->belongsTo(User::class , 'user_id');
+	}
+
+	public function evento(){
+		return $this->belongsTo(Evento::class , 'evento_id');
 	}
 }

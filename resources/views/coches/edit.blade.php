@@ -69,13 +69,15 @@
                     <label for="seguro" class="fw-bold mb-3">¿Seguro del coche en vigor?*</label>
                     <div class="mb-3 d-flex flex-wrap gap-3 text-center">
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="seguro" id="radioDefault1" value="1">
+                            <input class="form-check-input" type="radio" name="seguro" id="radioDefault1" value="1"
+                                {{ $coches->seguro == '1' ? 'checked' : '' }}>
                             <label class="form-check-label" for="radioDefault1">
                                 Si
                             </label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="seguro" id="radioDefault2" value="0" checked>
+                            <input class="form-check-input" type="radio" name="seguro" id="radioDefault2" value="0"
+                                {{ $coches->seguro == '0' ? 'checked' : '' }}>
                             <label class="form-check-label" for="radioDefault2">
                                 No
                             </label>
@@ -99,7 +101,7 @@
 
                     <!-- FOTO DEL VEHÍCULO -->
                     <div class="mb-3">
-                        <label for="foto_vehiculo" class="form-label fw-bold">Foto del vehículo*</label>
+                        <label for="foto_vehiculo" class="form-label fw-bold">Foto del vehículo* (pdf, jpg, jpeg, png)</label>
 
                         <!-- El input está oculto -->
                         <input class="form-control d-none" type="file" id="foto_vehiculo" name="foto_vehiculo" accept="image/*">
@@ -107,9 +109,9 @@
                         <!-- El icono que dispara el input -->
                         <div id="preview_container" class="text-center text-md-end" style="cursor: pointer; font-size: clamp(12rem, 20vw, 15rem);">
                             @if(isset($coches) && $coches->foto_vehiculo)
-                                <img src="{{ asset('storage/' . $coches->foto_vehiculo)}}" alt="" style="max-width: 350px; max-height: 350px;">
-                                @else
-                                <i class="bi bi-folder-plus" id="preview_icon" title="Selecciona imagen"></i>
+                            <img src="{{ asset('storage/' . $coches->foto_vehiculo)}}" alt="" style="max-width: 350px; max-height: 350px;">
+                            @else
+                            <i class="bi bi-folder-plus" id="preview_icon" title="Selecciona imagen"></i>
                             @endif
                         </div>
                     </div>

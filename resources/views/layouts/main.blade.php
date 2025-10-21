@@ -16,6 +16,10 @@
     height: 100%;
   }
 
+  a{
+    text-decoration: none;
+  }
+
   .header {
     background-color: #05072e;
   }

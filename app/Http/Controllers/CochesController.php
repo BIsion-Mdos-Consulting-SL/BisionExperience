@@ -222,10 +222,7 @@ class CochesController extends Controller
         $evento = Evento::find($evento_id);
 
         //Devuelve la decarga con el excel creado.
-        return Excel::download(
-            new CochExport($evento),
-            'coches' . $evento_id . '.xlsx'
-        );
+        return Excel::download(new CochExport($evento), 'coches_evento' . $evento_id . '.xlsx');
     }
 
     public function importarCoches(Request $request, $id)
@@ -247,30 +244,4 @@ class CochesController extends Controller
                 ->withErrors(['error' => 'Hubo un error al importar los coches: ' . $e->getMessage()]);
         }
     }
-
-
-    /* public function validarMatricula(Request $request)
-    {
-        $existe = Coche::where('matricula', $request->matricula)->exists();
-
-        if ($existe) {
-            // Si la matrícula ya existe, redirigimos a create con error
-            return redirect()->route('coches.create', $request->evento_id)
-                ->with('error', 'La matrícula ya existe');
-        }
-
-        // Si no existe, creamos el coche y redirigimos a index con éxito
-        Coche::create([
-            'marca' => $request->marca,
-            'modelo' => $request->modelo,
-            'version' => $request->version,
-            'matricula' => $request->matricula,
-            'kam' => $request->kam,
-            'asiste' => $request->input('asiste', 0),
-            'evento_id' => $request->evento_id,
-        ]);
-
-        return redirect()->route('coches.index', $request->evento_id)
-            ->with('success', 'Coche creado con éxito');
-    } */
 }

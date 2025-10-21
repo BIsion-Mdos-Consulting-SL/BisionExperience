@@ -1,20 +1,29 @@
-# Documentación del Proyecto Laravel 
+ # Documentación del Proyecto Laravel 
 
 ## Índice
 - [Documentación del Proyecto Laravel](#documentación-del-proyecto-laravel)
   - [Índice](#índice)
 - [📄 Resumen del Proyecto](#-resumen-del-proyecto)
 - [🗂️ Estructura MVC](#️-estructura-mvc)
+- [Cambio de idioma en el proyecto](#cambio-de-idioma-en-el-proyecto)
+- [Rutas Inicio Sesion (CLIENTE , DEALER , ADMINISTRADOR)](#rutas-inicio-sesion-cliente--dealer--administrador)
   - [📘 Modelos (Models)](#-modelos-models)
-      - [`create.blade.php`](#createbladephp)
+  - [👁️ Vistas (Views)](#️-vistas-views)
+      - [VISTAS EVENTOS](#vistas-eventos)
+      - [`dashboard.blade.php`](#dashboardbladephp)
     - [🧪 Vista con código JS](#-vista-con-código-js)
+      - [🧩 Código Blade + JavaScript](#-código-blade--javascript)
+      - [`create.blade.php`](#createbladephp)
+    - [🧪 Vista con código JS](#-vista-con-código-js-1)
       - [`edit.blade.php`](#editbladephp)
       - [VISTAS INVITADOS](#vistas-invitados)
       - [`index.blade.php`](#indexbladephp)
-    - [🧪 Vista con código JS](#-vista-con-código-js-1)
-      - [`create.blade.php`](#createbladephp-1)
     - [🧪 Vista con código JS](#-vista-con-código-js-2)
+      - [`create.blade.php`](#createbladephp-1)
+    - [🧪 Vista con código JS](#-vista-con-código-js-3)
       - [`edit.blade.php`](#editbladephp-1)
+      - [`proteccion_datos.blade.php`](#proteccion_datosbladephp)
+      - [`update.blade.php`](#updatebladephp)
       - [VISTAS ERRORES](#vistas-errores)
     - [📁 Estructura de carpetas](#-estructura-de-carpetas)
     - [🧩 Vistas comunes](#-vistas-comunes)
@@ -23,47 +32,57 @@
     - [🧩 Vistas comunes](#-vistas-comunes-1)
     - [📄 Vistas destacadas](#-vistas-destacadas)
       - [`auth/login.blade.php`](#authloginbladephp)
-    - [🧪 Vista con código JS](#-vista-con-código-js-3)
+    - [🧪 Vista con código JS](#-vista-con-código-js-4)
       - [✅ Objetivo](#-objetivo)
-      - [🧩 Código Blade + JavaScript](#-código-blade--javascript)
+      - [🧩 Código Blade + JavaScript](#-código-blade--javascript-1)
+      - [`auth/register.blade.php`](#authregisterbladephp)
+      - [VISTAS ADMIN](#vistas-admin)
+    - [📁 Estructura de carpetas](#-estructura-de-carpetas-2)
+    - [🧩 Vistas comunes](#-vistas-comunes-2)
+      - [VISTAS CLIENTE](#vistas-cliente)
+    - [📁 Estructura de carpetas](#-estructura-de-carpetas-3)
+    - [🧩 Vistas comunes](#-vistas-comunes-3)
+      - [VISTAS LAYOUTS](#vistas-layouts)
+    - [📁 Estructura de carpetas](#-estructura-de-carpetas-4)
+    - [🧩 Vistas comunes](#-vistas-comunes-4)
+      - [VISTAS VENDOR](#vistas-vendor)
+    - [📁 Estructura de carpetas](#-estructura-de-carpetas-5)
+    - [🧩 Vistas comunes](#-vistas-comunes-5)
   - [👁️ Controlador (Controllers)](#️-controlador-controllers)
     - [`EventosController`](#eventoscontroller)
     - [🧩 Métodos principales](#-métodos-principales)
       - [RUTAS EventosController](#rutas-eventoscontroller)
-      - [`index()`](#index)
-      - [`create()`](#create)
-      - [`store()`](#store)
-      - [`delete()`](#delete)
-      - [`edit()`](#edit)
-      - [`update()`](#update)
-      - [`show()`](#show)
-      - [`filtrarFecha()`](#filtrarfecha)
-      - [`exportarInvitados()`](#exportarinvitados)
       - [Datos extras funcion exportarInvitados():](#datos-extras-funcion-exportarinvitados)
     - [`InvitadosController`](#invitadoscontroller)
     - [🧩 Métodos principales](#-métodos-principales-1)
       - [RUTAS InvitadosController](#rutas-invitadoscontroller)
-      - [`index()`](#index-1)
-      - [`create()`](#create-1)
-      - [`store()`](#store-1)
-      - [`delete()`](#delete-1)
-      - [`edit()`](#edit-1)
-      - [`update()`](#update-1)
-      - [`show()`](#show-1)
-      - [`actualizarAsistencia()`](#actualizarasistencia)
     - [`CochesController`](#cochescontroller)
     - [🧩 Métodos principales](#-métodos-principales-2)
       - [RUTAS CochesController](#rutas-cochescontroller)
-      - [`index()`](#index-2)
-      - [`create()`](#create-2)
-      - [`store()`](#store-2)
-      - [`delete()`](#delete-2)
-      - [`edit()`](#edit-2)
-      - [`update()`](#update-2)
-      - [`actualizarAsistencia()`](#actualizarasistencia-1)
-      - [`show()`](#show-2)
-      - [`exportarCoches()`](#exportarcoches)
-      - [`importarCoches()`](#importarcoches)
+    - [`TrazabilidadController`](#trazabilidadcontroller)
+    - [🧩 Métodos principales](#-métodos-principales-3)
+      - [RUTAS TrazabilidadController](#rutas-trazabilidadcontroller)
+    - [`AjustesController`](#ajustescontroller)
+    - [🧩 Métodos principales](#-métodos-principales-4)
+      - [RUTAS AjustesController](#rutas-ajustescontroller)
+    - [`ClienteController`](#clientecontroller)
+    - [🧩 Métodos principales](#-métodos-principales-5)
+      - [RUTAS ClienteController](#rutas-clientecontroller)
+    - [`PruebaDinamicaController`](#pruebadinamicacontroller)
+    - [🧩 Métodos principales](#-métodos-principales-6)
+      - [RUTAS ReservaController](#rutas-reservacontroller)
+    - [`PruebaDinamicaController`](#pruebadinamicacontroller-1)
+    - [🧩 Métodos principales](#-métodos-principales-7)
+      - [RUTAS PruebaDinamicaController](#rutas-pruebadinamicacontroller)
+    - [`TimingController`](#timingcontroller)
+    - [🧩 Métodos principales](#-métodos-principales-8)
+      - [RUTAS TimingController](#rutas-timingcontroller)
+    - [`PatrocinadoresController`](#patrocinadorescontroller)
+    - [🧩 Métodos principales](#-métodos-principales-9)
+      - [RUTAS PatrocinadoresController](#rutas-patrocinadorescontroller)
+    - [`EventoConductorController`](#eventoconductorcontroller)
+    - [🧩 Métodos principales](#-métodos-principales-10)
+      - [RUTAS EventoConductorController](#rutas-eventoconductorcontroller)
   - [📌 Conclusión](#-conclusión)
     - [✅ Logros principales:](#-logros-principales)
     - [🚀 Recomendaciones para futuras mejoras:](#-recomendaciones-para-futuras-mejoras)
@@ -86,6 +105,42 @@ A continuación se describe cómo está estructurado el proyecto según el patr�
 
 ---
 
+# Cambio de idioma en el proyecto 
+
+1. Publicar carpeta lang para ver las que tenemos por defecto (en) , se cambia por "es": 
+    ```php
+        php artisan lang:publish
+        
+2. Ejecutar este comando:
+
+    ```php
+        composer require laravel-lang/common
+
+3. Crear carpeta "es" con la traduccion cambiada al español
+   
+    ```php
+        php artisan lang:add es
+
+4. Cambiar el .env para que se use la carpeta correcta , dejamos el "en" y usamos el "es":
+
+    ```php
+        APP_LOCALE=en , por: 
+        APP_LOCALE=es
+---
+
+
+---
+
+# Rutas Inicio Sesion (CLIENTE , DEALER , ADMINISTRADOR)
+
+| Carpeta    | Vista             | Ruta            | Descripción       |
+| ---------- | ----------------- | --------------- | ----------------- |
+| `cliente/` | `login.blade.php` | `cliente/login` | Ruta para cliente |
+| `dealer/`  | `login.blade.php` | `dealer/login`  | Ruta para dealer  |
+| `admin/`   | `login.blade.php` | `admin.login`   | Ruta para admin   |
+
+- Cada una son las rutas de acceso dependiendo del rol que tendra cada uno.
+
 ## 📘 Modelos (Models)
 
 - **User.php**
@@ -93,12 +148,19 @@ A continuación se describe cómo está estructurado el proyecto según el patr�
   - Campos principales:
   ```php
   protected $fillable = [
+		'rol',
 		'name',
 		'email',
 		'email_verified_at',
 		'password',
 		'remember_token'
 	];
+
+### 🔗 Relaciones en el modelo User
+
+- **reservas()**
+  - Tipo: `hasMany`
+  - Un evento puede tener **muchas reservas**.
 
 - **Evento.php**
   - Representa los eventos creados por los usuarios.
@@ -121,12 +183,6 @@ A continuación se describe cómo está estructurado el proyecto según el patr�
 	];
 ### 🔗 Relaciones en el modelo Evento
 
-- **invitados()**
-  - Tipo: `belongsToMany`
-  - Un evento puede tener **muchos conductores** como invitados.
-  - Relación con el modelo `Conductor`.
-  - Usa la tabla pivote `evento_conductor` con las claves: `evento_id` y `conductor_id`.
-
 ```php
 public function invitados()
 {
@@ -136,6 +192,31 @@ public function invitados()
 public function marcas()
 {
     return $this->belongsToMany(Marca::class, 'eventos_marca', 'evento_id', 'marca_id');
+}
+
+public function coches()
+{
+    return $this->hasMany(Coch::class, 'evento_id');
+}
+
+public function paradas()
+{
+    return $this->hasMany(Parada::class, 'evento_id')->orderBy('orden');
+}
+
+public function restaurante()
+{
+    return $this->hasOne(Restaurante::class, 'evento_id', 'id');
+}
+
+public function timings()
+{
+    return $this->hasMany(Timing::class, 'evento_id', 'id');
+}
+
+public function banners()
+{
+    return $this->hasMany(Banner::class, 'evento_id', 'id');
 }
 ```
 
@@ -156,8 +237,11 @@ public function marcas()
 		'preferencia',
 		'carnet',
 		'etiqueta',
-		'kam', 
-		'asiste'
+		'kam',
+		'asiste',
+		'dni',
+		'proteccion_datos',
+		'carnet_caducidad'
 	];
 
 ### 🔗 Relaciones en el modelo Conductor
@@ -180,8 +264,10 @@ public function eventos()
   - Campos principales: 
   ```php
   protected $fillable = [
-		'evento_id', //Apunta al id del evento.
-		'conductor_id' //Apunta al id del conductor.
+		'evento_id',
+		'conductor_id',
+		'confirmado',
+		'token'
 	];
 
 ### 🔗 Relaciones en el modelo EventoConductor
@@ -202,8 +288,8 @@ public function invitados(){
   - Campos principales: 
   ```php
   protected $fillable = [
-		'evento_id', //Apunta al id del evento.
-		'marca_id' //Apunta al id de la marca.
+		'evento_id',
+		'marca_id'
 	];
 
 - **Marca.php**
@@ -235,6 +321,180 @@ public function eventos(){
   protected $fillable = [
 		'nombre'
 	];
+
+- **Coch.php**
+- Representa la informacion de los coches que tengo guardados en la BD.
+  - Campos principales: 
+  ```php
+  protected $fillable = [
+		'marca',
+		'modelo',
+		'version',
+		'matricula',
+		'kam',
+		'asiste',
+		'evento_id',
+		'seguro',
+		'documento_seguro',
+		'foto_vehiculo'
+	];
+
+### 🔗 Relaciones en el modelo Coch
+
+```php
+public function reservas()
+{
+    return $this->hasMany(Reserva::class, 'coche_id');
+}
+
+public function evento()
+{
+    return $this->belongsTo(Evento::class, 'evento_id');
+}
+```
+
+- **Parada.php**
+- Representa la informacion de las paradas que tengo guardados en la BD de cada evento.
+  - Campos principales: 
+  ```php
+  protected $fillable = [
+		'evento_id',
+		'conductor',
+		'nombre',
+		'descripcion',
+		'enlace',
+		'orden'
+	];
+
+### 🔗 Relaciones en el modelo Parada
+
+```php
+public function evento()
+{
+    return $this->belongsTo(Evento::class, 'evento_id');
+}
+
+public function reservas()
+{
+    return $this->hasMany(Reserva::class);
+}
+```
+
+- **Reserva.php**
+- Representa la informacion de las reservas que tengo guardadas en la BD de cada evento , como usuario.
+  - Campos principales: 
+  ```php
+    protected $fillable = [
+		'user_id',
+		'coche_id',
+		'parada_id',
+		'evento_id',
+		'tipo'
+	];
+
+    protected $casts = [
+		'user_id' => 'int',
+		'coche_id' => 'int',
+		'parada_id' => 'int',
+		'evento_id' => 'int',
+		'hora_inicio' => 'string',
+		'hora_fin' => 'string'
+	];
+
+### 🔗 Relaciones en el modelo Reserva
+
+```php
+public function coch()
+{
+    return $this->belongsTo(Coch::class, 'coche_id');
+}
+
+public function parada()
+{
+    return $this->belongsTo(Parada::class , 'parada_id');
+}
+
+    public function user()
+{
+    return $this->belongsTo(User::class , 'user_id');
+}
+
+    public function evento(){
+    return $this->belongsTo(Evento::class , 'evento_id');
+}
+```
+
+- **Restaurante.php**
+- Representa la informacion de los o el restaurante que tengo guardado en la BD de cada evento.
+  - Campos principales: 
+  ```php
+    protected $casts = [
+        'evento_id' => 'int'
+    ];
+
+    protected $fillable = [
+        'nombre',
+        'descripcion',
+        'foto_restaurante',
+        'enlace',
+        'evento_id'
+    ];
+
+### 🔗 Relaciones en el modelo Restaurante
+
+```php
+public function evento()
+{
+    return $this->belongsTo(Evento::class, 'evento_id' , 'id');
+}
+```
+
+- **Timing.php**
+- Representa la informacion del timing que tengo guardado en la BD de cada evento.
+  - Campos principales: 
+  ```php
+    protected $fillable = [
+        'nombre',
+        'descripcion',
+        'evento_id'
+    ];
+
+### 🔗 Relaciones en el modelo Timing
+
+```php
+public function timings()
+{
+    return $this->hasMany(Timing::class);
+}
+
+    public function evento()
+{
+    return $this->belongsTo(Evento::class , 'evento_id', 'id');
+}
+```
+
+- **Banner.php**
+- Representa la informacion de cada banner(empresa) que tengo guardado en la BD de cada evento.
+  - Campos principales: 
+  ```php
+    protected $fillable = [
+        'evento_id',
+        'empresa',
+        'enlace',
+        'video',
+        'imagen',
+        'frase',
+        'contacto',
+        'texto'
+    ];
+
+### 🔗 Relaciones en el modelo Banner
+
+```php
+public function evento(){
+    return $this->belongsTo(Evento::class, 'evento_id');
+}
+```
 
 ## 👁️ Vistas (Views)
 
@@ -570,6 +830,15 @@ A continuación, se muestra un ejemplo de cómo se puede seleccionar en un CHECK
 - **Datos requeridos**: For each con distintos campos creados para mostrar todo el contenido (se pasan en el controlador).
 - **Extras**: La vista cuenta con comentarios donde se especifica concretamente cada parte del codigo , de tal manera que se vea mas legible. Suele ser igual la vista de create.blade.php pero en este caso recogemos valores que se mostraran en el formulario (GET).
 
+
+#### `proteccion_datos.blade.php`
+
+- **Propósito**: Codigo en HTML que usare para aplicar al modal en el <a>Proteccion de Datos</a> en el formualrio.
+  
+#### `update.blade.php`
+
+- **Propósito**: Este formulario servira para poder pooder mandar el correo de registro al invitado.
+
 #### VISTAS ERRORES 
 
 ### 📁 Estructura de carpetas
@@ -689,6 +958,216 @@ Evitar que el formulario se envíe si el checkbox de "He leído y acepto las nor
 </script>
 ```
 
+#### `auth/register.blade.php`
+
+- **Propósito**: Poder registrarte en la pagina.
+
+```blade
+
+@extends('layouts.login')
+@section('content')
+<x-guest-layout>
+    <form method="POST" id="formulario" action="{{ route('register') }}" class="col-12">
+        @csrf
+
+        <!-- Name (opcional) -->
+        <div>
+            <x-input-label for="name" :value="__('Nombre')" />
+            <x-text-input id="name" class="block mt-1 w-full validar" type="text" name="name" :value="old('name')" autofocus autocomplete="name" />
+            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+        </div>
+       
+
+        <!-- Email Address -->
+        <div class="mt-4">
+            <x-input-label for="email" :value="__('Email')" />
+            <x-text-input
+                id="email"
+                class="block mt-1 w-full validar"
+                type="email"
+                name="email"
+                value="{{ old('email') }}"
+                autocomplete="username" />
+        </div>
+
+        <!-- Password -->
+        <div class="mt-4">
+            <x-input-label for="password" :value="__('Contraseña')" class="fw-bold" />
+
+            <div class="input-group">
+                <x-text-input type="password" name="password" autocomplete="new-password" class="form-control password validar" />
+                <span class="input-group-text toggle-password" style="cursor: pointer;">
+                    <i class="bi bi-eye-fill"></i>
+                </span>
+            </div>
+            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="mt-4">
+            <x-input-label  for="password_confirmation" :value="__('Confirmar contraseña')" />
+            <div class="input-group">
+                <x-text-input type="password" name="password_confirmation" autocomplete="new-password" class="form-control password validar" />
+                <span class="input-group-text toggle-password" style="cursor: pointer;">
+                    <i class="bi bi-eye-fill"></i>
+                </span>
+            </div>
+            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+        </div>
+
+        <!---SWEETALERT PARA EL CORREO-->
+        @if ($errors->has('email'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'error',
+                    iconColor: "#05072e",
+                    title: 'Correo no existe en la BD',
+                    confirmButtonColor: "#05072e"
+                });
+            });
+        </script>
+        @endif
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Toggle de contraseña
+                const toggles = document.querySelectorAll('.toggle-password');
+                toggles.forEach(toggle => {
+                    toggle.addEventListener('click', function() {
+                        const input = this.previousElementSibling;
+                        const icon = this.querySelector('i');
+
+                        if (input.type === 'password') {
+                            input.type = 'text';
+                            icon.classList.remove('bi-eye-fill');
+                            icon.classList.add('bi-eye-slash-fill');
+                        } else {
+                            input.type = 'password';
+                            icon.classList.remove('bi-eye-slash-fill');
+                            icon.classList.add('bi-eye-fill');
+                        }
+                    });
+                });
+
+                // Validación del formulario
+                const form = document.getElementById('formulario');
+                const inputs = document.querySelectorAll('.validar');
+
+                form.addEventListener('submit', function(e) {
+                    // validación front (rápida) para UX; el back manda de verdad
+                    let valido = true;
+
+                    inputs.forEach(function(input) {
+                        if (!input.value || input.value.trim() === "") {
+                            input.classList.add('validacion-mal');
+                            input.classList.remove('validacion-bien');
+                            valido = false;
+                        } else {
+                            input.classList.remove('validacion-mal');
+                            input.classList.add('validacion-bien');
+                        }
+                    });
+
+                    if (!valido) {
+                        e.preventDefault();
+                    }
+                });
+
+                // Eliminar clase de error en tiempo real
+                inputs.forEach(function(input) {
+                    input.addEventListener('input', function() {
+                        if (input.value.trim() !== "") {
+                            input.classList.remove('validacion-mal');
+                        }
+                    });
+                });
+            });
+        </script>
+
+        <div class="flex items-center justify-end mt-4 gap-2">
+            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
+                {{ __('Ya registrado?') }}
+            </a>
+
+            <button type="submit" class="ms-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 btn_color">
+                {{ __('Registrarse') }}
+            </button>
+        </div>
+    </form>
+</x-guest-layout>
+@endsection
+```
+
+
+#### VISTAS ADMIN 
+
+### 📁 Estructura de carpetas
+### 🧩 Vistas comunes
+
+| Carpeta        | Vista                         | Descripción                                       |
+| -------------- | ----------------------------- | ------------------------------------------------- |
+| `admin/modals` | `modal_banner.blade.php`      | Modal banner                                      |
+| `admin/modals` | `modal_coche.blade.php`       | Modal coches                                      |
+| `admin/modals` | `modal_parada.blade.php`      | Modal parada                                      |
+| `admin/modals` | `modal_restaurante.blade.php` | Modal restaurante                                 |
+| `admin/modals` | `modal_timing.blade.php`      | Modal timing                                      |
+| `admin/`       | `ajuste.blade.php`            | Vista dashboard Ajustes (se inlucyen los modales) |
+
+- **Extras**: La vista cuenta con comentarios donde se especifica concretamente cada parte del codigo.
+
+#### VISTAS CLIENTE 
+
+### 📁 Estructura de carpetas
+### 🧩 Vistas comunes
+
+| Carpeta          | Vista                                 | Descripción                                     |
+| ---------------- | ------------------------------------- | ----------------------------------------------- |
+| `cliente/modals` | `modal_info_restaurante.blade.php`    | Modal para mostrar informacion restaurante      |
+| `cliente/modals` | `modal_info_ruta.blade.php`           | Modal para mostrar informacion ruta             |
+| `cliente/modals` | `modal_info_patrocinadores.blade.php` | Modal para mostrar partners (patrocinadores)    |
+| `cliente/modals` | `modal_pruebaDinamica.blade.php`      | Modal para realizar la prueba dinamica          |
+| `cliente/modals` | `modal_reserva.blade.php`             | Modal para realizar la pre-reserva              |
+| `cliente/`       | `modal_timing.blade.php`              | Modal para mostrar el timing (horario)          |
+| `cliente/`       | `dashboard.blade.php`                 | Pagina principal para la vista cliente          |
+| `cliente/`       | `info_coches.blade.php`               | Muestra la informacion de los coches del evento |
+| `cliente/`       | `login.blade.php`                     | Formulario de login para CLIENTE                |
+| `cliente/`       | `ruta.blade.php`                      | Muestra la informacion de la ruta del evento    |
+
+- **Extras**: La vista cuenta con comentarios donde se especifica concretamente cada parte del codigo.
+
+#### VISTAS LAYOUTS 
+
+### 📁 Estructura de carpetas
+### 🧩 Vistas comunes
+
+| Carpeta    | Vista                  | Descripción                            |
+| ---------- | ---------------------- | -------------------------------------- |
+| `layouts`  | `admin.blade.php`      | Esqueleto vista admin  , incluye CSS   |
+| `layouts`  | `cliente.blade.php`    | Esqueleto vista cliente  , incluye CSS |
+| `layouts`  | `coches.blade.php`     | Esqueleto vista coches , incluye CSS   |
+| `layouts`  | `error.blade.php`      | Esqueleto vista coches , incluye CSS   |
+| `layouts`  | `footer.php`           | Esqueleto footer , incluye CSS         |
+| `layouts/` | `login.php`            | Esqueleto login , incluye CSS          |
+| `layouts/` | `main.blade.php`       | Esqueleto principal , incluye CSS      |
+| `layouts/` | `navigation.blade.php` | Esqueleto navegacion , incluye CSS     |
+
+- **Extras**: La vista cuenta con comentarios donde se especifica concretamente cada parte del codigo.
+
+#### VISTAS VENDOR 
+
+### 📁 Estructura de carpetas
+### 🧩 Vistas comunes
+
+| Carpeta  | Vista                           | Descripción           |
+| -------- | ------------------------------- | --------------------- |
+| `vendor` | `mail/html`                     | Esqueleto correos CSS |
+| `vendor` | `mail/text`                     | Esqueleto correos CSS |
+| `vendor` | `notifications/email.blade.php` | Esqueleto correos CSS |
+
+- **Extras**: La vista cuenta con comentarios donde se especifica concretamente cada parte del codigo.
+
+
 ## 👁️ Controlador (Controllers)
 
 📌 Descripción general
@@ -741,319 +1220,10 @@ En este proyecto, los controladores siguen el patrón MVC proporcionado por Lara
     Route::put('/eventos/update/{id}', [EventosController::class, 'update'])->name('eventos.update');
 
     Route::get('/eventos/show', [EventosController::class, 'show'])->name('eventos.show');
-    Route::get('/eventos/filtrar' , [EventosController::class , 'filtrarFecha'])->name('eventos.filtrar');
+    Route::get('/eventos/filtrar', [EventosController::class, 'filtrarFecha'])->name('eventos.filtrar');
 
+    //EXPORTAR EXCEL
     Route::get('/eventos/{evento_id}/exportar-invitados', [EventosController::class, 'exportarInvitados'])->name('eventos.exportarInvitados');
-```
-
-#### `index()`
-
-``` php
-    //MOSTRAR EVENTOS 
-    public function index()
-    {
-        if (Auth::check()) {
-            //Pagina todos los eventos a 3 por pagina.
-            $eventos = Evento::paginate(3);
-            //Cuenta el total de eventos que se tiene.
-            $total = $eventos->count();
-            //Recoge todos los tipos de evento de la BD.
-            $tipo_evento = TipoEvento::all();
-            //Recoge todas las marcas de ls BD.
-            $marcas = Marca::all();
-
-            // Obtiene las marcas para cada evento
-            foreach ($eventos as $evento) {
-                $selectString = $evento->marca;
-                $selectIds = explode(',', $selectString); // Convierte la cadena en un array
-                $evento->marcasSeleccionadas = Marca::whereIn('id', $selectIds)->get(); // Filtrar las marcas por idy las asocia.
-            }
-            
-            //Retorna a la vista dashboard con los datos que se han recopilado.
-            return view('dashboard', compact('eventos', 'tipo_evento', 'total', 'marcas'));
-        } else {
-            //Sino redirige al login.
-            return view('./auth/login');
-        }
-    }
-```
-
-
-#### `create()`
-
-``` php
-    //MOSTRAR VENTANA CREAR EVENTO
-    public function create()
-    {
-        //Recoge las marcas de la BD tabla marcas.
-        $marcas = Marca::all();
-        //Recoge los tipos d eevento de la BD tabla tipo_evento.
-        $tipo_evento = TipoEvento::all();
-
-        return view('eventos.create', compact('marcas', 'tipo_evento'));
-    }
-```
-
-#### `store()`
-
-``` php
-    public function store(Request $request)
-    {
-        // VALIDAR CAMPOS
-        $request->validate([
-            'nombre' => 'required',
-            'marca' => 'required|array',
-            'fecha' => 'required',
-            'hora' => 'required',
-            'lugar_evento' => 'required',
-            'tipo_evento' => 'required',
-            'coste_evento' => 'required',
-            'aforo' => 'required',
-            'coste_unitario' => 'required',
-            'enlace' => 'nullable',
-            'documentacion' => 'nullable',
-            'texto_invitacion' => 'required',
-            'imagen' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
-        ]);
-
-        try {
-            $evento = new Evento();
-            $evento->nombre = $request->nombre;
-            //Une el array de marcas colocandole una , entre medias.
-            $evento->marca = implode(' , ', $request->marca);
-            $evento->fecha = $request->fecha;
-            $evento->hora = $request->hora;
-            $evento->lugar_evento = $request->lugar_evento;
-            $evento->tipo_evento = $request->tipo_evento;
-            $evento->coste_evento = $request->coste_evento;
-            $evento->aforo = $request->aforo;
-            $evento->coste_unitario = $request->coste_unitario;
-            $evento->texto_invitacion = $request->texto_invitacion;
-            $evento->imagen = $request->imagen;
-
-            //Verificacion de la imagen , para poder subirla.
-            if ($request->hasFile('imagen')) {
-                $path = $request->file('imagen')->store('images/eventos', 'public');
-                $evento->imagen = $path;
-            }
-
-            //Verificacion de la documentacion , para poder subirla.
-            if ($request->hasFile('documentacion')) {
-                $path = $request->file('documentacion')->store('images/eventos_documentacion', 'public');
-                $evento->documentacion = $path;
-            }
-
-            //Guarda nuevo evento.
-            $evento->save();
-
-            //Recoge con un foreach todas las marcas que tenemos en la BD para poder seleccionarla.
-            foreach ($request->marca as $marca_id) {
-                $eventos_marca = new EventosMarca();
-                $eventos_marca->evento_id = $evento->id;
-                $eventos_marca->marca_id = $marca_id;
-                $eventos_marca->save();
-            }
-
-            return redirect()->route('eventos.index')->with('success', 'Evento creado con éxito');
-        } catch (Exception $e) {
-            return redirect()->route('eventos.index')->with('error', 'Error al crear evento');
-        }
-    }
-
-```
-
-#### `delete()`
-
-``` php
-//ELIMINAR EVENTO
-    public function delete(int $id)
-    {
-        //Busca el evento por el id.
-        $evento = Evento::find($id);
-
-        if (!$evento) {
-            /**Estamos usando SweetAlert por lo cual no debemos confundirnos ya que este espera
-             * un respuesta en formato JSON.
-             */
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al eliminar'
-            ], 404);
-        } else {
-            $evento->delete();
-            return response()->json([
-                'success' => true,
-                'message' => 'Evento eliminado'
-            ], 200);
-        }
-    }
-```
-
-#### `edit()`
-
-``` php
-//MOSTRAR VENTANA EDITAR.
-    public function edit(int $id)
-    {
-        $evento = Evento::with('marcas')->findOrFail($id); // Carga el evento con sus marcas asociadas
-        $marcas = Marca::all(); //Obtiene todas las marcas.
-        $tipo_evento = TipoEvento::all(); //Obtiene todos los tipos de eventos.
-
-        if (!$evento) {
-            return redirect()->route('eventos.index')->with('error', 'Evento no encontrado');
-        } else {
-            return view('eventos.edit', compact('evento', 'marcas', 'tipo_evento'));
-        }
-    }
-```
-
-#### `update()`
-
-``` php
-//ACTUALIZAR EVENTO
-    public function update(Request $request, int $id)
-    {
-        //Busca evento por id.
-        $evento = Evento::find($id);
-
-        if (!$evento) {
-            return redirect()->route('eventos.index')->with('error', 'No se encontró el evento');
-        }
-
-        // VALIDAR CAMPOS
-        $request->validate([
-            'nombre' => 'required',
-            'marca' => 'required|array',
-            'fecha' => 'required',
-            'hora' => 'required',
-            'lugar_evento' => 'required',
-            'tipo_evento' => 'required',
-            'coste_evento' => 'required',
-            'aforo' => 'required',
-            'coste_unitario' => 'required',
-            'enlace' => 'nullable',
-            'documentacion' => 'nullable',
-            'texto_invitacion' => 'required',
-        ]);
-
-        try {
-            // Actualizar los campos del evento
-            $evento->nombre = $request->nombre;
-            $evento->fecha = $request->fecha;
-            $evento->hora = $request->hora;
-            $evento->lugar_evento = $request->lugar_evento;
-            $evento->tipo_evento = $request->tipo_evento;
-            $evento->coste_evento = $request->coste_evento;
-            $evento->aforo = $request->aforo;
-            $evento->coste_unitario = $request->coste_unitario;
-            $evento->texto_invitacion = $request->texto_invitacion;
-
-            // Manejamos la documentación con la siguiente condicion.
-            if ($request->hasFile('documentacion')) {
-                // Elimina la documentación anterior si existe
-                if ($evento->documentacion && Storage::exists('public/' . $evento->documentacion)) {
-                    Storage::delete('public/' . $evento->documentacion);
-                }
-
-                // Guardar la nueva documentación en "images/eventos_documentacion"
-                $pathDocumentacion = $request->file('documentacion')->store('images/eventos_documentacion', 'public');
-                $evento->documentacion = $pathDocumentacion; // Guarda la ruta relativa en la base de datos
-            }
-
-            $evento->save();
-
-            // Sincroniza las marcas seleccionadas
-            $evento->marcas()->sync($request->marca);
-
-            return redirect()->route('eventos.index')->with('success', 'Evento actualizado con éxito');
-        } catch (Exception $e) {
-            return redirect()->route('eventos.index')->with('error', 'Error al actualizar el evento');
-        }
-    }
-```
-
-#### `show()`
-
-``` php
-public function show(Request $request)
-    {
-        //Input llamado buscador.
-        $query = $request->input('buscador');
-        //Recogemos el array de marcas con una variable.
-        $marcaId = $request->input('marca');
-
-        //Carga los eventos con su marca relacionada.
-        $eventos = Evento::with('marcas')
-        //Si existe el buscador $query se realiza el filtrado.
-            ->when($query, function ($q) use ($query) {
-                $q->where(function ($subQ) use ($query) {
-                    $subQ->where('nombre', 'like', "%{$query}%")
-                        ->orWhere('tipo_evento', 'like', "%{$query}%")
-                        ->orWhere('lugar_evento', 'like', "%{$query}%")
-                        ->orWhereHas('marcas', function ($q3) use ($query) {
-                            $q3->where('nombre', 'like', "%{$query}%");
-                        });
-                });
-            })
-            //Si se proporciona marcaId se filtran los eventos con esa marca.
-            ->when($marcaId, function ($q) use ($marcaId) {
-                $q->whereHas('marcas', function ($q2) use ($marcaId) {
-                    $q2->where('id', $marcaId);
-                });
-            })
-            //Paginacion  de 3 maximo en pantalla.
-            ->paginate(3)
-            //Mantiene filtros en la paginacion.
-            ->appends(['buscador' => $query, 'marca' => $marcaId]);
-        //Total de eventos.
-        $total = $eventos->total();
-
-        return view('dashboard', compact('eventos', 'total'));
-    }
-```
-
-#### `filtrarFecha()`
-
-``` php
-    //FUNCION PARA FILTRAR FECHA
-    public function filtrarFecha(Request $request)
-    {
-        //Input de fecha inicio.
-        $fecha_inicio = $request->fecha_inicio;
-        //Input de fecha fin.
-        $fecha_fin = $request->fecha_fin;
-
-        if ($fecha_inicio && $fecha_fin) {
-            //Filtrar los eventos por la fecha inicio y fecha fin.
-            $eventos = Evento::where('fecha', '>=', $fecha_inicio)
-                ->whereDate('fecha', '<=', $fecha_fin)
-                //Paginacion total 3.
-                ->paginate(3)
-                //Mantiene filtro en la paginacion.
-                ->appends(['fecha_inicio' => $fecha_inicio, 'fecha_fin' => $fecha_fin]);
-
-            //Cuenta el total de eventos.
-            $total = $eventos->count();
-        } else {
-            //Mantiene paginacion.
-            $eventos = Evento::paginate(3);
-            //Mantiene numero de eventos.
-            $total = $eventos->count();
-        }
-
-        return view('dashboard', compact('eventos', 'total'));
-    }
-```
-#### `exportarInvitados()`
-
-``` php
-    public function exportarInvitados($evento_id)
-    {
-        //Busca el evento por el id.
-        $evento = Evento::find($evento_id);
-        //Devuelve un enlace de descarga en formato Excel para poder ver los invitados de ese evento.
-        return Excel::download(new InvitadosExport($evento), 'invitados_evento_' . $evento_id . '.xlsx');
-    }
 ```
 
 #### Datos extras funcion exportarInvitados():
@@ -1115,7 +1285,7 @@ Funciones para poder exportar el archivo en Excel:
 
 | Método                          | Descripción                                              |
 | ------------------------------- | -------------------------------------------------------- |
-| `index()`                       | Muestra una vista con la lista de invitadosa paginados.  |
+| `index()`                       | Muestra una vista con la lista de invitados paginados.   |
 | `create()`                      | Muestra el formulario.                                   |
 | `store()`                       | Guarda un nuevo invitado en la base de datos.            |
 | `edit($id)`                     | Muestra el formulario para editar un invitado existente. |
@@ -1123,282 +1293,26 @@ Funciones para poder exportar el archivo en Excel:
 | `delete($id)`                   | Elimina un invitado.                                     |
 | `show(Request $request)`        | Busca por todos los campos en el buscador.               |
 | `actualizarAsistencia($id)`     | Marca en el chekbox y guarda si el invitado asiste o no. |
+| `importarInvitados($id)`        | Importa la lista de invitados.                           |
 
 #### RUTAS InvitadosController 
 
 ``` php
-/***CRUD INVITADOS(CONDUCTORES) */
-    Route::get('/invitados/{id}' , [InvitadosController::class , 'index'])->name('invitados.index');
-    Route::get('/invitados/create/{id}' , [InvitadosController::class , 'create'])->name('invitados.create');
-    Route::post('/invitados/store/{id}' , [InvitadosController::class , 'store'])->name('invitados.store');
-    Route::delete('/invitados/delete/{id}' , [InvitadosController::class , 'delete'])->name('invitados.delete');
-    Route::get('/invitados/edit/{id}' , [InvitadosController::class , 'edit'])->name('invitados.edit');
-    Route::put('/invitados/update/{id}' , [InvitadosController::class , 'update'])->name('invitados.update');
+  /***CRUD INVITADOS(CONDUCTORES) */
+    Route::get('/invitados/{id}', [InvitadosController::class, 'index'])->name('invitados.index');
+    Route::get('/invitados/create/{id}', [InvitadosController::class, 'create'])->name('invitados.create');
+    Route::post('/invitados/store/{id}', [InvitadosController::class, 'store'])->name('invitados.store');
+    Route::delete('/invitados/delete/{id}', [InvitadosController::class, 'delete'])->name('invitados.delete');
+    Route::get('/invitados/edit/{id}', [InvitadosController::class, 'edit'])->name('invitados.edit');
+    Route::put('/invitados/update/{id}', [InvitadosController::class, 'update'])->name('invitados.update');
 
-    Route::get('/invitados/show/{id}' , [InvitadosController::class , 'show'])->name('invitados.show');
-    Route::post('/invitados/{id}/asistencia' , [InvitadosController::class , 'actualizarAsistencia']);
-```
-#### `index()`
+    Route::get('/invitados/show/{id}', [InvitadosController::class, 'show'])->name('invitados.show');
+    Route::post('/invitados/{id}/asistencia', [InvitadosController::class, 'actualizarAsistencia']);
 
-``` php
-    //FUNCION MUESTRA INVITADOS TABLA.
-    public function index($id)
-    {
-        //Pasamos el id para buscar y recoger la informacion de cada evento.
-        $evento = Evento::find($id);
-        if (!$evento) {
-            return redirect()->back()->with('error', 'Evento no encontrado');
-        }
-        //Paginacion de 50.
-        $invitados = $evento->invitados()->paginate(50);
-        //Me cuenta el total de invitados dentro de cada evento.
-        $total = $invitados->count();
-        //Pasamos en el compact todo lo que vamos a mostrar.
-        return view('invitados.index', ['id' => $evento], compact('evento', 'invitados', 'total'));
-    }
+    //IMPORTAR INVITADOS 
+    Route::post('/invitados/importar/{id}', [InvitadosController::class, 'importarInvitados'])->name('invitados.importar');
 ```
 
-#### `create()`
-
-``` php
-    //FUNCION MUESTRA FORMULARIO CREAR.
-    public function create($id)
-    {
-        //Muestra formulario de creacion para cada evento (crea un nuevo invitado).
-        $evento = Evento::find($id);
-        return view('invitados.create', compact('evento'));
-    }
-```
-
-#### `store()`
-
-``` php
-    //FUNCION PARA CREAR INVITADO
-    public function store(Request $request, $id)
-    {
-        //VALIDACION
-        $request->validate([
-            'cif' => 'nullable',
-            'nombre' => 'required',
-            'apellido' => 'required',
-            'email' => 'required',
-            'telefono' => 'required',
-            'empresa' => 'required',
-            'vehiculo_prop' => 'required',
-            'vehiculo_emp' => 'required',
-            'intolerancia' => 'required',
-            'preferencia' => 'required',
-            'carnet' => 'nullable',
-            'kam' => 'required',
-            'dni' => 'nullable',
-            'etiqueta' => 'required_if:vehiculo_prop,si'
-        ]);
-
-        try {
-            //Busca por cada evento y creara invitado dentro de ese evento.
-            $evento = Evento::find($id);
-            //Creamos un  nuevo invitado(conductor).
-            $invitado = new Conductor();
-            //Recogemos el id del invitado y lo pasamos al evento para poder crearlo.
-            $invitado->id = $request->evento;
-
-            $invitado->cif = $request->cif;
-            $invitado->nombre = $request->nombre;
-            $invitado->apellido = $request->apellido;
-            $invitado->email = $request->email;
-            $invitado->telefono = $request->telefono;
-            $invitado->empresa = $request->empresa;
-            $invitado->vehiculo_prop = $request->vehiculo_prop;
-            $invitado->vehiculo_emp = $request->vehiculo_emp;
-            $invitado->intolerancia = $request->intolerancia;
-            $invitado->preferencia = $request->preferencia;
-            $invitado->carnet = $request->carnet;
-            $invitado->kam = $request->kam;
-            $invitado->dni = $request->dni;
-
-            //Guarda el valor de uno o del otro por si esta marcado.
-            if ($request->vehiculo_prop === 'si' || $request->vehiculo_emp === 'si') {
-                $invitado->etiqueta = $request->etiqueta;
-            }
-
-            $invitado->save();
-            
-            //Creare un nuevo invitado dentro del evento seleccionado.
-            $evento_conductor = new EventoConductor();
-
-            //Cogeremos la tabla del evento_conductor y le pasaremos el id para cada uno (conductor_id).
-            $evento_conductor->conductor_id = $invitado->id;
-            //Cogeremos la tabla del evento_conductor y le pasaremos el id para cada uno (evento_id).
-            $evento_conductor->evento_id = $evento->id;
-            $evento_conductor->save();
-
-            return redirect()->route('invitados.index', compact('evento', 'invitado'))->with('success', 'Invitado creado con éxito.');
-        } catch (Exception $e) {
-            return redirect()->route('invitados.index', $evento->id)->with('error', 'Error al crear invitado.');
-        }
-    }
-```
-
-#### `delete()`
-
-``` php
-    //FUNCION PARA ELIMINAR INVITADO.
-    public function delete(int $id)
-    {
-        //Busca invitado por id.
-        $invitados = Conductor::find($id);
-        
-        //Recoge la respuesta en formato JSON (SweetAlert)
-        if (!$invitados) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al eliminar invitado'
-            ], 404);
-        } else {
-            $invitados->delete();
-            return response()->json([
-                'success' => true,
-                'message' => 'Invitado eliminado'
-            ], 200);
-        }
-    }
-```
-
-#### `edit()`
-
-``` php
-    //FUNCION PARA MOSTRAR EL FORMULARIO DE EDITAR.
-    public function edit(int $id)
-    {
-        //Busca el invitado dentro de cada evento creado.
-        $invitados = Conductor::find($id);
-        //Obtiene el evento asociado en la tabla evento conductor.
-        $eventoConductor = EventoConductor::where('conductor_id', $invitados->id)->first();
-        //Obtiene el id del evento si existe.
-        $eventoId = $eventoConductor ? $eventoConductor->evento_id : null;
-
-        if (!$invitados) {
-            return redirect()->route('invitados.index')->with('error', 'No se encontro el invitado');
-        }
-        return view('invitados.edit', compact('invitados', 'eventoId'));
-    }
-```
-
-#### `update()`
-
-``` php
-//FUNCION PARA EDITAR
-    public function update(Request $request, int $id)
-    {
-        //Busca el invitado mediante su id
-        $invitados = Conductor::find($id);
-
-        if (!$invitados) {
-            return redirect()->route('invitados.index', ['id' => $id])->with('error', 'No se encontró el invitado.');
-        }
-
-        //Asocia el id del conductor al evento y lo recoge.
-        $eventoConductor = EventoConductor::where('conductor_id', $invitados->id)->first();
-
-        if (!$eventoConductor) {
-            return redirect()->route('invitados.index', ['id' => $id])->with('error', 'No se encontró el evento asociado al invitado.');
-        }
-
-        $eventoId = $eventoConductor->evento_id;
-
-        //Validacion
-        $request->validate([
-            'cif' => 'nullable',
-            'nombre' => 'required',
-            'apellido' => 'required',
-            'email' => 'required',
-            'telefono' => 'required',
-            'empresa' => 'required',
-            'vehiculo_prop' => 'required',
-            'vehiculo_emp' => 'required',
-            'intolerancia' => 'required',
-            'preferencia' => 'required',
-            'carnet' => 'nullable',
-            'kam' => 'required',
-            'dni' => 'nullable',
-            'etiqueta' => 'required_if:vehiculo_prop,si'
-        ]);
-
-        try {
-            $invitados->cif = $request->cif;
-            $invitados->nombre = $request->nombre;
-            $invitados->apellido = $request->apellido;
-            $invitados->email = $request->email;
-            $invitados->telefono = $request->telefono;
-            $invitados->empresa = $request->empresa;
-            $invitados->vehiculo_prop = $request->vehiculo_prop;
-            $invitados->vehiculo_emp = $request->vehiculo_emp;
-            $invitados->intolerancia = $request->intolerancia;
-            $invitados->preferencia = $request->preferencia;
-            $invitados->carnet = $request->carnet;
-            $invitados->kam = $request->kam;
-            $invitados->dni = $request->dni;
-
-            //Guarda el valor de uno o del otro por si esta marcado.
-            if ($request->vehiculo_prop === 'si' || $request->vehiculo_emp === 'si') {
-                $invitados->etiqueta = $request->etiqueta;
-            }
-
-            $invitados->save();
-
-            return redirect()->route('invitados.index', ['id' => $eventoId])->with('success', 'Invitado actualizado con éxito.');
-        } catch (Exception $e) {
-            return redirect()->route('invitados.index', ['id' => $eventoId])->with('error', 'Error al actualizar el invitado.');
-        }
-    }
-```
-
-#### `show()`
-
-``` php
-    //FUNCION PARA FILTRAR BUSQUEDA
-    public function show(Request $request, int $id)
-    {
-        //Recoge informacion del input
-        $query = $request->input('buscador');
-        //Buscamos y recogemos datos del evento.
-        $evento = Evento::find($id);
-
-        $invitados = $evento->invitados()->where(function ($q) use ($query) {
-            $q->where('empresa', 'like', "%{$query}%")
-                ->orWhere('cif', 'like', "%{$query}%")
-                ->orWhere('nombre', 'like', "%{$query}%")
-                ->orWhere('apellido', 'like', "%{$query}%")
-                ->orWhere('email', 'like', "%{$query}%")
-                ->orWhere('telefono', 'like', "%{$query}%")
-                ->orWhere('kam', 'like', "%{$query}%");
-        })->paginate(6)//Paginacion de 6 por pantalla (busqueda)
-        //Mantiene la paginacion aun realizando el filtrado.
-            ->appends(['buscador' => $query]);
-
-        $total = $invitados->count();//Total de invitados por evento.
-        return view('invitados.index', compact('invitados', 'total', 'evento'));
-    }
-```
-
-#### `actualizarAsistencia()`
-
-``` php
-    //FUNCION PARA MARCAR LA ASISTENCIA
-    public function actualizarAsistencia(Request $request, $id)
-    {
-        //Busca el invitado por su id y recoge la asitencia.
-        $invitado = Conductor::find($id);
-        //Si se marca estara en la posicion 1 (true) o 0 (false)
-        $invitado->asiste = $request->asiste ? 1 : 0;
-        //Guarda el invitado y su asistencia.
-        $invitado->save();
-
-        return response()->json([
-            'success'  => true
-        ]);
-    }
-```
 ### `CochesController`
 
 ### 🧩 Métodos principales
@@ -1435,242 +1349,224 @@ Funciones para poder exportar el archivo en Excel:
     //IMPORTAR EXCEL
     Route::post('/coches/importar/{id}', [CochesController::class, 'importarCoches'])->name('coches.importarCoches');
 ```
-#### `index()`
 
-```php
-    public function index($id)
-    {
-        //Busca el evento por el id para mostrarlo.
-        $evento = Evento::find($id);
-        if (!$evento) {
-            return redirect()->back()->with('error', 'Coche no encontrado');
-        }
-        // Filtra los coches por evento_id
-        $coches = Coch::where('evento_id', $evento->id)->paginate(10);
-        //Realiza el conteo de los coches en la misma pagina.
-        $total = $coches->count();
+### `TrazabilidadController`
 
-        return view('coches.index', compact('coches', 'evento', 'total'));
-    }
+### 🧩 Métodos principales
+
+| Método                         | Descripción                                                   |
+| ------------------------------ | ------------------------------------------------------------- |
+| `index($id)`                   | Muestra la vista de toda la trazabilidad de coches (reservas) |
+| `show(Request $request , $id)` | Buscador en toda la BD de la tabla trazabilidad               |
+| `export()`                     | Exporta la tabla trazabilidad                                 |
+
+#### RUTAS TrazabilidadController 
+
+``` php
+    //TRAZABILIDAD DE PARADAS
+    Route::get('/trazabilidad/{evento}', [TrazabilidadController::class, 'index'])->name('trazabilidad.index');
+    Route::get('/trazabilidad/show/{id}', [TrazabilidadController::class, 'show'])->name('show.trazabilidad');
+    Route::get('/eventos/{evento}/reservas/export', [TrazabilidadController::class, 'export'])->name('reservas.export');
 ```
 
-#### `create()`
+### `AjustesController`
 
-```php
-    public function create($id)
-    {
-        //Busca el evento por el id y luego mostrara el formulario.
-        $evento = Evento::find($id);
-        return view('coches.create', compact('evento'));
-    }
+### 🧩 Métodos principales
+
+| Método                                                                            | Descripción                                     |
+| --------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `index(Request $request , Evento $evento)`                                        | Muestra la pagina entera con los datos cargados |
+| `storeParadas(Request $request , Evento $evento)`                                 | Crea parada                                     |
+| `updateParadas(Request $request , Evento $evento , Parada $parada)`               | Edita parada                                    |
+| `deleteParadas(Evento $evento , $id)`                                             | Elimina parada                                  |
+| `editCoches(Evento $evento)`                                                      | Recoge informacion y la usa para editar coche   |
+| `updateCoches(Request $request , Evento $evento , Coch $coche)`                   | Edita coche                                     |
+| `deleteCoches(Evento $evento , $id)`                                              | Elimina coche                                   |
+| `storeRestaurante(Request $request , Evento $evento)`                             | Crea restaurante                                |
+| `updateRestaurante(Request $request , Evento $evento , Restaurante $restaurante)` | Edita restaurante                               |
+| `deleteRestaurante(Evento $evento , $id)`                                         | Elimina restaurante                             |
+| `storeBanner(Request $request , Evento $evento)`                                  | Crea banner                                     |
+| `updateBanner(Request $request , Evento $evento , Banner $banner)`                | Edita banner                                    |
+| `deleteBanner(Evento $evento , $id)`                                              | Elimina banner                                  |
+| `storeTiming(Request $request , Evento $evento)`                                  | Crea timing                                     |
+| `editTiming(Evento $evento)`                                                      | Recoge informacion para editar timing           |
+| `updateTiming(Request $request , Evento $evento , Timing $timing)`                | Edita timing                                    |
+| `deleteTiming(Evento $evento , $id)`                                              | Elimina timing                                  |
+
+#### RUTAS AjustesController 
+
+``` php
+    /***** RUTAS PARA AJUSTE (BOTON) */
+
+    // Mostrar página de ajustes de un evento concreto
+    Route::get('/ajustes/{evento}', [AjustesController::class, 'index'])
+        ->name('admin.ajustes');
+
+    // CREA , EDITA y ELIMINA PARADA
+    Route::post('/ajustes/{evento}/paradas', [AjustesController::class, 'storeParadas'])->name('store.paradas');
+    Route::put('/ajustes/{evento}/paradas/{parada}', [AjustesController::class, 'updateParadas'])->name('evento.parada.update');
+    Route::delete('/ajustes/{evento}/paradas/delete/{id}', [AjustesController::class, 'deleteParadas'])
+        ->name('eliminarParada');
+
+    //EDITA COCHES Y ELIMINA
+    Route::get('ajustes/{evento}/coches/', [AjustesController::class, 'editCoches'])->name('evento.coche.edit');
+    Route::put('ajustes/{evento}/coches/{coche}', [AjustesController::class, 'updateCoches'])->name('evento.coche.update');
+    Route::delete('ajustes/{evento}/coches/delete/{id}', [AjustesController::class, 'deleteCoches'])
+        ->name('eliminarCoches');
+
+    //CREA Y EDITA RESTAURANTE
+    Route::post('ajustes/{evento}/restaurante', [AjustesController::class, 'storeRestaurante'])->name('store.restaurantes');
+    Route::put('ajustes/{evento}/restaurante/{restaurante}', [AjustesController::class, 'updateRestaurante'])->name('evento.restaurante.update');
+    Route::delete('ajustes/{evento}/restaurante/{id}', [AjustesController::class, 'deleteRestaurante'])->name('eliminarRestaurante');
+
+    //CREA , EDITA Y ELIMINA BANNER
+    Route::post('ajustes/{evento}/banner', [AjustesController::class, 'storeBanner'])->name('store.banner');
+    Route::put('ajustes/{evento}/banner/{banner}', [AjustesController::class, 'updateBanner'])->name('evento.banner.update');
+    Route::delete('ajustes/{evento}/banner/{id}', [AjustesController::class, 'deleteBanner'])->name('eliminarBanner');
+
+    //CREA , EDITA Y ELIMINA TIMING
+    Route::get('ajustes/{evento}/edit', [AjustesController::class, 'editTiming'])->name('evento.timing.edit');
+    Route::post('ajustes/{evento}/timing', [AjustesController::class, 'storeTiming'])->name('store.timing');
+    Route::put('ajustes/{evento}/timing/{timing}', [AjustesController::class, 'updateTiming'])->name('evento.timing.update');
+    Route::delete('ajustes/{evento}/timing/{id}', [AjustesController::class, 'deleteTiming'])->name('eliminarTiming');
 ```
 
-#### `store()`
+### `ClienteController`
 
-```php
-    public function store(Request $request, $id)
-    {
-        //Validaciones para poder crewar formulario.
-        $request->validate([
-            'marca' => 'required',
-            'modelo' => 'required',
-            'version' => 'required',
-            'matricula' => 'required',
-            'kam' => 'required',
-            'asiste' => 'nullable|boolean'
-        ]);
+### 🧩 Métodos principales
 
-        try {
-            //Busca el evento y crea el cohe de ese evento en especifico.
-            $evento = Evento::find($id);
-            if (!$evento) {
-                return redirect()->back()->with('error', 'Evento no encontrado');
-            }
+| Método                            | Descripción                                                     |
+| --------------------------------- | --------------------------------------------------------------- |
+| `index(Evento $evento)`           | Muestra informacion de dashboard cliente                        |
+| `infoCoches(Evento $evento)`      | Muestra informacion datos coches en vista cliente , todo con id |
+| `infoCochesAuto()`                | Muestra informacion coches , todo sin id                        |
+| `infoAauto()`                     | Entrada a ruta , elige el ultimo evento                         |
+| `infoRestaurante(Evento $evento)` | Muestra informacion datos restaurante                           |
+| `principal()`                     | Pagina principal dsahboard (cliente)                            |
 
-            //Se crea un nuevo coche.
-            $coche = new Coch();
-            $coche->marca = $request->marca;
-            $coche->modelo = $request->modelo;
-            $coche->version = $request->version;
-            $coche->matricula = $request->matricula;
-            $coche->kam = $request->kam;
-            $coche->asiste = $request->input('asiste', 0);
-            $coche->evento_id = $evento->id;
-            $coche->save();
+#### RUTAS ClienteController 
 
-            return redirect()->route('coches.index', $evento->id)->with('success', 'Coche creado con éxito.');
-        } catch (Exception $e) {
-            return redirect()->route('coches.index', $id)->with('error', 'Error al crear coche.');
-        }
-    }
+``` php
+    //TRAZABILIDAD DE PARADAS
+    Route::get('/', [ClienteController::class, 'principal'])->name('inicio');
+    // Dashboard
+    Route::get('/cliente/dashboard', function () {
+        return view('cliente.dashboard');
+    })->name('cliente.dashboard');
+
+    // ENTRADA a Ruta (elige el último evento y REDIRIGE a /cliente/eventos/{evento})
+    Route::get('/cliente/ruta', [ClienteController::class, 'infoAuto'])
+        ->name('cliente.ruta');
+
+    // Muestra la ruta de un evento concreto (renderiza la vista con $evento y $paradas)
+    Route::get('/cliente/eventos/{evento}', [ClienteController::class, 'index'])
+        ->name('cliente.eventos.show');
+
+    // Coches: entrada sin id (elige último y redirige)
+    Route::get('/cliente/coches', [ClienteController::class, 'infoCochesAuto'])
+        ->name('cliente.info_coches');
+
+    // Coches: con id pinta la vista con datos
+    Route::get('/cliente/coches/{evento}', [ClienteController::class, 'infoCoches'])
+        ->name('cliente.eventos.coches');
+
+    Route::get('/cliente/restaurante/{evento}', [ClienteController::class, 'infoRestaurante'])->name('cliente.info_restaurante');
 ```
 
-#### `delete()`
+### `PruebaDinamicaController`
 
-```php
-    public function delete(int $id)
-    {
-        //Busca el coche creado por el id que tiene.
-        $coches = Coch::find($id);
+### 🧩 Métodos principales
 
-        //Manejamos con una condicion para un JSON para el sweetAlert , sino no elimina.
-        if (!$coches) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al eliminar coche'
-            ], 404);
-        } else {
-            $coches->delete();
-            return response()->json([
-                'success' => true,
-                'message' => 'Coche eliminado'
-            ], 200);
-        }
-    }
+| Método                                                             | Descripción                                             |
+| ------------------------------------------------------------------ | ------------------------------------------------------- |
+| `cargaDatos()`                                                     | Carga datos para coger informacion y pìntar en el modal |
+| `storeReserva(Request $request , Evento $evento , Parada $parada)` | Crea la reserva                                         |
+
+
+#### RUTAS ReservaController 
+
+``` php
+    //RUTAS RESERVA
+    Route::get('/cargarDatos', [ReservaController::class, 'cargaDatos'])->name('cargar.datos');
+    Route::post('/reserva/store/{evento}/{parada}', [ReservaController::class, 'storeReserva'])->name('store.reserva');
 ```
 
-#### `edit()`
+### `PruebaDinamicaController`
 
-```php
-    public function edit(int $id)
-    {
-        //Busca el coche poor el id y muestra el formulario de editar.
-        $coches = Coch::find($id);
+### 🧩 Métodos principales
 
-        if (!$coches) {
-            return redirect()->route('coches.index')->with('error', 'No se encontro el invitado');
-        }
-        //Maneja la relacion eloquent para que solo traiga y pinte los coches de ese evento.
-        $evento = $coches->evento;
-        return view('coches.edit', compact('coches', 'evento'));
-    }
+| Método                                  | Descripción                                             |
+| --------------------------------------- | ------------------------------------------------------- |
+| `cargaDatos()`                          | Carga datos para coger informacion y pìntar en el modal |
+| `storePruebaDinamica(Request $request)` | Crea la prueba dinamica                                 |
+
+
+#### RUTAS PruebaDinamicaController 
+
+``` php
+    //PRUEBA DINAMICA
+    Route::get('/cargarDatos/pruebaDinamica', [PruebaDinamicaController::class, 'cargaDatos'])->name('cargarDatos.pruebaDinamica');
+    Route::middleware('auth')->post('/store/pruebaDinamica', [PruebaDinamicaController::class, 'storePruebaDinamica'])->name('store.pruebaDinamica');
 ```
 
-#### `update()`
+### `TimingController`
 
-```php
-    public function update(Request $request, int $id)
-    {
-        $coche = Coch::find($id);
+### 🧩 Métodos principales
 
-        if (!$coche) {
-            return redirect()->route('coches.index')->with('error', 'No se encontró el coche');
-        }
+| Método         | Descripción                                             |
+| -------------- | ------------------------------------------------------- |
+| `cargaDatos()` | Carga datos para coger informacion y pìntar en el modal |
+|                |
 
-        $evento = $coche->evento; //Obtiene evento desde la relacion.
 
-        $request->validate([
-            'marca' => 'required',
-            'modelo' => 'required',
-            'version' => 'required',
-            'matricula' => 'required',
-            'kam' => 'required',
-            'asiste' => 'nullable|in:0,1'
-        ]);
+#### RUTAS TimingController 
 
-        try {
-            $coche->marca = $request->marca;
-            $coche->modelo = $request->modelo;
-            $coche->version = $request->version;
-            $coche->matricula = $request->matricula;
-            $coche->kam = $request->kam;
-            $coche->asiste = $request->input('asiste', 0);
-            $coche->save();
-
-            //Realizamos la condicion ternaria para que no nos salga el error de null al actualizar (muy importante).
-            return redirect()->route('coches.index', $evento ? $evento->id : null)->with('success', 'Coche actualizado correctamente');
-        } catch (Exception $e) {
-            return redirect()->back()->with('error', 'Error al actualizar el coche: ');
-        }
-    }
+``` php
+    //TIMING
+    Route::get('/cargarDatos/timing', [TimingController::class, 'cargarDatos'])->name('cargarDatos.timing');
 ```
 
-#### `actualizarAsistencia()`
+### `PatrocinadoresController`
 
-```php
-    public function actualizarAsistencia(Request $request, $id)
-    {
-        //Busca el coche por su id.
-        $coche = Coch::find($id);
-        //Si se marca el checkbox mediante el JS creado esto recoge la informacion , por si es true (boolean).
-        $coche->asiste = $request->asiste ? 1 : 0;
-        //Guarda y actualiza el registro.
-        $coche->save();
+### 🧩 Métodos principales
 
-        return response()->json([
-            'success' => true
-        ]);
-    }
+| Método                          | Descripción                                             |
+| ------------------------------- | ------------------------------------------------------- |
+| `cargarDatos(Request $request)` | Carga datos para coger informacion y pìntar en el modal |
+|                                 |
+
+
+#### RUTAS PatrocinadoresController 
+
+``` php
+    //PATROCINADORES
+    Route::get('/cargarDatos/patrocinadores', [PatrocinadoresController::class, 'cargarDatos'])->name('cargarDatos.patrocinadores');
 ```
 
-#### `show()`
+### `EventoConductorController`
 
-```php
-public function show(Request $request, $id)
-    {
-        //Busca el coche por su id.
-        $evento = Evento::find($id);
-        //Recoge el valor del input llamado buscador.
-        $buscador = $request->input('buscador');
+### 🧩 Métodos principales
 
-        $coches = Coch::where('evento_id', $evento->id)
-            ->where(function ($query) use ($buscador) {
-                $query->where('marca', 'like', '%' . $buscador . '%')
-                    ->orWhere('modelo', 'like', '%' . $buscador . '%')
-                    ->orWhere('version', 'like', '%' . $buscador . '%')
-                    ->orWhere('matricula', 'like', '%' . $buscador . '%')
-                    ->orWhere('kam', 'like', '%' . $buscador . '%');
-            })
-            ->paginate(6);
+| Método                                        | Descripción                                                               |
+| --------------------------------------------- | ------------------------------------------------------------------------- |
+| `enviarEmail($evento_id , $conductor_id)`     | Manda mensaje a correo electronico que se generara con un token y una url |
+| `mostrarFormulario($token)`                   | Recupera datos del token y muestra formulario                             |
+| `enviarFormulario(Request $request , $token)` | Envia el formulario con los datos                                         |
 
-        //Realiza el conteo de los coches en la vista.
-        $total = Coch::where('evento_id', $evento->id)->count();
-        return view('coches.index', compact('coches', 'total', 'evento'));
-    }
+
+#### RUTAS EventoConductorController 
+
+``` php
+    //EVENTO CONDUCTOR
+    Route::get('/evento-confirmacion/{token}', [EventoConductorController::class, 'mostrarFormulario'])->name('evento.confirmacion');
+
+    //RUTA PARA ENVIAR FORMULARIO (PROCESADO).  
+    Route::post('/evento-confirmacion/{token}', [EventoConductorController::class, 'enviarFormulario'])->name('evento.enviar');
+
+    //RUTA PARA ENVIAR EMAIL AL INVITADO.
+    Route::get('/evento/{evento_id}/invitado/{conductor_id}/confirmacion', [EventoConductorController::class, 'enviarEmail'])->name('invitados.enviarEmail');
 ```
 
-#### `exportarCoches()`
-
-```php
-    public function exportarCoches($evento_id)
-    {
-        //Busca el evento por el id.
-        $evento = Evento::find($evento_id);
-
-        //Devuelve la decarga con el excel creado.
-        return Excel::download(
-            new CochExport($evento),
-            'coches' . $evento_id . '.xlsx'
-        );
-    }
-```
-
-#### `importarCoches()`
-
-```php
-     public function importarCoches(Request $request, $id)
-    {
-        //Busca el evento pro el id.
-        $evento = Evento::find($id);
-
-        try {
-            //Genera una importacion de ese mismo evento(por eso se le apsa el id).
-            Excel::import(new CochImport($evento->id), $request->file('file'));
-
-            // Si la importación es exitosa, redirige a la vista que muestra los coches del evento
-            // y muestra un mensaje de éxito.
-            return redirect()
-                ->route('coches.show', $evento->id)
-                ->with('success', 'Coches importados correctamente');
-        } catch (\Exception $e) {
-            // Si ocurre algún error durante la importación,
-            // redirige a la página anterior y muestra un mensaje de error con la causa.
-            return redirect()
-                ->back()
-                ->withErrors(['error' => 'Hubo un error al importar los coches: ' . $e->getMessage()]);
-        }
-    }
-```
 
 ## 📌 Conclusión
 

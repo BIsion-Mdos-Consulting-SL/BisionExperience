@@ -29,18 +29,19 @@ class Parada extends Model
 	protected $table = 'parada';
 	public $timestamps = false;
 
-	protected $casts = [
-		'hora_inicio' => 'datetime',
-		'hora_fin' => 'datetime'
+	protected $fillable = [
+		'evento_id',
+		'conductor',
+		'nombre',
+		'descripcion',
+		'enlace',
+		'orden'
 	];
 
-	protected $fillable = [
-		'nombre_vehiculo',
-		'conductor',
-		'hora_inicio',
-		'hora_fin',
-		'nombre'
-	];
+	public function evento()
+	{
+		return $this->belongsTo(Evento::class, 'evento_id');
+	}
 
 	public function reservas()
 	{

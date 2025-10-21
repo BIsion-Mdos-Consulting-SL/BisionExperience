@@ -116,7 +116,7 @@
                                     @endif
 
                                     <div class="card-footer text-center">
-                                        <div class="d-flex justify-content-center">
+                                        <div class="d-flex justify-content-center gap-2">
                                             <!--BOTON ELIMINAR--->
                                             <form action="{{ route('eventos.delete', $evento->id) }}" method="POST">
                                                 @csrf
@@ -128,9 +128,15 @@
                                             <form name="fomulario" action="{{ route('eventos.edit', $evento->id) }}" method="GET">
                                                 @csrf
                                                 @method('PUT')
-                                                <button name="edit" id_update="{{ $evento->id }}" class="btn btn-primary mx-2" style="background-color: #05072e;">Editar</button>
+                                                <button name="edit" id_update="{{ $evento->id }}" class="btn btn-secondary" style="background-color: #05072e;">Editar</button>
                                             </form>
+                                            <!----INVITADOS LISTA---->
                                             <a href="{{ route('invitados.index', $evento->id) }}" class="btn btn-secondary">Invitados</a>
+
+                                            <!-- AJUSTES -->
+                                            <a href="{{ route('admin.ajustes', $evento) }}" class="btn btn-secondary" style="background-color:#05072e;">
+                                                Ajustes
+                                            </a>
                                         </div>
                                     </div>
                                 </div>

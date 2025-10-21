@@ -116,13 +116,6 @@
                                                     <i class="bi bi-envelope-fill"></i>
                                                 </button>
                                             </form>
-
-                                            <!----BOTON RESERVA COCHES----->
-                                            <!-- <form action="{{ route('reserva.enviarEmail', ['evento_id' => $evento->id, 'conductor_id' => $invitado->id]) }}" method="GET">
-                                                <button type="submit" style="background:none;border:none;color:#05072e;" title="Reservar Coche">
-                                                    <i class="bi bi-car-front-fill"></i>
-                                                </button>
-                                            </form> -->
                                         </div>
                                     </div>
                                 </div>
@@ -202,14 +195,6 @@
                                                     <i class="bi bi-envelope-fill"></i>
                                                 </button>
                                             </form>
-
-                                            <!----BOTON RESERVA COCHES----->
-                                            <!-- <form action="{{ route('reserva.enviarEmail', ['evento_id' => $evento->id, 'conductor_id' => $invitado->id]) }}">
-                                                @csrf
-                                                <button type="submit" style="background:none;border:none;color:#05072e;" title="Reservar Coche">
-                                                <i class="bi bi-car-front-fill"></i>
-                                                </button>
-                                            </form> -->
                                         </td>
                                     </tr>
                                     @endforeach

@@ -1,12 +1,13 @@
 @extends('layouts.login')
 @section('content')
-<div class="fondo_principal">
-    <div class="p-5 d-sm-block d-md-block d-lg-flex flex-wrap justify-content-center align-items-center gap-5">
-        <div class="mb-5 mb-sm-5 col-sm-12 col-md-12 col-lg-6 text-center" style="background-color: #0A0D40; border-radius: 10px;">
-            <img src="{{asset('images/logo.png')}}" style="width: 100%; border-radius: 10px; margin-bottom: 30px;">
-            <h4 style="color: white;">Caravana Sostenible Mayo 2025</h4>
+<div class="fondo">
+    <div class="p-2 d-block justify-content-center m-auto align-items-center gap-5">
+        <div class="mb-5 mb-sm-5 col-sm-12 col-md-12 col-lg-7 text-center m-auto">
+            <a href="/">
+                <img src="{{asset('storage/images/logo(2).png')}}" style="width: 100%; border-radius: 10px; text-align: center;">
+            </a>
         </div>
-        <div class="col-sm-12 p-sm-5 col-md-12 col-lg-5 fondo_secundario mb-sm-5">
+        <div class="col-sm-12 p-sm-5 col-md-12 col-lg-7 fondo_secundario mb-sm-5">
             <!-- Session Status -->
             <x-auth-session-status class="mb-4" :status="session('status')" />
             <form id="form" method="POST" action="{{ route('login') }}">
@@ -15,7 +16,7 @@
                 <div class="mb-3">
                     <x-input-label for="email" :value="__('Usuario')" class="mb-3 fw-bold" />
                     <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-envelope-at-fill"></i></span>
+                        <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
                         <x-text-input id="email" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" class="form-control" />
                     </div>
                     <x-input-error :messages="$errors->get('email')" class="mt-2" />
@@ -30,7 +31,7 @@
                     </div>
                     <x-input-error :messages="$errors->get('password')" class="mt-2" />
                 </div>
- 
+
                 <!----FUNCION PARA MOSTRAR/OCULTAR CONTRASEÑA(JS)---->
                 <script>
                     const inputPassword = document.getElementById('password');
@@ -100,11 +101,11 @@
                     <div class="text-start">
                         @if (Route::has('password.request'))
                         <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}" style="font-size: small; text-decoration: none;">
-                            {{ __('Olvido la contraseña?') }}
+                            {{ __('Recuperar contraseña') }}
                         </a>
                         @endif
 
-                        <a style="font-size: small; text-decoration: none; margin-left: 10px;" href="{{route('register')}}">Registrarse</a>
+                        <!-- <a style="font-size: small; text-decoration: none; margin-left: 10px;" href="{{route('register')}}">Registrarse</a> -->
                     </div>
 
                     <x-primary-button class="btn_color">
@@ -114,8 +115,10 @@
             </form>
         </div>
     </div>
-    <footer class="footer">
-        <img class="m-auto" src="{{asset('images/footer_bision.png')}}" style="width: 200px;">
-    </footer>
-    @include('auth.politica_privacidad')
-    @endsection
+</div>
+<footer class="footer">
+    <img class="m-auto" src="{{asset('images/footer_bision.png')}}" style="width: 200px;">
+</footer>
+@include('auth.politica_privacidad')
+@endsection
+

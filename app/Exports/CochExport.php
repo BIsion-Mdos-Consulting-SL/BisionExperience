@@ -3,11 +3,13 @@
 namespace App\Exports;
 
 use App\Models\Coch;
+use App\Models\Evento;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class CochExport implements FromCollection, WithHeadings
 {
+    protected $evento;
     /**
      * @return \Illuminate\Support\Collection
      */
@@ -23,9 +25,13 @@ class CochExport implements FromCollection, WithHeadings
         ];
     }
 
+    public function __construct(Evento $evento){
+        $this->evento = $evento;
+    }
+
     public function collection()
     {
-        return Coch::all()->map(function ($coche) {
+       /*  return Coch::all()->map(function ($coche) {
             return [
                 'marca' => $coche->marca,
                 'modelo' => $coche->modelo,
@@ -33,6 +39,17 @@ class CochExport implements FromCollection, WithHeadings
                 'matricula' => $coche->matricula,
                 'kam' => $coche->kam,
                 'asiste' => $coche->asiste ? 'Si' : 'No',
+            ];
+        }); */
+
+        return $this->evento->coches->map(function($coches){
+            return [
+                'marca' => $coches->marca,
+                'modelo' => $coches->modelo,
+                'version' => $coches->version,
+                'matricula' => $coches->matricula,
+                'kam' => $coches->kam,
+                'asiste' => $coches->asiste ? 'Si' : 'No'
             ];
         });
     }

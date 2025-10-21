@@ -4,18 +4,24 @@
     <form method="POST" id="formulario" action="{{ route('register') }}" class="col-12">
         @csrf
 
-        <!-- Name -->
+        <!-- Name (opcional) -->
         <div>
             <x-input-label for="name" :value="__('Nombre')" />
             <x-text-input id="name" class="block mt-1 w-full validar" type="text" name="name" :value="old('name')" autofocus autocomplete="name" />
             <x-input-error :messages="$errors->get('name')" class="mt-2" />
         </div>
+       
 
         <!-- Email Address -->
         <div class="mt-4">
             <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full validar" type="email" name="email" :value="old('email')" autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <x-text-input
+                id="email"
+                class="block mt-1 w-full validar"
+                type="email"
+                name="email"
+                value="{{ old('email') }}"
+                autocomplete="username" />
         </div>
 
         <!-- Password -->
@@ -23,10 +29,7 @@
             <x-input-label for="password" :value="__('Contraseña')" class="fw-bold" />
 
             <div class="input-group">
-                <!-- Input de contraseña -->
                 <x-text-input type="password" name="password" autocomplete="new-password" class="form-control password validar" />
-
-                <!-- Icono dentro del input -->
                 <span class="input-group-text toggle-password" style="cursor: pointer;">
                     <i class="bi bi-eye-fill"></i>
                 </span>
@@ -36,17 +39,29 @@
 
         <!-- Confirm Password -->
         <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirmar contraseña')" />
-
+            <x-input-label  for="password_confirmation" :value="__('Confirmar contraseña')" />
             <div class="input-group">
                 <x-text-input type="password" name="password_confirmation" autocomplete="new-password" class="form-control password validar" />
-
                 <span class="input-group-text toggle-password" style="cursor: pointer;">
                     <i class="bi bi-eye-fill"></i>
                 </span>
             </div>
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
+
+        <!---SWEETALERT PARA EL CORREO-->
+        @if ($errors->has('email'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'error',
+                    iconColor: "#05072e",
+                    title: 'Correo no existe en la BD',
+                    confirmButtonColor: "#05072e"
+                });
+            });
+        </script>
+        @endif
 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
@@ -74,7 +89,7 @@
                 const inputs = document.querySelectorAll('.validar');
 
                 form.addEventListener('submit', function(e) {
-                    e.preventDefault();
+                    // validación front (rápida) para UX; el back manda de verdad
                     let valido = true;
 
                     inputs.forEach(function(input) {
@@ -88,8 +103,8 @@
                         }
                     });
 
-                    if (valido) {
-                        form.submit();
+                    if (!valido) {
+                        e.preventDefault();
                     }
                 });
 
@@ -105,7 +120,7 @@
         </script>
 
         <div class="flex items-center justify-end mt-4 gap-2">
-            <a class="underline  text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
+            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
                 {{ __('Ya registrado?') }}
             </a>
 

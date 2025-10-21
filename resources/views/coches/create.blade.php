@@ -67,7 +67,7 @@
                             </label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="seguro" id="radioDefault2" value="0" checked>
+                            <input class="form-check-input" type="radio" name="seguro" id="radioDefault2" value="0">
                             <label class="form-check-label" for="radioDefault2">
                                 No
                             </label>
@@ -76,13 +76,13 @@
 
                     <!-- DOCUMENTACION SEGURO -->
                     <div class="mb-3">
-                        <label for="documento_seguro" class="form-label fw-bold ">Documentacion del seguro*</label>
+                        <label for="documento_seguro" class="form-label fw-bold ">Documentacion del seguro* (pdf, jpg, jpeg, png)</label>
                         <input type="file" class="form-control validar" name="documento_seguro" value="{{ old('documento_seguro') }}" placeholder="Introduce documento_seguro">
                     </div>
 
                     <!-- FOTO DEL VEHÍCULO -->
                     <div class="mb-3">
-                        <label for="foto_vehiculo" class="form-label fw-bold">Foto del vehículo*</label>
+                        <label for="foto_vehiculo" class="form-label fw-bold">Foto del vehículo* (pdf, jpg, jpeg, png)</label>
 
                         <!-- El input está oculto -->
                         <input class="form-control d-none" type="file" id="foto_vehiculo" name="foto_vehiculo" accept="image/*">

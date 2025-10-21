@@ -36,8 +36,15 @@ Route::middleware('guest')->group(function () {
     Route::post('register', [RegisteredUserController::class, 'store']);
 });
 
+//Login para admins (fuera de guest y auth).
+
+Route::get('admin/login', [AuthenticatedSessionController::class, 'createAdmin'])
+    ->name('admin.login');
+
+
 Route::middleware('auth')->group(function () {
     Route::get('verify-email', EmailVerificationPromptController::class)
+        ->middleware(['auth'])
         ->name('verification.notice');
 
     Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)

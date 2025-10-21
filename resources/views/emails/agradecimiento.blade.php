@@ -23,11 +23,13 @@
             En breve recibirás más detalles sobre el evento.
         </p>
 
-        <div style="margin: 30px 0;">
-            <a href="{{ route('login') }}" style="display: inline-block; padding: 12px 24px; background-color: #ffffff; color: #0A0D40; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: clamp(14px, 4vw, 18px);">
+        <!----Crearemos un formulario para poder mandar por post el boton y poder cerrar la sesion que teniamos antes activas para ya no estar logueado como admin (tener en cuenta la sesion activa)--->
+        <form method="POST" action="{{route('logout')}}">
+            @csrf
+            <button type="submit" style="display: inline-block; padding: 12px 24px; background-color: #ffffff; color: #0A0D40; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: clamp(14px, 4vw, 18px);">
                 Volver al inicio
-            </a>
-        </div>
+            </button>
+        </form>
     </div>
 
     <div style="width: 100%; text-align: center; background-color: #05072E; height: auto; position: fixed; bottom: 0; left: 0; z-index: 100;">

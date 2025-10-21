@@ -27,6 +27,8 @@
                                 @if(isset($evento))
                                 <a href="{{ route('coches.create', $evento->id) }}" class="btn_color">Registro coche</a>
                                 @endif
+                                
+                                <a href="{{route('trazabilidad.index' , $evento->id)}}" class="btn_color">Trazabilidad Paradas</a>
                             </div>
                         </form>
 
