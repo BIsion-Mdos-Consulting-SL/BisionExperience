@@ -27,7 +27,7 @@
         <form method="POST" action="{{route('logout')}}">
             @csrf
             <button type="submit" style="display: inline-block; padding: 12px 24px; background-color: #ffffff; color: #0A0D40; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: clamp(14px, 4vw, 18px);">
-                Volver al inicio
+                Inicio de sesion
             </button>
         </form>
     </div>
