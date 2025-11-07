@@ -11,6 +11,15 @@
         @endif
     </div>
 
+    <!--MENSAJE DE ERROR-->
+    <div>
+        @if(session('error'))
+        <div class="alert alert-danger py-1 px-2 mb-2 small" role="alert">
+            {{ session('error') }}
+        </div>
+        @endif
+    </div>
+
     <!--FORMULARIO NUEVO INVITADO-->
     <form method="POST" action="{{route('invitados.store' , $evento->id)}}" enctype="multipart/form-data"
         class="m-auto mt-5 mb-5 d-flex flex-wrap justify-content-between gap-3" style="width: 70%;" id="formulario">
@@ -58,14 +67,11 @@
                 <input type="text" class="form-control" name="dni" id="dni" value="{{ old('dni')}}">
             </div>
 
-            <!--MENSAJE DE ERROR-->
-            <div>
-                @if(session('error'))
-                <div class="alert alert-danger py-1 px-2 mb-2 small" role="alert">
-                    {{ session('error') }}
-                </div>
-                @endif
+            @error('dni')
+            <div class="alert alert-danger py-1 px-2 mb-2 small" role="alert">
+                {{ $message }}
             </div>
+            @enderror
         </div>
 
 
@@ -74,19 +80,19 @@
             <div class="d-flex flex-wrap">
                 <!---VEHICULO PROPIO--->
                 <div class="mb-5 col-md-8">
-                    <label for="vehiculo_prop" class="form-label fw-bold" style="margin-right: 2%">¿Cuenta con un vehiculo propio?</label>
+                    <label for="vehiculo_prop" class="form-label fw-bold" style="margin-right: 2%">¿Cuenta con vehiculo de uso propio?</label>
                     <div class="form-check">
-                        <input id="btn_si" class="form-check-input" type="radio" value="si" name="vehiculo_prop" {{ old('vehiculo_prop') == 'si' ? 'checked' : '' }}>
+                        <input id="btn_si_prop" class="form-check-input" type="radio" value="si" name="vehiculo_prop" {{ old('vehiculo_prop') == 'si' ? 'checked' : '' }}>
                         <label class="form-check-label" for="vehiculo_prop">Sí</label>
                     </div>
                     <div class="form-check">
-                        <input id="btn_no" class="form-check-input" type="radio" value="no" name="vehiculo_prop" {{ old('vehiculo_prop') == 'no' ? 'checked' : '' }}>
+                        <input id="btn_no_prop" class="form-check-input" type="radio" value="no" name="vehiculo_prop" {{ old('vehiculo_prop') == 'no' ? 'checked' : '' }}>
                         <label class="form-check-label" for="vehiculo_prop">No</label>
                     </div>
                 </div>
 
-                <!----ETIQUETA (MOSTRAR)----->
-                <div id="etiqueta-container" style="display: none;" class="mx-md-2">
+                <!----ETIQUETA 1  (MOSTRAR)----->
+                <div id="etiqueta-container_prop" style="display: none;" class="mx-md-2">
                     <label for="etiqueta" class="form-label fw-bold">Etiqueta</label>
 
                     <div class="div_etiqueta form-check">
@@ -111,51 +117,90 @@
                 </div>
             </div>
 
-            <!---VEHICULO EMPRESA--->
-            <div class="mb-3">
-                <label for="vehiculo_emp" class="form-label fw-bold">¿Cuenta con un vehiculo de empresa?</label>
-                <div class="form-check">
-                    <input id="btn_si_emp" class="form-check-input" type="radio" value="si" name="vehiculo_emp" {{ old('vehiculo_emp') == 'si' ? 'checked' : '' }}>
-                    <label class="form-check-label" for="vehiculo_emp">Sí</label>
-                </div>
-                <div class="form-check">
-                    <input id="btn_no_emp" class="form-check-input" type="radio" value="no" name="vehiculo_emp" {{ old('vehiculo_emp') == 'no' ? 'checked' : '' }}>
-                    <label class="form-check-label" for="vehiculo_emp">No</label>
-                </div>
-            </div>
-
-            <!---JS ETIQUETA--->
+            <!---JS ETIQUETA VEHICULO PROP--->
             <script>
-                const boton_si = document.getElementById('btn_si');
-                const boton_no = document.getElementById('btn_no');
-                const boton_si_emp = document.getElementById('btn_si_emp');
-                const boton_no_emp = document.getElementById('btn_no_emp');
-                const etiquetaContainer = document.getElementById('etiqueta-container');
+                const boton_si_prop = document.getElementById('btn_si_prop');
+                const boton_no_prop = document.getElementById('btn_no_prop');
+                const etiquetaContainerProp = document.getElementById('etiqueta-container_prop');
 
                 function mostrar() {
-                    if (boton_si.checked || boton_si_emp.checked) {
-                        etiquetaContainer.style.display = "block";
+                    if (boton_si_prop.checked) {
+                        etiquetaContainerProp.style.display = "block";
                     } else {
-                        etiquetaContainer.style.display = "none";
+                        etiquetaContainerProp.style.display = "none";
                     }
                 }
 
-                boton_si.addEventListener('click', () => {
-                    boton_no_emp.checked = true;
+                boton_si_prop.addEventListener('click', () => {
+                    boton_no_emp.checked = false;
                     mostrar();
                 })
 
-                boton_si_emp.addEventListener('click', () => {
-                    boton_no.checked = true;
-                    mostrar();
-                })
-
-                boton_no.addEventListener('click', () => {
+                boton_no_prop.addEventListener('click', () => {
                     mostrar();
                 });
+            </script>
+
+            <div class="d-flex flex-wrap mt-3">
+                <!---VEHICULO EMPRESA--->
+                <div class="mb-5 col-md-8">
+                    <label for="vehiculo_emp" class="form-label fw-bold" style="margin-right: 2%;">¿Cuenta con un vehiculo de empresa?</label>
+                    <div class="form-check">
+                        <input id="btn_si_emp" class="form-check-input" type="radio" value="si" name="vehiculo_emp" {{ old('vehiculo_emp') == 'si' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="btn_si_emp">Sí</label>
+                    </div>
+                    <div class="form-check">
+                        <input id="btn_no_emp" class="form-check-input" type="radio" value="no" name="vehiculo_emp" {{ old('vehiculo_emp') == 'no' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="btn_no_emp">No</label>
+                    </div>
+                </div>
+
+                <div id="etiqueta-container_emp" style="display: none;" class="mx-md-2">
+                    <label for="etiqueta_2" class="form-label fw-bold">Etiqueta</label>
+
+                    <div class="div_etiqueta form-check">
+                        <input class="form-check-input" type="radio" value="B" name="etiqueta_2" {{ old('etiqueta_2') == 'B' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="etiqueta_2">B</label>
+                    </div>
+
+                    <div class="div_etiqueta form-check">
+                        <input class="form-check-input" type="radio" value="C" name="etiqueta_2" {{ old('etiqueta_2') == 'C' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="etiqueta_2">C</label>
+                    </div>
+
+                    <div class="div_etiqueta form-check">
+                        <input class="form-check-input" type="radio" value="ECO" name="etiqueta_2" {{ old('etiqueta_2') == 'ECO' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="etiqueta_2">ECO</label>
+                    </div>
+
+                    <div class="div_etiqueta form-check">
+                        <input class="form-check-input" type="radio" value="0" name="etiqueta_2" {{ old('etiqueta_2') == '0' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="etiqueta_2">0</label>
+                    </div>
+                </div>
+            </div>
+
+            <!---JS ETIQUETA VEHICULO EMP--->
+            <script>
+                const boton_si_emp = document.getElementById('btn_si_emp');
+                const boton_no_emp = document.getElementById('btn_no_emp');
+                const etiquetaContainerEmp = document.getElementById('etiqueta-container_emp');
+
+                function mostrarEmp() {
+                    if (boton_si_emp.checked) {
+                        etiquetaContainerEmp.style.display = "block";
+                    } else {
+                        etiquetaContainerEmp.style.display = "none";
+                    }
+                }
+
+                boton_si_emp.addEventListener('click', () => {
+                    boton_no_emp.checked = false;
+                    mostrarEmp();
+                })
 
                 boton_no_emp.addEventListener('click', () => {
-                    mostrar();
+                    mostrarEmp();
                 })
             </script>
 
@@ -241,49 +286,49 @@
             }
 
             //APELLIDO
-            if(apellido.value.trim() === ""){
+            if (apellido.value.trim() === "") {
                 apellido.classList.add("validacion-mal");
                 valido = false;
-            } else{
+            } else {
                 apellido.classList.remove("validacion-mal");
                 apellido.classList.add("validacion-bien");
             }
 
             //EMAIL
-            if(email.value.trim() === ""){
+            if (email.value.trim() === "") {
                 email.classList.add("validacion-mal");
                 valido = false;
-            } else{
+            } else {
                 email.classList.remove("validacion-mal");
                 email.classList.add("validacion-bien");
             }
 
             //DNI
-            if(dni.value.trim() === ""){
+            if (dni.value.trim() === "") {
                 dni.classList.add("validacion-mal");
                 valido = false;
-            } else{
+            } else {
                 dni.classList.remove("validacion-mal");
                 dni.classList.add("validacion-bien");
             }
 
             //CARNET DE CONDUCIR
-            if(carnet.value.trim() === ""){
+            if (carnet.value.trim() === "") {
                 carnet.classList.add("validacion-mal");
                 valido = false;
-            } else{
+            } else {
                 carnet.classList.remove("validacion-mal");
                 carnet.classList.add("validacion-bien");
             }
 
-            if(valido){
+            if (valido) {
                 form.submit();
             }
         });
 
-        [nombre , apellido , email , dni , carnet].forEach(input =>{
-            input.addEventListener('input' , function(){
-                if(input.value.trim() !== ""){
+        [nombre, apellido, email, dni, carnet].forEach(input => {
+            input.addEventListener('input', function() {
+                if (input.value.trim() !== "") {
                     input.classList.remove("validacion-mal");
                 }
             })

@@ -22,7 +22,7 @@ class ClienteRegistrado extends Mailable
     /**
      * Create a new message instance. Se guardan los campos pasamos por parametro y los modelos.
      */
-    public function __construct(Conductor $conductor , Evento $evento)
+    public function __construct(Conductor $conductor , ?Evento $evento = null)
     {
         $this->conductor = $conductor;
         $this->evento = $evento;
@@ -45,7 +45,7 @@ class ClienteRegistrado extends Mailable
     {
         return new Content(
             view: 'emails.registrado',
-            with : [
+            with: [
                 'conductor' => $this->conductor,
                 'evento' => $this->evento
             ]

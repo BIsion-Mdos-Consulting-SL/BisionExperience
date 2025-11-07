@@ -57,12 +57,57 @@ class Evento extends Model
 		'enlace',
 		'documentacion',
 		'texto_invitacion',
-		'imagen'
+		'imagen',
+		'public_id'
 	];
+
+	/**
+	 * La función "invitados" define una relación de muchos a muchos entre el modelo actual y el
+	 * modelo "Conductor" con atributos adicionales de tabla pivote.
+	 * 
+	 * @return La función `invitados` devuelve una relación de muchos a muchos entre el modelo actual
+	 * y el modelo `Conductor`. Especifica la tabla intermedia `evento_conductor` con las claves externas
+	 * `evento_id` y `conductor_id`. Además, incluye las columnas pivote especificadas, como
+	 * `cif`, `nombre`, `apellido`, `email` y otras, en la tabla pivote.
+	 */
 
 	public function invitados()
 	{
-		return $this->belongsToMany(Conductor::class, 'evento_conductor', 'evento_id', 'conductor_id');
+		return $this->belongsToMany(Conductor::class, 'evento_conductor', 'evento_id', 'conductor_id')
+			->withPivot([
+				'cif',
+				'nombre',
+				'apellido',
+				'email',
+				'telefono',
+				'empresa',
+				'vehiculo_prop',
+				'vehiculo_emp',
+				'intolerancia',
+				'preferencia',
+				'carnet',
+				'etiqueta',
+				'kam',
+				'asiste',
+				'dni',
+				'proteccion_datos',
+				'carnet_caducidad',
+				'confirmado',
+				'token',
+				'etiqueta_2'
+			]);
+	}
+
+	/**
+	 * La función `booted` en PHP asigna un `public_id` único a un evento si está vacío, utilizando el evento `creating` de Laravel.
+	 */
+	protected static function booted()
+	{
+		static::creating(function ($evento) {
+			if (empty($evento->public_id)) {
+				$evento->public_id = (string) \Illuminate\Support\Str::uuid();
+			}
+		});
 	}
 
 	public function marcas()
@@ -93,5 +138,17 @@ class Evento extends Model
 	public function banners()
 	{
 		return $this->hasMany(Banner::class, 'evento_id', 'id');
+	}
+
+	/**
+	* La función `getRouteKeyName()` en PHP devuelve el nombre de la clave de ruta 'public_id'.
+	* 
+	* @return El método `getRouteKeyName()` devuelve la cadena `'public_id'`. Este método se utiliza en
+	* Laravel para especificar el atributo que se debe usar al recuperar un modelo por su clave de ruta. En
+	* este caso, la clave de ruta para el modelo será el atributo `public_id`.
+	*/
+	public function getRouteKeyName()
+	{
+		return 'public_id';
 	}
 }

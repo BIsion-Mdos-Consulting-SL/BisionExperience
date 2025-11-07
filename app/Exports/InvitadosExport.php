@@ -42,11 +42,11 @@ class InvitadosExport implements FromCollection, WithHeadings
                 'cif'        => $invitado->cif,
                 'nombre'     => $invitado->nombre,
                 'apellidos'  => $invitado->apellido,
-                'telefono'   =>  "\t" . $invitado->telefono,//Se coloca "\t" para que se veo el formato texto (numeros).
-                'dni'        => "\t" . $invitado->dni,//Se coloca "\t" para que se veo el formato texto (numeros).
+                'telefono'   =>  "\t" . $invitado->telefono, //Se coloca "\t" para que se veo el formato texto (numeros).
+                'dni'        => "\t" . $invitado->dni, //Se coloca "\t" para que se veo el formato texto (numeros).
                 'email'      => $invitado->email,
                 'kam'        => $invitado->kam,
-                'asistio'    => $invitado->asiste ? 'Si' : 'No' //Condicion si el invitado asiste o no asiste.
+                'asistio'   => ($invitado->pivot->asistio ?? $invitado->pivot->asiste ?? false) ? 'Si' : 'No',
             ];
         });
     }

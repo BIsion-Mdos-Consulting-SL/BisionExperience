@@ -11,6 +11,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 
 class CochesController extends Controller
@@ -43,8 +44,8 @@ class CochesController extends Controller
 
     public function store(Request $request, $evento_id)
     {
-        // Validacion si ya existe esa matrícula
-        if (Coch::where('matricula', $request->matricula)->exists()) {
+        // Validacion si ya existe esa matrícula por evento.
+        if (Coch::where('evento_id', $evento_id)->where('matricula', $request->matricula)->exists()) {
             return redirect()
                 ->back()
                 ->withInput()
@@ -52,7 +53,11 @@ class CochesController extends Controller
         }
 
         $request->validate([
-            'matricula' => 'required|unique:coches,matricula',
+            'matricula' => [
+                'required',
+                Rule::unique('coches', 'matricula')
+                    ->where(fn($q) => $q->where('evento_id', $evento_id)),
+            ],
             'marca' => 'required',
             'modelo' => 'required',
             'version' => 'required',
@@ -93,7 +98,7 @@ class CochesController extends Controller
 
         return redirect()
             ->route('coches.index', $evento_id)
-            ->with('success', 'Coche creado con éxito');
+            ->toast('success', 'Coche creado con exito');
     }
 
     public function delete(int $id)
@@ -174,9 +179,9 @@ class CochesController extends Controller
 
             $coche->save();
             //Realizamos la condicion ternaria para que no nos salga el error de null al actualizar (muy importante).
-            return redirect()->route('coches.index', $evento ? $evento->id : null)->with('success', 'Coche actualizado correctamente');
+            return redirect()->route('coches.index', $evento ? $evento->id : null)->toast('success', 'Coche actualizado correctamente');
         } catch (Exception $e) {
-            return redirect()->back()->with('error', 'Error al actualizar el coche: ');
+            return redirect()->back()->toast('error', 'Error al actualizar el coche: ');
         }
     }
 

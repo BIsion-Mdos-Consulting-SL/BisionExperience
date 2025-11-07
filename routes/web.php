@@ -35,7 +35,7 @@ Route::get('/cliente/login', function () {
 })->name('cliente.login');
 
 //PANTALLA LOGIN DEALER.
-Route::get('/dealer/login' , function() {
+Route::get('/dealer/login', function () {
     return view('dealer.login');
 })->name('dealer.login');
 
@@ -67,8 +67,8 @@ Route::middleware(['auth',  CheckRole::class . ':admin'])->group(function () {
     /**------------------------------------------------------------------------------------------------*/
 
     /***CRUD INVITADOS(CONDUCTORES) */
-    Route::get('/invitados/{id}', [InvitadosController::class, 'index'])->name('invitados.index');
-    Route::get('/invitados/create/{id}', [InvitadosController::class, 'create'])->name('invitados.create');
+    /* Route::get('/invitados/{id}', [InvitadosController::class, 'index'])->name('invitados.index'); */
+    /*Route::get('/invitados/create/{id}', [InvitadosController::class, 'create'])->name('invitados.create');
     Route::post('/invitados/store/{id}', [InvitadosController::class, 'store'])->name('invitados.store');
     Route::delete('/invitados/delete/{id}', [InvitadosController::class, 'delete'])->name('invitados.delete');
     Route::get('/invitados/edit/{id}', [InvitadosController::class, 'edit'])->name('invitados.edit');
@@ -76,9 +76,29 @@ Route::middleware(['auth',  CheckRole::class . ':admin'])->group(function () {
 
     Route::get('/invitados/show/{id}', [InvitadosController::class, 'show'])->name('invitados.show');
     Route::post('/invitados/{id}/asistencia', [InvitadosController::class, 'actualizarAsistencia']);
-
     //IMPORTAR INVITADOS 
-    Route::post('/invitados/importar/{id}', [InvitadosController::class, 'importarInvitados'])->name('invitados.importar');
+    Route::post('/invitados/importar/{id}', [InvitadosController::class, 'importarInvitados'])->name('invitados.importar'); */
+    Route::prefix('eventos/{evento:id}')->group(function () {
+        Route::get('invitados', [InvitadosController::class, 'index'])->name('invitados.index');
+        Route::get('invitados/create', [InvitadosController::class, 'create'])->name('invitados.create');
+        Route::post('invitados', [InvitadosController::class, 'store'])->name('invitados.store');
+
+        Route::get('invitados/buscar', [InvitadosController::class, 'show'])->name('invitados.show');
+        Route::get('invitados/{invitado}/edit', [InvitadosController::class, 'edit'])
+            ->name('invitados.edit');
+        Route::put('invitados/{invitado}', [InvitadosController::class, 'update'])->name('invitados.update');
+        Route::delete('invitados/delete', [InvitadosController::class, 'delete'])->name('invitados.delete');
+
+        // Acciones específicas sobre el pivot
+        Route::post(
+            'invitados/{invitado}/asistencia',
+            [InvitadosController::class, 'actualizarAsistencia']
+        )->name('invitados.asistencia');
+
+        // Import/Export ligados al evento> [InvitadosController::class, 'importarInvitados'])->name('invitados.importar');
+        Route::get('invitados/exportar', [InvitadosController::class, 'exportarInvitados'])->name('invitados.exportar');
+        Route::post('invitados/importar', [InvitadosController::class, 'importarInvitados'])->name('invitados.importar');
+    });
 
     /***--------------------------------------------------------------------------------------------------------- */
 
@@ -106,36 +126,34 @@ Route::middleware(['auth',  CheckRole::class . ':admin'])->group(function () {
     /***** RUTAS PARA AJUSTE (BOTON) */
 
     // Mostrar página de ajustes de un evento concreto
-    Route::get('/ajustes/{evento}', [AjustesController::class, 'index'])
+    Route::get('/ajustes/{evento:id}', [AjustesController::class, 'index'])
         ->name('admin.ajustes');
 
     // CREA , EDITA y ELIMINA PARADA
-    Route::post('/ajustes/{evento}/paradas', [AjustesController::class, 'storeParadas'])->name('store.paradas');
-    Route::put('/ajustes/{evento}/paradas/{parada}', [AjustesController::class, 'updateParadas'])->name('evento.parada.update');
-    Route::delete('/ajustes/{evento}/paradas/delete/{id}', [AjustesController::class, 'deleteParadas'])
-        ->name('eliminarParada');
+    Route::post('/ajustes/{evento:id}/paradas', [AjustesController::class, 'storeParadas'])->name('store.paradas');
+    Route::put('/ajustes/{evento:id}/paradas/{parada}', [AjustesController::class, 'updateParadas'])->name('evento.parada.update');
+    Route::delete('/ajustes/{evento:id}/paradas/delete/{id}', [AjustesController::class, 'deleteParadas'])->name('eliminarParada');
 
-    //EDITA COCHES Y ELIMINA
-    Route::get('ajustes/{evento}/coches/', [AjustesController::class, 'editCoches'])->name('evento.coche.edit');
-    Route::put('ajustes/{evento}/coches/{coche}', [AjustesController::class, 'updateCoches'])->name('evento.coche.update');
-    Route::delete('ajustes/{evento}/coches/delete/{id}', [AjustesController::class, 'deleteCoches'])
-        ->name('eliminarCoches');
+    // EDITA COCHES Y ELIMINA
+    Route::get('/ajustes/{evento:id}/coches', [AjustesController::class, 'editCoches'])->name('evento.coche.edit');
+    Route::put('/ajustes/{evento:id}/coches/{coche}', [AjustesController::class, 'updateCoches'])->name('evento.coche.update');
+    Route::delete('/ajustes/{evento:id}/coches/delete/{id}', [AjustesController::class, 'deleteCoches'])->name('eliminarCoches');
 
-    //CREA Y EDITA RESTAURANTE
-    Route::post('ajustes/{evento}/restaurante', [AjustesController::class, 'storeRestaurante'])->name('store.restaurantes');
-    Route::put('ajustes/{evento}/restaurante/{restaurante}', [AjustesController::class, 'updateRestaurante'])->name('evento.restaurante.update');
-    Route::delete('ajustes/{evento}/restaurante/{id}', [AjustesController::class, 'deleteRestaurante'])->name('eliminarRestaurante');
+    // RESTAURANTE
+    Route::post('/ajustes/{evento:id}/restaurante', [AjustesController::class, 'storeRestaurante'])->name('store.restaurantes');
+    Route::put('/ajustes/{evento:id}/restaurante/{restaurante}', [AjustesController::class, 'updateRestaurante'])->name('evento.restaurante.update');
+    Route::delete('/ajustes/{evento:id}/restaurante/{id}', [AjustesController::class, 'deleteRestaurante'])->name('eliminarRestaurante');
 
-    //CREA , EDITA Y ELIMINA BANNER
-    Route::post('ajustes/{evento}/banner', [AjustesController::class, 'storeBanner'])->name('store.banner');
-    Route::put('ajustes/{evento}/banner/{banner}', [AjustesController::class, 'updateBanner'])->name('evento.banner.update');
-    Route::delete('ajustes/{evento}/banner/{id}', [AjustesController::class, 'deleteBanner'])->name('eliminarBanner');
+    // BANNER
+    Route::post('/ajustes/{evento:id}/banner', [AjustesController::class, 'storeBanner'])->name('store.banner');
+    Route::put('/ajustes/{evento:id}/banner/{banner}', [AjustesController::class, 'updateBanner'])->name('evento.banner.update');
+    Route::delete('/ajustes/{evento:id}/banner/{id}', [AjustesController::class, 'deleteBanner'])->name('eliminarBanner');
 
-    //CREA , EDITA Y ELIMINA TIMING
-    Route::get('ajustes/{evento}/edit', [AjustesController::class, 'editTiming'])->name('evento.timing.edit');
-    Route::post('ajustes/{evento}/timing', [AjustesController::class, 'storeTiming'])->name('store.timing');
-    Route::put('ajustes/{evento}/timing/{timing}', [AjustesController::class, 'updateTiming'])->name('evento.timing.update');
-    Route::delete('ajustes/{evento}/timing/{id}', [AjustesController::class, 'deleteTiming'])->name('eliminarTiming');
+    // TIMING
+    Route::get('/ajustes/{evento:id}/edit', [AjustesController::class, 'editTiming'])->name('evento.timing.edit');
+    Route::post('/ajustes/{evento:id}/timing', [AjustesController::class, 'storeTiming'])->name('store.timing');
+    Route::put('/ajustes/{evento:id}/timing/{timing}', [AjustesController::class, 'updateTiming'])->name('evento.timing.update');
+    Route::delete('/ajustes/{evento:id}/timing/{id}', [AjustesController::class, 'deleteTiming'])->name('eliminarTiming');
 });
 
 // RUTAS PARA CLIENTES
@@ -179,12 +197,22 @@ Route::middleware(['auth', CheckRole::class . ':cliente'])->group(function () {
     Route::get('/cargarDatos/patrocinadores', [PatrocinadoresController::class, 'cargarDatos'])->name('cargarDatos.patrocinadores');
 });
 
-Route::middleware(['auth' , CheckRole::class . ':dealer'])->group(function () {
+//RUTAS PARA DEALER
+Route::middleware(['auth', CheckRole::class . ':dealer'])->group(function () {});
 
-});
 
+//RUTAS PARA REGISTRO FORMULARIO
+Route::get('/eventos/{evento:public_id}/conductor/registro', [EventosController::class, 'conductorForm'])->name('conductor.registro');
 
-/**** -------------------------------------ENVIO DE CORREOS---------------------------------------- */
+Route::post('/eventos/{evento:public_id}/conductor/registro/store', [EventosController::class, 'conductorStore'])->name('conductor.registro.store');
+
+//RUTAS NUEVAS PARA MOSTRAR Y ENVIAR FORMULARIO, REUTILIZABLES.
+
+Route::get('/invitado/registro', [EventoConductorController::class, 'mostrarFormulario'])->name('invitado.form');
+
+Route::post('/invitado/registro', [EventoConductorController::class, 'enviarFormulario'])->name('invitado.enviar');
+
+/****ENVIO DE CORREOS PARA REGISTRO INVITADOS.*/
 
 //RUTAS PARA EL ENVIO DE URL.
 Route::get('/evento-confirmacion/{token}', [EventoConductorController::class, 'mostrarFormulario'])->name('evento.confirmacion');
@@ -194,7 +222,6 @@ Route::post('/evento-confirmacion/{token}', [EventoConductorController::class, '
 
 //RUTA PARA ENVIAR EMAIL AL INVITADO.
 Route::get('/evento/{evento_id}/invitado/{conductor_id}/confirmacion', [EventoConductorController::class, 'enviarEmail'])->name('invitados.enviarEmail');
-
 
 /**** --------------------RUTAS DE AGRADECIMIENTO(PUBLICA)----------------------- */
 

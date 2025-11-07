@@ -1,5 +1,6 @@
 @extends('layouts.main')
 @section('content')
+<meta name="robots" content="noindex,nofollow">
 <div class="py-5 mb-5">
     <h1 class="mb-3 text-center mt-2 texto fw-bold">Registro invitado</h1>
     <!--MENSAJE DE EXITO-->
@@ -12,9 +13,18 @@
     </div>
 
     <!--FORMULARIO NUEVO INVITADO-->
-    <form method="POST" id="formulario" action="{{isset($edicion) && $edicion ? route('evento.enviar' , $token) : route('invitados.update' , $evento->id)}}" enctype="multipart/form-data"
-        class="m-auto mt-5 mb-5 d-flex flex-wrap justify-content-between gap-3" style="width: 70%;">
+    <form
+        method="POST"
+        id="formulario"
+        action="{{route('conductor.registro.store' , $evento)}}"
+        enctype="multipart/form-data"
+        class="m-auto mt-5 mb-5 d-flex flex-wrap justify-content-between gap-3"
+        style="width: 70%;">
+
         @csrf
+        {{-- HONEYPOT (anti-bots) --}}
+        <input type="text" name="website" style="display:none" tabindex="-1" autocomplete="off">
+
         <div class="col-12 col-sm-5">
             <!--NOMBRE-->
             <div class="mb-3">
@@ -55,17 +65,13 @@
             <!--DNI-->
             <div class="mb-3">
                 <label for="dni" class="form-label fw-bold">DNI*</label>
-                <input type="text" class="form-control validar" name="dni">
+                <input type="text" class="form-control validar @error('dni') is-invalid @enderror" name="dni">
             </div>
 
-            <!--MENSAJE DE ERROR-->
-            <div>
-                @if(session('error'))
-                <div class="alert alert-danger py-1 px-2 mb-2 small" role="alert">
-                    {{ session('error') }}
-                </div>
-                @endif
-            </div>
+            @error('dni')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+
         </div>
 
         <div class="col-12 col-sm-6">
@@ -75,17 +81,17 @@
                 <div class="mb-5 col-md-8">
                     <label for="vehiculo_prop" class="form-label fw-bold" style="margin-right: 2%">¿Cuenta con un vehiculo propio?</label>
                     <div class="form-check">
-                        <input id="btn_si" class="form-check-input" type="radio" value="si" name="vehiculo_prop"  {{ old('vehiculo_prop') == 'si' ? 'checked' : '' }}>
+                        <input id="btn_si_prop" class="form-check-input" type="radio" value="si" name="vehiculo_prop" {{ old('vehiculo_prop') == 'si' ? 'checked' : '' }}>
                         <label class="form-check-label" for="vehiculo_prop">Sí</label>
                     </div>
                     <div class="form-check">
-                        <input id="btn_no" class="form-check-input" type="radio" value="no" name="vehiculo_prop" {{ old('vehiculo_prop') == 'no' ? 'checked' : '' }}>
+                        <input id="btn_no_prop" class="form-check-input" type="radio" value="no" name="vehiculo_prop" {{ old('vehiculo_prop') == 'no' ? 'checked' : '' }}>
                         <label class="form-check-label" for="vehiculo_prop">No</label>
                     </div>
                 </div>
 
                 <!----ETIQUETA (MOSTRAR)----->
-                <div id="etiqueta-container" style="display: none;" class="mx-md-2">
+                <div id="etiqueta-container_prop" style="display: none;" class="mx-md-2">
                     <label for="etiqueta" class="form-label fw-bold">Etiqueta</label>
 
                     <div class="div_etiqueta form-check">
@@ -110,56 +116,47 @@
                 </div>
             </div>
 
-            <!---VEHICULO EMPRESA--->
-            <div class="mb-3">
-                <label for="vehiculo_emp" class="form-label fw-bold">¿Cuenta con un vehiculo de empresa?</label>
-                <div class="form-check">
-                    <input id="btn_si_emp" class="form-check-input" type="radio" value="si" name="vehiculo_emp" {{ old('vehiculo_emp') == 'si' ? 'checked' : '' }}>
-                    <label class="form-check-label" for="vehiculo_emp">Sí</label>
+            <div class="d-flex flex-wrap mt-3">
+                <!---VEHICULO EMPRESA--->
+                <div class="mb-5 col-md-8">
+                    <label for="vehiculo_emp" class="form-label fw-bold" style="margin-right: 2%;">¿Cuenta con un vehiculo de empresa?</label>
+                    <div class="form-check">
+                        <input id="btn_si_emp" class="form-check-input" type="radio" value="si" name="vehiculo_emp" {{ old('vehiculo_emp') == 'si' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="btn_si_emp">Sí</label>
+                    </div>
+                    <div class="form-check">
+                        <input id="btn_no_emp" class="form-check-input" type="radio" value="no" name="vehiculo_emp" {{ old('vehiculo_emp') == 'no' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="btn_no_emp">No</label>
+                    </div>
                 </div>
-                <div class="form-check">
-                    <input id="btn_no_emp" class="form-check-input" type="radio" value="no" name="vehiculo_emp" {{ old('vehiculo_emp') == 'no' ? 'checked' : '' }}>
-                    <label class="form-check-label" for="vehiculo_emp">No</label>
+
+                <div id="etiqueta-container_emp" style="display: none;" class="mx-md-2">
+                    <label for="etiqueta_2" class="form-label fw-bold">Etiqueta</label>
+
+                    <div class="div_etiqueta form-check">
+                        <input class="form-check-input" type="radio" value="B" name="etiqueta_2" {{ old('etiqueta_2') == 'B' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="etiqueta_2">B</label>
+                    </div>
+
+                    <div class="div_etiqueta form-check">
+                        <input class="form-check-input" type="radio" value="C" name="etiqueta_2" {{ old('etiqueta_2') == 'C' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="etiqueta_2">C</label>
+                    </div>
+
+                    <div class="div_etiqueta form-check">
+                        <input class="form-check-input" type="radio" value="ECO" name="etiqueta_2" {{ old('etiqueta_2') == 'ECO' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="etiqueta_2">ECO</label>
+                    </div>
+
+                    <div class="div_etiqueta form-check">
+                        <input class="form-check-input" type="radio" value="0" name="etiqueta_2" {{ old('etiqueta_2') == '0' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="etiqueta_2">0</label>
+                    </div>
                 </div>
             </div>
 
-            <!---JS ETIQUETA--->
-            <script>
-                const boton_si = document.getElementById('btn_si');
-                const boton_no = document.getElementById('btn_no');
-                const boton_si_emp = document.getElementById('btn_si_emp');
-                const boton_no_emp = document.getElementById('btn_no_emp');
-                const etiquetaContainer = document.getElementById('etiqueta-container');
-
-                function mostrar() {
-                    if (boton_si.checked || boton_si_emp.checked) {
-                        etiquetaContainer.style.display = "block";
-                    } else {
-                        etiquetaContainer.style.display = "none";
-                    }
-                }
-
-                boton_si.addEventListener('click', () => {
-                    boton_no_emp.checked = true;
-                    mostrar();
-                })
-
-                boton_si_emp.addEventListener('click', () => {
-                    boton_no.checked = true;
-                    mostrar();
-                })
-
-                boton_no.addEventListener('click', () => {
-                    mostrar();
-                });
-
-                boton_no_emp.addEventListener('click', () => {
-                    mostrar();
-                })
-            </script>
-
             <!--CARNET DE CONDUCIR-->
-            <!--             <div class="mb-3">
+            <!--  <div class="mb-3">
                 <label for="carnet" class="form-label fw-bold">Carnet de conducir* (.pdf, .doc, .docx, .jpg, .png)</label>
                 <input type="file" class="form-control validar" name="carnet" accept=".pdf, .doc, .docx, .jpg, .png">
             </div> -->
@@ -171,10 +168,10 @@
             </div>
 
             <!---KAM--->
-            <!-- <div class="mb-3">
+            <div class="mb-3">
                 <label for="kam" class="form-label fw-bold">KAM*</label>
-                <input type="text" class="form-control" name="kam">
-            </div> -->
+                <input type="text" class="form-control" name="kam" value="{{old('kam')}}">
+            </div>
 
             <!---INTOLERANCIA ALIMENTARIA--->
             <div class="mb-3">
@@ -209,7 +206,9 @@
                 <!--BOTON GUARDA EVENTO-->
                 <button type="submit" class="btn_color">Guardar</button>
                 <!--BOTON VUELVE DASHBOARD-->
-                <a href="{{route('invitados.index' , $evento->id)}}" class="btn_secundario text-decoration-none">Volver</a>
+                @if(!empty($evento?->id))
+                <a href="{{ route('invitados.index', $evento->id) }}" class="btn_secundario text-decoration-none">Volver</a>
+                @endif
             </div>
         </div>
     </form>
@@ -253,5 +252,52 @@
                 }
             })
         })
+
+        //VEHICULO PROPIO MOSTRAR ETIQUETA
+
+        const boton_si_prop = document.getElementById('btn_si_prop');
+        const boton_no_prop = document.getElementById('btn_no_prop');
+        const etiquetaContainerProp = document.getElementById('etiqueta-container_prop');
+
+        function mostrar() {
+            if (boton_si_prop.checked) {
+                etiquetaContainerProp.style.display = "block";
+            } else {
+                etiquetaContainerProp.style.display = "none";
+            }
+        }
+
+        boton_si_prop.addEventListener('click', () => {
+            boton_no_prop.checked = false;
+            mostrar();
+        })
+
+        boton_no_prop.addEventListener('click', () => {
+            mostrar();
+        })
+
+        //VEHICULO  MOSTRAR ETIQUETA
+
+        const boton_si_emp = document.getElementById('btn_si_emp');
+        const boton_no_emp = document.getElementById('btn_no_emp');
+        const etiquetaContainerEmp = document.getElementById('etiqueta-container_emp');
+
+        function mostrarEmp() {
+            if (boton_si_emp.checked) {
+                etiquetaContainerEmp.style.display = "block";
+            } else {
+                etiquetaContainerEmp.style.display = "none";
+            }
+        }
+
+        boton_si_emp.addEventListener('click', () => {
+            boton_no_emp.checked = false;
+            mostrarEmp();
+        })
+
+        boton_no_emp.addEventListener('click', () => {
+            mostrarEmp();
+        })
+
     })
 </script>

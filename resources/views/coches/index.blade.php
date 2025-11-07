@@ -3,6 +3,18 @@
 <x-app-layout>
     <div class="py-12 fondo_principal">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 p-3">
+            <!---MENSAJES DE EXITO Y ERROR---->
+            @if(session('success') || session('error'))
+            <div class="position-fixed top-0 end-0 p-3" style="margin-top: 80px; z-index:1050;">
+                <div
+                    class="alert shadow alert-dismissible fade show 
+                {{ session('success') ? 'alert-success' : 'alert-danger' }}"
+                    role="alert">
+                    {{ session('success') ?? session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+            @endif
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <!--CONTENEDOR CARDS -->
                 <div class="container py-5">
@@ -27,7 +39,7 @@
                                 @if(isset($evento))
                                 <a href="{{ route('coches.create', $evento->id) }}" class="btn_color">Registro coche</a>
                                 @endif
-                                
+
                                 <a href="{{route('trazabilidad.index' , $evento->id)}}" class="btn_color">Trazabilidad Paradas</a>
                             </div>
                         </form>

@@ -5,55 +5,56 @@ namespace App\Http\Controllers;
 use App\Imports\InvitadosImport;
 use App\Models\Conductor;
 use App\Models\Evento;
-use App\Models\EventoConductor;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 
 class InvitadosController extends Controller
 {
     //FUNCION MUESTRA INVITADOS TABLA.
-    public function index($id)
+    public function index(Evento $evento)
     {
-        //Pasamos el id para buscar y recoger la informacion de cada evento.
-        $evento = Evento::find($id);
-        if (!$evento) {
-            return redirect()->back()->with('error', 'Evento no encontrado');
-        }
-        //Paginacion de 50.
         $invitados = $evento->invitados()->paginate(50);
-        //Me cuenta el total de invitados dentro de cada evento.
-        $total = $evento->invitados()->count();
 
-        //Contador de asistencia.
-        $asisten = $evento->invitados()->where('asiste', 1)->count();
-        $no_asiste = $evento->invitados()->where(function ($query) {
-            $query->where('asiste', 0)->orWhereNull('asiste');
-        })->count();
-        //Pasamos en el compact todo lo que vamos a mostrar.
-        return view('invitados.index', ['id' => $evento], compact('evento', 'invitados', 'total', 'asisten', 'no_asiste'));
+        $rel   = $evento->invitados();
+        $pivot = $rel->getTable(); //Recoge la informacion de la tabla junto a su relacion.
+
+        $total   = $rel->count();
+
+        // Fuera de closure podrías usar wherePivot, pero por consistencia usamos $pivot.col
+        $asisten = $evento->invitados()
+            ->where("$pivot.asiste", 1)
+            ->count();
+
+        $no_asiste = $evento->invitados()
+            ->where(function ($q) use ($pivot) {
+                $q->where("$pivot.asiste", 0)
+                    ->orWhereNull("$pivot.asiste"); // por si viene NULL
+            })
+            ->count();
+
+        return view('invitados.index', compact('evento', 'invitados', 'total', 'asisten', 'no_asiste'));
     }
 
     //FUNCION MUESTRA FORMULARIO CREAR.
-    public function create($id)
+    public function create(Evento $evento)
     {
-        //Muestra formulario de creacion para cada evento (crea un nuevo invitado).
-        $evento = Evento::find($id);
         return view('invitados.create', compact('evento'));
     }
 
     //FUNCION PARA CREAR INVITADO
     public function store(Request $request, $id)
     {
-        if (Conductor::where('dni', $request->dni)->exists()) {
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with('error', 'Invitado con DNI ' . $request->dni . ' ya existe.');
-        }
+        // --- Normaliza DNI: quita espacios y pasa a MAYÚSCULAS ---
+        $dniNormalizado = $request->filled('dni')
+            ? strtoupper(preg_replace('/\s+/', '', $request->dni))
+            : null;
 
-        // VALIDACIÓN
+        // Para que la validación y el guardado usen el normalizado
+        $request->merge(['dni' => $dniNormalizado]);
+
         $request->validate([
             'cif' => 'nullable',
             'nombre' => 'required',
@@ -61,44 +62,108 @@ class InvitadosController extends Controller
             'email' => 'required|email',
             'telefono' => 'nullable',
             'empresa' => 'nullable',
-            'vehiculo_prop' => 'nullable',
-            'vehiculo_emp' => 'nullable',
+            'vehiculo_prop' => 'nullable|in:si,no',
+            'vehiculo_emp' => 'nullable|in:si,no',
             'intolerancia' => 'nullable',
             'preferencia' => 'nullable',
             'carnet_caducidad' => 'required|date',
             'kam' => 'nullable',
-            'dni' => 'nullable|unique:conductor,dni',
-            'etiqueta' => 'required_if:vehiculo_prop,si',
+            'dni' => [
+                'required',
+                'string',
+                'max:20',
+                // ÚNICO dentro del mismo evento en la tabla pivot
+                Rule::unique('evento_conductor', 'dni')
+                    ->where(fn($q) => $q->where('evento_id', $id)),
+            ],
+            'etiqueta'   => 'nullable|required_if:vehiculo_prop,si',
+            'etiqueta_2' => 'nullable|required_if:vehiculo_emp,si',
             'proteccion_datos' => 'accepted'
         ]);
 
         try {
             $evento = Evento::findOrFail($id);
-            $invitado = new Conductor();
 
-            $invitado->fill($request->except('carnet'));
+            // (Opcional) Comprobación rápida con el normalizado, por si acaso
+            if ($dniNormalizado) {
+                $pivot = $evento->invitados()->getTable();
+                $yaEnEvento = $evento->invitados()
+                    ->wherePivot('dni', $dniNormalizado) // usar el DNI normalizado
+                    ->exists();
 
-            // Guardar carnet si se envía archivo
-            if ($request->hasFile('carnet')) {
-                $invitado->carnet = $request->file('carnet')->store('carnets', 'public');
+                if ($yaEnEvento) {
+                    return back()->withInput()->toast('error', 'Este DNI ya existe en este evento.');
+                }
             }
 
-            // Si tiene coche propio o empresa, guardar etiqueta
-            if ($request->vehiculo_prop === 'si' || $request->vehiculo_emp === 'si') {
-                $invitado->etiqueta = $request->etiqueta;
-            }
-
-            $invitado->save();
-
-            // Asociar al evento
-            EventoConductor::create([
-                'evento_id' => $evento->id,
-                'conductor_id' => $invitado->id,
+            // 1) Conductor base (reusar por DNI normalizado o crear)
+            $datosBase = $request->only([
+                'cif',
+                'nombre',
+                'apellido',
+                'email',
+                'telefono',
+                'empresa',
+                'dni',
+                'carnet_caducidad',
+                'vehiculo_prop',
+                'vehiculo_emp',
+                'intolerancia',
+                'preferencia',
+                'kam',
+                'etiqueta',
+                'etiqueta_2',
+                'proteccion_datos'
             ]);
 
-            return redirect()->route('invitados.index', $evento->id)->with('success', 'Invitado creado con éxito.');
+            $datosBase['dni'] = $dniNormalizado;
+
+            if ($request->hasFile('carnet')) {
+                $datosBase['carnet'] = $request->file('carnet')->store('carnets', 'public');
+            }
+
+            $datosBase['etiqueta'] = $request->vehiculo_prop === 'si' ? $request->etiqueta : null;
+
+            $datosBase['etiqueta_2'] = $request->vehiculo_emp === 'si' ? $request->etiqueta_2 : null;
+
+            $invitado = $dniNormalizado
+                ? Conductor::firstOrNew(['dni' => $dniNormalizado])
+                : new Conductor();
+
+            $invitado->fill($datosBase)->save();
+
+            // 2) Snapshot COMPLETO al pivot (usa el DNI normalizado)
+            $pivotData = [
+                'cif'               => $request->cif,
+                'nombre'            => $request->nombre,
+                'apellido'          => $request->apellido,
+                'email'             => $request->email,
+                'telefono'          => $request->telefono,
+                'empresa'           => $request->empresa,
+                'vehiculo_prop'     => $request->vehiculo_prop,
+                'vehiculo_emp'      => $request->vehiculo_emp,
+                'intolerancia'      => $request->intolerancia,
+                'preferencia'       => $request->preferencia,
+                'carnet'            => $request->hasFile('carnet') ? $datosBase['carnet'] : null,
+                'etiqueta'         => $request->vehiculo_prop === 'si' ? $request->etiqueta   : null,
+                'etiqueta_2'       => $request->vehiculo_emp  === 'si' ? $request->etiqueta_2 : null,
+                'kam'               => $request->kam,
+                'asiste'            => $request->boolean('asiste'),
+                'dni'               => $dniNormalizado, // <- aquí el normalizado
+                'proteccion_datos'  => $request->boolean('proteccion_datos'),
+                'carnet_caducidad'  => $request->carnet_caducidad,
+            ];
+
+            // 3) Relaciona sin duplicar y setea el pivot
+            $evento->invitados()->sync([
+                $invitado->id => $pivotData
+            ], false);
+
+            return redirect()->route('invitados.index', $evento->id)
+                ->toast('success', 'Invitado creado con exito.');
         } catch (\Exception $e) {
-            return redirect()->route('invitados.index', $id)->with('error', 'Error al crear invitado.');
+            return redirect()->route('invitados.index', $id)
+                ->toast('error', 'Error al crear invitado.');
         }
     }
 
@@ -124,122 +189,219 @@ class InvitadosController extends Controller
     }
 
     //FUNCION PARA MOSTRAR EL FORMULARIO DE EDITAR.
-    public function edit(int $id)
+    public function edit(Evento $evento, Conductor $invitado)
     {
-        //Busca el invitado dentro de cada evento creado.
-        $invitados = Conductor::find($id);
-        //Obtiene el evento asociado en la tabla evento conductor.
-        $eventoConductor = EventoConductor::where('conductor_id', $invitados->id)->first();
-        //Obtiene el id del evento si existe.
-        $eventoId = $eventoConductor ? $eventoConductor->evento_id : null;
+        $invitado = $evento->invitados()
+            ->withPivot([
+                'cif',
+                'nombre',
+                'apellido',
+                'email',
+                'telefono',
+                'empresa',
+                'vehiculo_prop',
+                'vehiculo_emp',
+                'intolerancia',
+                'preferencia',
+                'carnet',
+                'etiqueta',
+                'kam',
+                'asiste',
+                'dni',
+                'proteccion_datos',
+                'carnet_caducidad',
+                'confirmado',
+                'etiqueta_2',
+                'token'
+            ])
+            ->whereKey($invitado->getKey())
+            ->firstOrFail();
 
-        if (!$invitados) {
-            return redirect()->route('invitados.index')->with('error', 'No se encontro el invitado');
-        }
-        return view('invitados.edit', compact('invitados', 'eventoId'));
+        return view('invitados.edit', [
+            'eventoId' => $evento->id,
+            'invitados' => $invitado,   // mantengo tu nombre de variable para la vista
+            'pivot'    => $invitado->pivot,
+        ]);
     }
 
-    //FUNCION PARA EDITAR
-    public function update(Request $request, int $id)
+    /**
+     * Actualiza un invitado dentro de un evento específico.
+     */
+    public function update(Request $request, Evento $evento, Conductor $invitado)
     {
-        //Busca el invitado mediante su id
-        $invitados = Conductor::find($id);
-
-        if (!$invitados) {
-            return redirect()->route('invitados.index', ['id' => $id])->with('error', 'No se encontró el invitado.');
-        }
-
-        //Asocia el id del conductor al evento y lo recoge.
-        $eventoConductor = EventoConductor::where('conductor_id', $invitados->id)->first();
-
-        if (!$eventoConductor) {
-            return redirect()->route('invitados.index', ['id' => $id])->with('error', 'No se encontró el evento asociado al invitado.');
-        }
-
-        $eventoId = $eventoConductor->evento_id;
-
-        //Validacion
+        // 1) Validación
         $request->validate([
-            'cif' => 'nullable',
-            'nombre' => 'required',
-            'apellido' => 'required',
-            'email' => 'required',
-            'telefono' => 'nullable',
-            'empresa' => 'nullable',
-            'vehiculo_prop' => 'nullable',
-            'vehiculo_emp' => 'nullable',
-            'intolerancia' => 'nullable',
-            'preferencia' => 'nullable',
-            'carnet_caducidad' => 'required',
-            'kam' => 'nullable',
-            'dni' => 'nullable',
-            'etiqueta' => 'required_if:vehiculo_prop,si',
+            'cif'               => 'nullable|string|max:50',
+            'nombre'            => 'required|string|max:255',
+            'apellido'          => 'required|string|max:255',
+            'email'             => 'required|email|max:255',
+            'telefono'          => 'nullable|string|max:50',
+            'empresa'           => 'nullable|string|max:255',
+            'vehiculo_prop'     => 'nullable|in:si,no',
+            'vehiculo_emp'      => 'nullable|in:si,no',
+            'intolerancia'      => 'nullable|string|max:255',
+            'preferencia'       => 'nullable|string|max:255',
+            'carnet_caducidad'  => 'required|date',
+            'kam'               => 'nullable|string|max:255',
+            'dni'               => 'nullable|string|max:20',
+            'etiqueta'          => 'required_if:vehiculo_prop,si|required_if:vehiculo_emp,si',
+            'proteccion_datos'  => 'nullable|boolean',
+            'asiste'            => 'nullable|boolean',
+            'carnet'            => 'nullable|file|mimes:jpg,png,pdf|max:2048',
         ]);
 
         try {
-            $invitados->cif = $request->cif;
-            $invitados->nombre = $request->nombre;
-            $invitados->apellido = $request->apellido;
-            $invitados->email = $request->email;
-            $invitados->telefono = $request->telefono;
-            $invitados->empresa = $request->empresa;
-            $invitados->vehiculo_prop = $request->vehiculo_prop;
-            $invitados->vehiculo_emp = $request->vehiculo_emp;
-            $invitados->intolerancia = $request->intolerancia;
-            $invitados->preferencia = $request->preferencia;
-            $invitados->carnet_caducidad = $request->carnet_caducidad;
-            $invitados->kam = $request->kam;
-            $invitados->dni = $request->dni;
+            // 2) Verifica que el invitado pertenece a este evento (y carga el pivot correcto)
+            $invitadoEvento = $evento->invitados()
+                ->whereKey($invitado->getKey())
+                ->firstOrFail();
 
-            //Guarda el valor de uno o del otro por si esta marcado.
-            if ($request->vehiculo_prop === 'si' || $request->vehiculo_emp === 'si') {
-                $invitados->etiqueta = $request->etiqueta;
+            // 3) Alias de relación y nombre de tabla pivot (evita escribir literal)
+            $rel   = $evento->invitados();
+            $pivot = $rel->getTable(); // debería ser "evento_conductor"
+
+            // 4) Evitar duplicado de DNI dentro del mismo evento (si viene DNI)
+            if ($request->filled('dni')) {
+                $dniDuplicado = $evento->invitados()
+                    ->wherePivot('dni', $request->dni)
+                    ->where("$pivot.conductor_id", '<>', $invitado->id) // apunta al pivot, no al modelo
+                    ->exists();
+
+                if ($dniDuplicado) {
+                    return redirect()
+                        ->route('invitados.index', $evento)
+                        ->toast('error', 'Ya existe este DNI en este evento.');
+                }
             }
 
-            $invitados->save();
+            // 5) Actualiza datos base del modelo Conductor (fuera del pivot)
+            $invitado->fill($request->only([
+                'cif',
+                'nombre',
+                'apellido',
+                'email',
+                'telefono',
+                'empresa',
+                'dni',
+                'carnet_caducidad',
+                'vehiculo_prop',
+                'vehiculo_emp',
+                'intolerancia',
+                'preferencia',
+                'kam',
+                'etiqueta',
+                'etiqueta_2',
+                'proteccion_datos'
+            ]))->save();
 
-            return redirect()->route('invitados.index', ['id' => $eventoId])->with('success', 'Invitado actualizado con éxito.');
-        } catch (Exception $e) {
-            return redirect()->route('invitados.index', ['id' => $eventoId])->with('error', 'Error al actualizar el invitado.');
+            // 6) Prepara payload de actualización del PIVOT
+            $pivotData = [
+                'cif'               => $request->cif,
+                'nombre'            => $request->nombre,
+                'apellido'          => $request->apellido,
+                'email'             => $request->email,
+                'telefono'          => $request->telefono,
+                'empresa'           => $request->empresa,
+                'vehiculo_prop'     => $request->vehiculo_prop,
+                'vehiculo_emp'      => $request->vehiculo_emp,
+                'intolerancia'      => $request->intolerancia,
+                'preferencia'       => $request->preferencia,
+                'etiqueta'         => ($request->vehiculo_prop === 'si') ? $request->etiqueta   : null,
+                'etiqueta_2'       => ($request->vehiculo_emp  === 'si') ? $request->etiqueta_2 : null,
+                'kam'               => $request->kam,
+                'asiste'            => $request->boolean('asiste'),           // true/false -> 1/0 al guardar
+                'dni'               => $request->dni,
+                'proteccion_datos'  => $request->boolean('proteccion_datos'), // true/false -> 1/0
+                'carnet_caducidad'  => $request->carnet_caducidad,
+            ];
+
+            // 7) Si suben carnet, súbelo y guarda la ruta en el pivot
+            if ($request->hasFile('carnet')) {
+                $pivotData['carnet'] = $request->file('carnet')->store('carnets', 'public');
+            }
+
+            // 8) Actualiza la fila del PIVOT para este invitado en este evento
+            $evento->invitados()->updateExistingPivot($invitado->id, $pivotData);
+
+            // 9) Vuelve al listado con éxito
+            return redirect()
+                ->route('invitados.index', $evento)
+                ->toast('success', 'Invitado actualizado con exito.');
+        } catch (\Exception $e) {
+            Log::error('Error al actualizar invitado', [
+                'error'       => $e->getMessage(),
+                'invitado_id' => $invitado->id ?? null,
+                'evento_id'   => $evento->id ?? null,
+            ]);
+
+            return redirect()
+                ->route('invitados.index', $evento)
+                ->toast('error', 'Error al actualizar el invitado.');
         }
     }
 
     //FUNCION PARA FILTRAR BUSQUEDA
-    public function show(Request $request, int $id)
+    public function show(Request $request, Evento $evento)
     {
-        //Recoge informacion del input
-        $query = $request->input('buscador');
-        //Buscamos y recogemos datos del evento.
-        $evento = Evento::find($id);
+        $query = trim((string) $request->input('buscador', ''));
 
-        $invitados = $evento->invitados()->where(function ($q) use ($query) {
-            $q->where('empresa', 'like', "%{$query}%")
-                ->orWhere('cif', 'like', "%{$query}%")
-                ->orWhere('nombre', 'like', "%{$query}%")
-                ->orWhere('apellido', 'like', "%{$query}%")
-                ->orWhere('email', 'like', "%{$query}%")
-                ->orWhere('telefono', 'like', "%{$query}%")
-                ->orWhere('kam', 'like', "%{$query}%");
-        })->paginate(6) //Paginacion de 6 por pantalla (busqueda)
-            //Mantiene la paginacion aun realizando el filtrado.
+        $rel   = $evento->invitados();
+        $pivot = $rel->getTable(); // nombre de la tabla pivot
+
+        $filtro = function ($q) use ($pivot, $query) {
+            $q->where("$pivot.empresa",   'like', "%{$query}%")
+                ->orWhere("$pivot.cif",      'like', "%{$query}%")
+                ->orWhere("$pivot.nombre",   'like', "%{$query}%")
+                ->orWhere("$pivot.apellido", 'like', "%{$query}%")
+                ->orWhere("$pivot.email",    'like', "%{$query}%")
+                ->orWhere("$pivot.telefono", 'like', "%{$query}%")
+                ->orWhere("$pivot.kam",      'like', "%{$query}%");
+        };
+
+        $invitados = $rel
+            ->where($filtro)
+            ->paginate(6)
             ->appends(['buscador' => $query]);
 
-        $total = $invitados->total(); //Total de invitados por evento.
-        return view('invitados.index', compact('invitados', 'total', 'evento'));
+        $total = $evento->invitados()->where($filtro)->count();
+
+        $asisten = $evento->invitados()
+            ->where($filtro)
+            ->where("$pivot.asiste", 1)
+            ->count();
+
+        $no_asiste = $evento->invitados()
+            ->where($filtro)
+            ->where(function ($q) use ($pivot) {
+                $q->where("$pivot.asiste", 0)
+                    ->orWhereNull("$pivot.asiste");
+            })
+            ->count();
+
+        return view('invitados.index', compact('invitados', 'total', 'evento' , 'asisten' , 'no_asiste'));
     }
 
-    //FUNCION PARA MARCAR LA ASISTENCIA
-    public function actualizarAsistencia(Request $request, $id)
+    public function actualizarAsistencia(Request $request, Evento $evento, Conductor $invitado)
     {
-        //Busca el invitado por su id y recoge la asitencia.
-        $invitado = Conductor::find($id);
-        //Si se marca estara en la posicion 1 (true) o 0 (false)
-        $invitado->asiste = $request->asiste ? 1 : 0;
-        //Guarda el invitado y su asistencia.
-        $invitado->save();
+        $evento->invitados()->updateExistingPivot($invitado->id, [
+            'asiste' => $request->boolean('asiste') ? 1 : 0,
+        ]);
+
+        $rel   = $evento->invitados();
+        $pivot = $rel->getTable(); // "evento_conductor"
+
+        $total    = $rel->count();
+        $asisten  = $evento->invitados()->where("$pivot.asiste", 1)->count();
+        $no_asiste = $evento->invitados()
+            ->where(function ($q) use ($pivot) {
+                $q->where("$pivot.asiste", 0)
+                    ->orWhereNull("$pivot.asiste");
+            })
+            ->count();
 
         return response()->json([
-            'success'  => true
+            'success' => true,
+            'totals'  => compact('total', 'asisten', 'no_asiste'),
         ]);
     }
 
@@ -257,7 +419,7 @@ class InvitadosController extends Controller
 
             return redirect()
                 ->route('invitados.index', $evento->id)
-                ->with('success', 'Invitados importados correctamente');
+                ->toast('success', 'Invitados importados correctamente');
         } catch (Exception $e) {
             return redirect()
                 ->back()

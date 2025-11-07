@@ -16,6 +16,7 @@
       - [`create.blade.php`](#createbladephp)
     - [🧪 Vista con código JS](#-vista-con-código-js-1)
       - [`edit.blade.php`](#editbladephp)
+      - [`modal_qr.blade.php`](#modal_qrbladephp)
       - [VISTAS INVITADOS](#vistas-invitados)
       - [`index.blade.php`](#indexbladephp)
     - [🧪 Vista con código JS](#-vista-con-código-js-2)
@@ -185,8 +186,42 @@ A continuación se describe cómo está estructurado el proyecto según el patr�
 
 ```php
 public function invitados()
+	{
+    return $this->belongsToMany(Conductor::class, 'evento_conductor', 'evento_id', 'conductor_id')
+        ->withPivot([
+            'cif',
+            'nombre',
+            'apellido',
+            'email',
+            'telefono',
+            'empresa',
+            'vehiculo_prop',
+            'vehiculo_emp',
+            'intolerancia',
+            'preferencia',
+            'carnet',
+            'etiqueta',
+            'kam',
+            'asiste',
+            'dni',
+            'proteccion_datos',
+            'carnet_caducidad',
+            'confirmado',
+            'token',
+            'etiqueta_2'
+        ]);
+}
+
+/**
+* La función `booted` en PHP asigna un `public_id` único a un evento si está vacío, utilizando el evento `creating` de Laravel.
+*/
+protected static function booted()
 {
-    return $this->belongsToMany(Conductor::class, 'evento_conductor', 'evento_id', 'conductor_id');
+    static::creating(function ($evento) {
+        if (empty($evento->public_id)) {
+            $evento->public_id = (string) \Illuminate\Support\Str::uuid();
+        }
+    });
 }
 
 public function marcas()
@@ -217,6 +252,17 @@ public function timings()
 public function banners()
 {
     return $this->hasMany(Banner::class, 'evento_id', 'id');
+}
+/**
+* La función `getRouteKeyName()` en PHP devuelve el nombre de la clave de ruta 'public_id'.
+* 
+* @return El método `getRouteKeyName()` devuelve la cadena `'public_id'`. Este método se utiliza en
+* Laravel para especificar el atributo que se debe usar al recuperar un modelo por su clave de ruta. En
+* este caso, la clave de ruta para el modelo será el atributo `public_id`.
+*/
+public function getRouteKeyName()
+{
+    return 'public_id';
 }
 ```
 
@@ -255,8 +301,35 @@ public function banners()
 ```php
 public function eventos()
 	{
-		return $this->belongsToMany(Evento::class, 'evento_conductor', 'conductor_id', 'evento_id');
+		return $this->belongsToMany(Evento::class, 'evento_conductor', 'conductor_id', 'evento_id')
+			->withPivot([
+				'cif',
+				'nombre',
+				'apellido',
+				'email',
+				'telefono',
+				'empresa',
+				'vehiculo_prop',
+				'vehiculo_emp',
+				'intolerancia',
+				'preferencia',
+				'carnet',
+				'etiqueta',
+				'kam',
+				'asiste',
+				'dni',
+				'proteccion_datos',
+				'carnet_caducidad',
+				'confirmado',
+				'token',
+				'etiqueta_2'
+			]);
 	}
+
+public function conductores()
+{
+    return $this->belongsToMany(Conductor::class, 'evento_conductor', 'evento_id', 'conductor_id');
+}
 ```
 
 - **EventoConductor.php**
@@ -625,7 +698,11 @@ A continuación, se muestra un ejemplo de cómo se puede incluir una funcion en 
         </select>
     </div>
 ```
+#### `modal_qr.blade.php`
 
+- **Propósito**: Pagina donde se encuentra el modal del codigo QR..
+- **Acciones**: La vista modal_qr esta comentada para que puedas leer el contenido de cada una de sus partes.
+- **Extras**: La vista cuenta con comentarios donde se especifica concretamente cada parte del codigo , de tal manera que se vea mas legible.
 
 #### VISTAS INVITADOS
 
@@ -722,42 +799,57 @@ A continuación, se muestra un ejemplo de cómo se puede seleccionar en un CHECK
 
 
     //FUNCION CHECKBOX ASISTENCIA
-    function actualizarAsistencia(id, valor) { //Pasaremos id como valor y recogeremos en la llamada un dato en este caso valor.
-        fetch(`/invitados/${id}/asistencia`, { //Ruta para la solicitud fetch.
-                //Pasamos el metodo.
-                method: 'POST',
-                //Recogemos datos y el token csrf del formulario.
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                //Cuerpo , pasamos el valor a string.
-                body: JSON.stringify({
-                    asiste: valor
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                //Si no entra en la paticion.
-                if (!data.success) {
-                    Swal.fire({
-                        title: "Error al actualizar asistencia.",
-                        icon: "warning",
-                        iconColor: "#05072e",
-                        confirmButtonColor: "#05072e"
-                    })
+    document.addEventListener('DOMContentLoaded', () => {
+        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        document.querySelectorAll('.js-asiste').forEach(chk => {
+            chk.addEventListener('change', async (e) => {
+                const el = e.currentTarget;
+                const eventoId = el.dataset.eventoId;
+                const invitadoId = el.dataset.invitadoId;
+                const valor = el.checked;
+
+                try {
+                    const res = await fetch(`/eventos/${eventoId}/invitados/${invitadoId}/asistencia`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': token
+                        },
+                        body: JSON.stringify({
+                            asiste: valor
+                        })
+                    });
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+                    const data = await res.json();
+                    if (!data.success) throw new Error('Respuesta inválida');
+
+                    // refresca contadores
+                    const t = document.getElementById('total-span');
+                    const a = document.getElementById('asisten-span');
+                    const na = document.getElementById('noasiste-span');
+                    if (data.totals) {
+                        if (t) t.textContent = data.totals.total;
+                        if (a) a.textContent = data.totals.asisten;
+                        if (na) na.textContent = data.totals.no_asiste;
+                    }
+                } catch (err) {
+                    el.checked = !valor; // revierte
+                    if (window.Swal) {
+                        Swal.fire({
+                            title: "Error al actualizar asistencia.",
+                            text: err.message || "",
+                            icon: "warning",
+                            confirmButtonColor: "#05072e"
+                        });
+                    } else {
+                        alert('Error al actualizar asistencia');
+                    }
                 }
-            })
-            //Error
-            .catch(() => {
-                Swal.fire({
-                    title: "Error de conexion.",
-                    icon: "warning",
-                    iconColor: "#05072e",
-                    confirmButtonColor: "#05072e"
-                })
-            })
-    }
+            });
+        });
+    });
 ```
 
 #### `create.blade.php`
@@ -768,18 +860,36 @@ A continuación, se muestra un ejemplo de cómo se puede seleccionar en un CHECK
 
 
 ```blade
-    <!---VEHICULO PROPIO-->
-    <label for="vehiculo_prop" class="form-label fw-bold" style="margin-right: 2%">¿Cuenta con un vehiculo propio?</label>
-     <input id="btn_si" class="form-check-input" type="radio" value="si" name="vehiculo_prop">
-     <input id="btn_no" class="form-check-input" type="radio" value="no" name="vehiculo_prop">
+    <!---VEHICULO PROPIO--->
+    <div class="mb-5 col-md-8">
+        <label for="vehiculo_prop" class="form-label fw-bold" style="margin-right: 2%">¿Cuenta con vehiculo de uso propio?</label>
+        <div class="form-check">
+            <input id="btn_si_prop" class="form-check-input" type="radio" value="si" name="vehiculo_prop" {{ old('vehiculo_prop') == 'si' ? 'checked' : '' }}>
+            <label class="form-check-label" for="vehiculo_prop">Sí</label>
+        </div>
+        <div class="form-check">
+            <input id="btn_no_prop" class="form-check-input" type="radio" value="no" name="vehiculo_prop" {{ old('vehiculo_prop') == 'no' ? 'checked' : '' }}>
+            <label class="form-check-label" for="vehiculo_prop">No</label>
+        </div>
+    </div>
 
-    <!----ETIQUETA (MOSTRAR)----->
-    <div id="etiqueta-container" style="display: none;" class="mx-md-2">
+    <!----ETIQUETA 1  (MOSTRAR)----->
+    <div id="etiqueta-container_prop" style="display: none;" class="mx-md-2">
+    <!----ETIQUETA 2  (MOSTRAR)----->
+    <div id="etiqueta-container_emp" style="display: none;" class="mx-md-2">
 
     <!---VEHICULO EMPRESA--->
-    <label for="vehiculo_emp" class="form-label fw-bold">¿Cuenta con un vehiculo de empresa?</label>
-    <input id="btn_si_emp" class="form-check-input" type="radio" value="si" name="vehiculo_emp">
-    <input id="btn_no_emp" class="form-check-input" type="radio" value="no" name="vehiculo_emp">
+    <div class="mb-5 col-md-8">
+        <label for="vehiculo_emp" class="form-label fw-bold" style="margin-right: 2%;">¿Cuenta con un vehiculo de empresa?</label>
+        <div class="form-check">
+            <input id="btn_si_emp" class="form-check-input" type="radio" value="si" name="vehiculo_emp" {{ old('vehiculo_emp') == 'si' ? 'checked' : '' }}>
+            <label class="form-check-label" for="btn_si_emp">Sí</label>
+        </div>
+        <div class="form-check">
+            <input id="btn_no_emp" class="form-check-input" type="radio" value="no" name="vehiculo_emp" {{ old('vehiculo_emp') == 'no' ? 'checked' : '' }}>
+            <label class="form-check-label" for="btn_no_emp">No</label>
+        </div>
+    </div>
 ```
 
 ### 🧪 Vista con código JS
@@ -788,39 +898,27 @@ A continuación, se muestra un ejemplo de cómo se puede seleccionar en un CHECK
 
 ```blade
     <!---JS ETIQUETA--->
-    <script>
-        const boton_si = document.getElementById('btn_si');//Vehiculo propio
-        const boton_no = document.getElementById('btn_no');//Vehiculo propio
-        const boton_si_emp = document.getElementById('btn_si_emp');//Vehiculo empresa
-        const boton_no_emp = document.getElementById('btn_no_emp');//Vehiculo empresa
-        const etiquetaContainer = document.getElementById('etiqueta-container');//Etiqueta contenedor
+     <script>
+        const boton_si_prop = document.getElementById('btn_si_prop');
+        const boton_no_prop = document.getElementById('btn_no_prop');
+        const etiquetaContainerProp = document.getElementById('etiqueta-container_prop');
 
-        //Funcion para mostrar y ocultar contenedor etiqueta.
         function mostrar() {
-            if(boton_si.checked || boton_si_emp.checked){
-                etiquetaContainer.style.display = "block";
-            }else{
-                etiquetaContainer.style.display = "none";
+            if (boton_si_prop.checked) {
+                etiquetaContainerProp.style.display = "block";
+            } else {
+                etiquetaContainerProp.style.display = "none";
             }
         }
-        
-        boton_si.addEventListener('click' , () =>{
-            boton_no_emp.checked = true;
+
+        boton_si_prop.addEventListener('click', () => {
+            boton_no_emp.checked = false;
             mostrar();
         })
 
-        boton_si_emp.addEventListener('click', () =>{
-            boton_no.checked = true;
-            mostrar();
-        })
-
-        boton_no.addEventListener('click' , () =>{
+        boton_no_prop.addEventListener('click', () => {
             mostrar();
         });
-
-        boton_no_emp.addEventListener('click' , () =>{
-            mostrar();
-        })
     </script>
 ```
 
@@ -1196,18 +1294,19 @@ En este proyecto, los controladores siguen el patrón MVC proporcionado por Lara
 
 ### 🧩 Métodos principales
 
-| Método                           | Descripción                                                                    |
-| -------------------------------- | ------------------------------------------------------------------------------ |
-| `index()`                        | Muestra una vista con la lista de eventos paginados, tipos de evento y marcas. |
-| `create()`                       | Muestra el formulario.                                                         |
-| `store()`                        | Guarda un nuevo evento en la base de datos.                                    |
-| `edit($id)`                      | Muestra el formulario para editar un evento existente.                         |
-| `update(Request $request, $id)`  | Actualiza la información de un evento.                                         |
-| `delete($id)`                    | Elimina un evento.                                                             |
-| `show(Request $request)`         | Busca por todos los campos en el buscador.                                     |
-| `filtrarFecha(Request $request)` | Filtra por fecha de inicio y fehca de fin (rango).                             |
-| `exportarInvitado($evento_id)`   | Exporta en documento Excel los invitados de cada evento.                       |
-
+| Método                                              | Descripción                                                                    |
+| --------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `index()`                                           | Muestra una vista con la lista de eventos paginados, tipos de evento y marcas. |
+| `create()`                                          | Muestra el formulario.                                                         |
+| `store()`                                           | Guarda un nuevo evento en la base de datos.                                    |
+| `edit($id)`                                         | Muestra el formulario para editar un evento existente.                         |
+| `update(Request $request, $id)`                     | Actualiza la información de un evento.                                         |
+| `delete($id)`                                       | Elimina un evento.                                                             |
+| `show(Request $request)`                            | Busca por todos los campos en el buscador.                                     |
+| `filtrarFecha(Request $request)`                    | Filtra por fecha de inicio y fehca de fin (rango).                             |
+| `exportarInvitado($evento_id)`                      | Exporta en documento Excel los invitados de cada evento.                       |
+| `conductorForm(Evento $evento)`                     | Muestra formulario que usaremos para el registro de sin LOGIN.                 |
+| `conductorStore(Request $request , Evento $evento)` | Funcion que se usara para el registro de los conductores sin LOGIN.            |
 
 
 #### RUTAS EventosController 
@@ -1224,6 +1323,11 @@ En este proyecto, los controladores siguen el patrón MVC proporcionado por Lara
 
     //EXPORTAR EXCEL
     Route::get('/eventos/{evento_id}/exportar-invitados', [EventosController::class, 'exportarInvitados'])->name('eventos.exportarInvitados');
+
+    //RUTAS PARA REGISTRO FORMULARIO
+    Route::get('/eventos/{evento:public_id}/conductor/registro', [EventosController::class, 'conductorForm'])->name('conductor.registro');
+
+    Route::post('/eventos/{evento:public_id}/conductor/registro/store', [EventosController::class, 'conductorStore'])->name('conductor.registro.store');
 ```
 
 #### Datos extras funcion exportarInvitados():
@@ -1283,34 +1387,43 @@ Funciones para poder exportar el archivo en Excel:
 
 ### 🧩 Métodos principales
 
-| Método                          | Descripción                                              |
-| ------------------------------- | -------------------------------------------------------- |
-| `index()`                       | Muestra una vista con la lista de invitados paginados.   |
-| `create()`                      | Muestra el formulario.                                   |
-| `store()`                       | Guarda un nuevo invitado en la base de datos.            |
-| `edit($id)`                     | Muestra el formulario para editar un invitado existente. |
-| `update(Request $request, $id)` | Actualiza la información de un invitado.                 |
-| `delete($id)`                   | Elimina un invitado.                                     |
-| `show(Request $request)`        | Busca por todos los campos en el buscador.               |
-| `actualizarAsistencia($id)`     | Marca en el chekbox y guarda si el invitado asiste o no. |
-| `importarInvitados($id)`        | Importa la lista de invitados.                           |
+| Método                                                                          | Descripción                                              |
+| ------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| `index(Evento $evento)`                                                         | Muestra una vista con la lista de invitados paginados.   |
+| `create(Evento $evento)`                                                        | Muestra el formulario.                                   |
+| `store(Request $request , $id)`                                                 | Guarda un nuevo invitado en la base de datos.            |
+| `edit(Evento $evento , Conductor $invitado)`                                    | Muestra el formulario para editar un invitado existente. |
+| `update(Request $request, Evento $evento , Conductor $invitado)`                | Actualiza la información de un invitado.                 |
+| `delete($id)`                                                                   | Elimina un invitado.                                     |
+| `show(Request $request , Evento $evento)`                                       | Busca por todos los campos en el buscador.               |
+| `actualizarAsistencia(Request $request , Evento $evento , Conductor $invitado)` | Marca en el chekbox y guarda si el invitado asiste o no. |
+| `importarInvitados(Request $reuqest , $id)`                                     | Importa la lista de invitados.                           |
 
 #### RUTAS InvitadosController 
 
 ``` php
   /***CRUD INVITADOS(CONDUCTORES) */
-    Route::get('/invitados/{id}', [InvitadosController::class, 'index'])->name('invitados.index');
-    Route::get('/invitados/create/{id}', [InvitadosController::class, 'create'])->name('invitados.create');
-    Route::post('/invitados/store/{id}', [InvitadosController::class, 'store'])->name('invitados.store');
-    Route::delete('/invitados/delete/{id}', [InvitadosController::class, 'delete'])->name('invitados.delete');
-    Route::get('/invitados/edit/{id}', [InvitadosController::class, 'edit'])->name('invitados.edit');
-    Route::put('/invitados/update/{id}', [InvitadosController::class, 'update'])->name('invitados.update');
+    Route::prefix('eventos/{evento:id}')->group(function () {
+        Route::get('invitados', [InvitadosController::class, 'index'])->name('invitados.index');
+        Route::get('invitados/create', [InvitadosController::class, 'create'])->name('invitados.create');
+        Route::post('invitados', [InvitadosController::class, 'store'])->name('invitados.store');
 
-    Route::get('/invitados/show/{id}', [InvitadosController::class, 'show'])->name('invitados.show');
-    Route::post('/invitados/{id}/asistencia', [InvitadosController::class, 'actualizarAsistencia']);
+        Route::get('invitados/buscar', [InvitadosController::class, 'show'])->name('invitados.show');
+        Route::get('invitados/{invitado}/edit', [InvitadosController::class, 'edit'])
+            ->name('invitados.edit');
+        Route::put('invitados/{invitado}', [InvitadosController::class, 'update'])->name('invitados.update');
+        Route::delete('invitados/delete', [InvitadosController::class, 'delete'])->name('invitados.delete');
 
-    //IMPORTAR INVITADOS 
-    Route::post('/invitados/importar/{id}', [InvitadosController::class, 'importarInvitados'])->name('invitados.importar');
+        // Acciones específicas sobre el pivot
+        Route::post(
+            'invitados/{invitado}/asistencia',
+            [InvitadosController::class, 'actualizarAsistencia']
+        )->name('invitados.asistencia');
+
+        // Import/Export ligados al evento> [InvitadosController::class, 'importarInvitados'])->name('invitados.importar');
+        Route::get('invitados/exportar', [InvitadosController::class, 'exportarInvitados'])->name('invitados.exportar');
+        Route::post('invitados/importar', [InvitadosController::class, 'importarInvitados'])->name('invitados.importar');
+    });
 ```
 
 ### `CochesController`

@@ -3,14 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Exports\InvitadosExport;
+use App\Models\Conductor;
 use App\Models\Evento;
 use App\Models\EventosMarca;
 use App\Models\Marca;
 use App\Models\TipoEvento;
 use Exception;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 
 class EventosController extends Controller
@@ -34,7 +40,7 @@ class EventosController extends Controller
                 $selectIds = explode(',', $selectString); // Convierte la cadena en un array
                 $evento->marcasSeleccionadas = Marca::whereIn('id', $selectIds)->get(); // Filtrar las marcas por idy las asocia.
             }
-            
+
             //Retorna a la vista dashboard con los datos que se han recopilado.
             return view('dashboard', compact('eventos', 'tipo_evento', 'total', 'marcas'));
         } else {
@@ -42,7 +48,6 @@ class EventosController extends Controller
             return view('./auth/login');
         }
     }
-
 
     //MOSTRAR VENTANA CREAR EVENTO
     public function create()
@@ -112,9 +117,9 @@ class EventosController extends Controller
                 $eventos_marca->save();
             }
 
-            return redirect()->route('eventos.index')->with('success', 'Evento creado con éxito');
+            return redirect()->route('eventos.index')->toast('success', 'Evento creado con exito');
         } catch (Exception $e) {
-            return redirect()->route('eventos.index')->with('error', 'Error al crear evento');
+            return redirect()->route('eventos.index')->toast('error', 'Error al crear evento');
         }
     }
 
@@ -211,9 +216,9 @@ class EventosController extends Controller
             // Sincroniza las marcas seleccionadas
             $evento->marcas()->sync($request->marca);
 
-            return redirect()->route('eventos.index')->with('success', 'Evento actualizado con éxito');
+            return redirect()->route('eventos.index')->toast('success', 'Evento actualizado con exito');
         } catch (Exception $e) {
-            return redirect()->route('eventos.index')->with('error', 'Error al actualizar el evento');
+            return redirect()->route('eventos.index')->toast('error', 'Error al actualizar el evento');
         }
     }
 
@@ -226,7 +231,7 @@ class EventosController extends Controller
 
         //Carga los eventos con su marca relacionada.
         $eventos = Evento::with('marcas')
-        //Si existe el buscador $query se realiza el filtrado.
+            //Si existe el buscador $query se realiza el filtrado.
             ->when($query, function ($q) use ($query) {
                 $q->where(function ($subQ) use ($query) {
                     $subQ->where('nombre', 'like', "%{$query}%")
@@ -289,5 +294,122 @@ class EventosController extends Controller
         $evento = Evento::find($evento_id);
         //Devuelve un enlace de descarga en formato Excel para poder ver los invitados de ese evento.
         return Excel::download(new InvitadosExport($evento), 'invitados_evento_' . $evento_id . '.xlsx');
+    }
+
+    //MUESTRA FORMULARIO QUE USAREMOS PARA EL REGISTRO DE LOS CONDUCTORES SIN LOGIN.
+    public function conductorForm(Evento $evento)
+    {
+        return view('invitados.update', compact('evento'));
+    }
+
+    //FUNCION QUE SE USARA PARA REGISTRAR AL CONDUCTOR SIN LOGIN.
+    public function conductorStore(Request $request, Evento $evento)
+    {
+        // 0) Honeypot anti-bots
+        if (!empty($request->input('website'))) {
+            return back()->with('error', 'Solicitud no válida.')->withInput();
+        }
+
+        // 1) Validación básica (sin unicidad por evento aún)
+        $data = $request->validate([
+            'nombre'            => ['required', 'string', 'max:150'],
+            'apellido'          => ['required', 'string', 'max:150'],
+            'email'             => ['required', 'email', 'max:150'],
+            'telefono'          => ['required', 'string', 'max:50'],
+            'empresa'           => ['required', 'string', 'max:150'],
+            'cif'               => ['required', 'string', 'max:50'],
+            'dni'               => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('evento_conductor', 'dni')
+                    ->where(fn($q) => $q->where('evento_id', $evento->id))
+            ],
+            'kam' => ['nullable', 'string', 'max:255'],
+            'vehiculo_prop'     => ['nullable', 'in:si,no'],
+            'vehiculo_emp'      => ['nullable', 'in:si,no'],
+            'etiqueta'          => ['nullable', 'in:B,C,ECO,0'],
+            'etiqueta_2'          => ['nullable', 'in:B,C,ECO,0'],
+            'carnet_caducidad'  => ['required', 'date'],
+            'intolerancia'      => ['required', 'string', 'max:255'],
+            'preferencia'       => ['required', 'in:carne,pescado'],
+            'proteccion_datos'  => ['accepted'],
+            'website'           => ['nullable', 'string', 'max:1'],
+        ]);
+
+        try {
+            DB::transaction(function () use ($data, $evento) {
+                $conductor = Conductor::create(
+                    [
+                        'nombre'           => $data['nombre'],
+                        'apellido'         => $data['apellido'],
+                        'email'            => $data['email'],
+                        'telefono'         => $data['telefono'],
+                        'empresa'          => $data['empresa'],
+                        'cif'              => $data['cif'],
+                        'vehiculo_prop'    => $data['vehiculo_prop'] ?? null,
+                        'vehiculo_emp'     => $data['vehiculo_emp'] ?? null,
+                        'etiqueta'         => $data['etiqueta'] ?? null,
+                        'etiqueta_2'       => $data['etiqueta_2'] ?? null,
+                        'kam'              => $data['kam'] ?? null,
+                        'carnet_caducidad' => $data['carnet_caducidad'],
+                        'intolerancia'     => $data['intolerancia'],
+                        'preferencia'      => $data['preferencia'],
+                        'dni' => $data['dni'],
+                        'proteccion_datos' => (bool)($data['proteccion_datos'] ?? false),
+                    ]
+                );
+
+                //Validación de unicidad en la pivote: (evento_id, conductor_id)
+                Validator::make(
+                    ['conductor_id' => $conductor->id],
+                    [
+                        'conductor_id' => [
+                            Rule::unique('evento_conductor', 'conductor_id')
+                                ->where(fn($q) => $q->where('evento_id', $evento->id)),
+                        ],
+                    ],
+                    ['conductor_id.unique' => 'Este DNI ya está registrado para este evento.']
+                )->validate();
+
+                //Inserta relación en pivote (idempotente)
+                //Asegúrate de tener las relaciones belongsToMany definidas
+                $evento->invitados()->syncWithoutDetaching([$conductor->id]);
+
+                $evento->invitados()->updateExistingPivot($conductor->id, [
+                    'cif'               => $data['cif'],
+                    'nombre'            => $data['nombre'],
+                    'apellido'          => $data['apellido'],
+                    'email'             => $data['email'],
+                    'telefono'          => $data['telefono'],
+                    'empresa'           => $data['empresa'],
+                    'vehiculo_prop'     => $data['vehiculo_prop'] ?? null,
+                    'vehiculo_emp'      => $data['vehiculo_emp'] ?? null,
+                    'etiqueta'          => $data['etiqueta'] ?? null,
+                    'etiqueta_2'        => $data['etiqueta_2'] ?? null,
+                    'kam'               => $data['kam'] ?? null,
+                    'intolerancia'      => $data['intolerancia'],
+                    'preferencia'       => $data['preferencia'],
+                    'proteccion_datos'  => (bool)($data['proteccion_datos'] ?? false),
+                    'carnet_caducidad'  => $data['carnet_caducidad'],
+                    'dni'               => $data['dni'],
+                ]);
+            });
+
+            return redirect()
+                ->route('emails.agradecimiento')
+                ->with('success', 'Registrado correctamente');
+        } catch (ValidationException $e) {
+            // Mensaje de validación (por ejemplo el DNI ya está en ese evento)
+            return back()->withErrors($e->errors())->withInput();
+        } catch (QueryException $e) {
+            // Por si el índice único en DB salta (doble click, carrera, etc.)
+            if (str_contains($e->getMessage(), 'uniq_evento_conductor')) {
+                return back()
+                    ->withErrors(['dni' => 'Este DNI ya existe en este evento.'])
+                    ->withInput();
+            }
+            throw $e;
+        }
     }
 }

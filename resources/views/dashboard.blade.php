@@ -4,6 +4,18 @@
     <div class="py-12 fondo_principal">
         <img class="col-7 col-sm-6 col-md-6 col-lg-4" src="{{asset('images/logo.png')}}" style="border-radius: 10px; margin-bottom: 30px; margin: auto; margin-bottom: 40px;">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 p-3">
+            <!---MENSAJES DE EXITO Y ERROR---->
+            @if(session('success') || session('error'))
+            <div class="position-fixed top-0 end-0 p-3" style="margin-top: 80px; z-index:1050;">
+                <div
+                    class="alert shadow alert-dismissible fade show 
+                {{ session('success') ? 'alert-success' : 'alert-danger' }}"
+                    role="alert">
+                    {{ session('success') ?? session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+            @endif
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <!--CONTENEDOR CARDS -->
                 <div class="container">
@@ -103,6 +115,7 @@
                                         <p><span class="fw-bold">Lugar evento:</span> {{ $evento->lugar_evento }}</p>
                                     </div>
 
+
                                     <!---TEXTO INVITACION (MOSTRAR)--->
                                     @if(isset($evento))
                                     <div class="tooltip-container text-center mb-3">
@@ -114,6 +127,62 @@
                                         </div>
                                     </div>
                                     @endif
+
+                                    <!--CODIGO QR-->
+                                    @if(isset($evento))
+                                    @php
+                                    $registroUrl = route('conductor.registro' , $evento);
+                                    @endphp
+
+                                    <div class="d-flex mt-2 mb-2 gap-2">
+                                        <button
+                                            id="btn-copy-{{ $evento->id }}"
+                                            onclick="copiarEnlace('{{ $registroUrl }}', {{ $evento->id }})"
+                                            class="btn btn-sm mb-3 m-auto w-50"
+                                            style="border: 2px solid #05072e; color: #05072e; background: transparent;">
+                                            Copiar enlace
+                                        </button>
+
+                                        <button type="button"
+                                            class="btn btn-sm mb-3 m-auto w-20 fw-bold"
+                                            style="background-color: #05072e; color: white;"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#qrModal-{{$evento->id}}">
+                                            Ver QR
+                                        </button>
+                                    </div>
+
+                                    @include('eventos.modal_qr' , ['evento' => $evento , 'registroUrl' => $registroUrl])
+                                    @endif
+
+                                    <!---FUNCION JS PARA COPIAR ENLACE-->
+                                    <script>
+                                        function copiarEnlace(url, id) {
+                                            navigator.clipboard.writeText(url)
+                                                .then(() => {
+                                                    const btn = document.getElementById(`btn-copy-${id}`);
+                                                    const originalText = btn.innerHTML;
+
+                                                    btn.innerHTML = 'Copiado';
+
+                                                    btn.style.backgroundColor = '#05072e';
+                                                    btn.style.color = '#fff';
+                                                    btn.style.borderColor = '#05072e';
+
+                                                    // Restaura al estado original
+                                                    setTimeout(() => {
+                                                        btn.innerHTML = originalText;
+                                                        btn.style.backgroundColor = 'transparent';
+                                                        btn.style.color = '#05072e';
+                                                        btn.style.borderColor = '#05072e';
+                                                    }, 2000);
+                                                })
+                                                .catch(err => {
+                                                    console.error('Error al copiar enlace:', err);
+                                                    alert('No se pudo copiar el enlace');
+                                                });
+                                        }
+                                    </script>
 
                                     <div class="card-footer text-center">
                                         <div class="d-flex justify-content-center gap-2">
@@ -131,10 +200,10 @@
                                                 <button name="edit" id_update="{{ $evento->id }}" class="btn btn-secondary" style="background-color: #05072e;">Editar</button>
                                             </form>
                                             <!----INVITADOS LISTA---->
-                                            <a href="{{ route('invitados.index', $evento->id) }}" class="btn btn-secondary">Invitados</a>
+                                            <a href="{{ route('invitados.index', ['evento' => $evento->id]) }}" class="btn btn-secondary">Invitados</a>
 
                                             <!-- AJUSTES -->
-                                            <a href="{{ route('admin.ajustes', $evento) }}" class="btn btn-secondary" style="background-color:#05072e;">
+                                            <a href="{{ route('admin.ajustes', ['evento' => $evento->id]) }}" class="btn btn-secondary" style="background-color:#05072e;">
                                                 Ajustes
                                             </a>
                                         </div>

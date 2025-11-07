@@ -57,6 +57,7 @@ class Conductor extends Model
 		'preferencia',
 		'carnet',
 		'etiqueta',
+		'etiqueta_2',
 		'kam',
 		'asiste',
 		'dni',
@@ -64,8 +65,61 @@ class Conductor extends Model
 		'carnet_caducidad'
 	];
 
+	/**
+
+	 * La función "eventos" define una relación de muchos a muchos entre un modelo "Conductor" y un
+
+	 * modelo "Evento" en PHP, con campos adicionales en la tabla pivote especificados.
+
+	 * 
+	 * @return El fragmento de código define un método llamado `eventos` que establece una relación de muchos a muchos
+
+	 * entre el modelo actual y el modelo `Evento` utilizando la tabla pivote `evento_conductor`.
+
+	 * método `withPivot`. Estas columnas pivote adicionales incluyen 'cif', 'nombre', 'apellido', 'email',
+
+	 * 'telefono', '
+
+	 */
 	public function eventos()
 	{
-		return $this->belongsToMany(Evento::class, 'evento_conductor', 'conductor_id', 'evento_id');
+		return $this->belongsToMany(Evento::class, 'evento_conductor', 'conductor_id', 'evento_id')
+			->withPivot([
+				'cif',
+				'nombre',
+				'apellido',
+				'email',
+				'telefono',
+				'empresa',
+				'vehiculo_prop',
+				'vehiculo_emp',
+				'intolerancia',
+				'preferencia',
+				'carnet',
+				'etiqueta',
+				'kam',
+				'asiste',
+				'dni',
+				'proteccion_datos',
+				'carnet_caducidad',
+				'confirmado',
+				'token',
+				'etiqueta_2'
+			]);
+	}
+
+	/**
+	 * La función conductores() establece una relación de muchos a muchos entre el modelo actual y
+
+	 * el modelo Conductor utilizando la tabla pivote evento_conductor.
+
+	 * 
+	 * @return La función `conductores` devuelve una relación de muchos a muchos entre el modelo actual
+
+	 * y el modelo `Conductor`. Especifica la tabla pivote `evento_conductor` y las claves externas `evento_id` y `conductor_id` para la relación.
+	 */
+	public function conductores()
+	{
+		return $this->belongsToMany(Conductor::class, 'evento_conductor', 'evento_id', 'conductor_id');
 	}
 }

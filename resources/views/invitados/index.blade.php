@@ -4,6 +4,18 @@
     <div class="py-12 fondo_principal">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 p-3">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <!---MENSAJES DE EXITO Y ERROR---->
+                @if(session('success') || session('error'))
+                <div class="position-fixed top-0 end-0 p-3" style="margin-top: 80px; z-index:1050;">
+                    <div
+                        class="alert shadow alert-dismissible fade show 
+                {{ session('success') ? 'alert-success' : 'alert-danger' }}"
+                        role="alert">
+                        {{ session('success') ?? session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+                @endif
                 <!--CONTENEDOR CARDS -->
                 <div class="container py-5">
                     <div class="p-6 text-gray-900">
@@ -15,7 +27,7 @@
                         </h2>
 
                         <!-- CONTENEDOR DE BOTONES -->
-                        <form class="d-block d-sm-flex d-md-flex flex-wrap mb-5 align-items-center mb-3" action="{{ route('invitados.show', $evento->id) }}" method="GET">
+                        <form class="d-block d-sm-flex d-md-flex flex-wrap mb-5 align-items-center mb-3" action="{{ route('invitados.show', ['evento' => $evento->id]) }}" method="GET">
                             <div class="col-12 col-sm-6 col-md-5">
                                 <input class="form-control me-2 rounded-3" id="nombre" name="buscador" type="text" placeholder="Introducir CIF, nombre, apellidos, email, teléfono, empresa...">
                             </div>
@@ -35,9 +47,12 @@
                         <div class="d-flex flex-wrap mb-3 justify-content-between">
                             <!----CUENTA NUMERO TOTAL DE INVITADOS POR PAGINACION--->
                             <div class="text-start">
-                                @if(isset($total) && isset($asisten) && isset($no_asiste))
-                                <h4 class="fw-bold text-start">{{$total}} invitados ({{$asisten}} / {{$no_asiste}}) </h4>
-                                @endif
+                                <h4 class="fw-bold text-start">
+                                    <span id="total-span">{{ $total }}</span> invitados (
+                                    <span id="asisten-span">{{ $asisten }}</span> /
+                                    <span id="noasiste-span">{{ $no_asiste }}</span>
+                                    )
+                                </h4>
                             </div>
                             <div class="d-flex flex-wrap gap-2 text-end">
                                 <!---BOTON PARA EXPORTAR INVITADOS DENTRO DE ESE EVENTO--->
@@ -74,21 +89,21 @@
                                             {{ \Carbon\Carbon::parse($invitado->carnet_caducidad)->format('d/m/Y') }}
                                         </p>
 
-                                        <p class="card-text mb-1"><strong>CIF:</strong> {{ $invitado->cif }}</p>
-                                        <p class="card-text mb-1"><strong>DNI:</strong> {{ $invitado->dni }}</p>
                                         <p class="card-text mb-1"><strong>Teléfono:</strong> {{ $invitado->telefono }}</p>
                                         <p class="card-text mb-1 email" data-email="{{ $invitado->email }}">
                                             <strong>Email:</strong> {{ $invitado->email }}
                                         </p>
-                                        <p class="card-text mb-1"><strong>KAM:</strong> {{ $invitado->kam }}</p>
                                         <p class="card-text mb-1"><strong>Observaciones:</strong> {{ $invitado->observaciones }}</p>
 
                                         <!---CHECKBOX ASISTE-->
-                                        <div class="d-flex align-items-center mt-3">
-                                            <input class="form-check-input me-2" type="checkbox"
-                                                {{ $invitado->asiste ? 'checked' : '' }}
-                                                onchange="actualizarAsistencia({{ $invitado->id }}, this.checked)">
-                                            <label>Asiste</label>
+                                        <div class="d-flex fw-bold gap-2 align-items-center mt-3">
+                                            <input
+                                                type="checkbox"
+                                                class="form-check-input js-asiste"
+                                                data-evento-id="{{ $evento->id }}"
+                                                data-invitado-id="{{ $invitado->id }}"
+                                                data-url="{{ route('invitados.asistencia', ['evento' => $evento->id, 'invitado' => $invitado->id]) }}"
+                                                {{ ($invitado->pivot->asiste ?? false) ? 'checked' : '' }}> Asiste
                                         </div>
 
                                         <div class="mt-2 d-flex flex-wrap gap-2 justify-content-end">
@@ -102,18 +117,10 @@
                                             </form>
 
                                             <!---BOTON EDITAR---->
-                                            <form action="{{route('invitados.edit', $invitado->id)}}" method="GET">
+                                            <form action="{{ route('invitados.edit', [$evento->id, $invitado->id]) }}" method="GET">
                                                 @csrf
                                                 <button type="submit" style="background:none;border:none;color:#05072e;" title="Editar">
                                                     <i class="bi bi-pencil-square"></i>
-                                                </button>
-                                            </form>
-
-                                            <!---BOTON ENVIAR EMAIL CONFIRMACION--->
-                                            <form action="{{route('invitados.enviarEmail', ['evento_id' => $evento->id , 'conductor_id' => $invitado->id])}}" method="GET">
-                                                @csrf
-                                                <button type="submit" style="background:none;border:none;color:#05072e;" title="Enviar Correo">
-                                                    <i class="bi bi-envelope-fill"></i>
                                                 </button>
                                             </form>
                                         </div>
@@ -129,14 +136,11 @@
                                 <thead>
                                     <tr>
                                         <th>Empresa</th>
-                                        <th>CIF</th>
                                         <th>Nombre</th>
                                         <th>Apellidos</th>
-                                        <th>DNI</th>
                                         <th>Fecha Carnet de conducir</th>
                                         <th>Telefono</th>
                                         <th>Email</th>
-                                        <th>KAM</th>
                                         <th>Observaciones</th>
                                         <th>Asiste</th>
                                         <th></th>
@@ -147,10 +151,8 @@
                                     @foreach($invitados as $invitado)
                                     <tr style="font-size: small;">
                                         <td>{{$invitado->empresa}}</td>
-                                        <td>{{$invitado->cif}}</td>
                                         <td>{{$invitado->nombre}}</td>
                                         <td>{{$invitado->apellido}}</td>
-                                        <td>{{$invitado->dni}}</td>
 
 
                                         <td class="fecha_carnet" data-fecha="{{ $invitado->carnet_caducidad }}">
@@ -160,14 +162,17 @@
 
                                         <td>{{$invitado->telefono}}</td>
                                         <td class="email">{{$invitado->email}}</td>
-                                        <td>{{$invitado->kam}}</td>
                                         <td></td>
 
                                         <!---CHECKBOX ASISTENCIA---->
                                         <td class="text-center">
-                                            <input class="form-check-input" type="checkbox" style="text-align: center;"
-                                                {{ $invitado->asiste ? 'checked' : '' }}
-                                                onchange="actualizarAsistencia({{ $invitado->id }}, this.checked)">
+                                            <input
+                                                type="checkbox"
+                                                class="form-check-input js-asiste"
+                                                data-evento-id="{{ $evento->id }}"
+                                                data-invitado-id="{{ $invitado->id }}"
+                                                data-url="{{ route('invitados.asistencia', ['evento' => $evento->id, 'invitado' => $invitado->id]) }}"
+                                                {{ ($invitado->pivot->asiste ?? false) ? 'checked' : '' }}>
                                         </td>
 
                                         <!--BOTONES--->
@@ -182,17 +187,10 @@
                                             </form>
 
                                             <!---BOTON EDITAR---->
-                                            <form action="{{route('invitados.edit', $invitado->id)}}" method="GET">
+                                            <form action="{{ route('invitados.edit', [$evento->id, $invitado->id]) }}" method="GET">
                                                 @csrf
                                                 <button type="submit" style="background:none;border:none;color:#05072e;" title="Editar">
                                                     <i class="bi bi-pencil-square"></i>
-                                                </button>
-                                            </form>
-
-                                            <!---BOTON ENVIAR EMAIL CONFIRMACION--->
-                                            <form action="{{ route('invitados.enviarEmail', ['evento_id' => $evento->id, 'conductor_id' => $invitado->id]) }}" method="GET">
-                                                <button type="submit" style="background:none;border:none;color:#05072e;" title="Enviar email">
-                                                    <i class="bi bi-envelope-fill"></i>
                                                 </button>
                                             </form>
                                         </td>
@@ -291,40 +289,57 @@
     });
 
     //FUNCION CHECKBOX ASISTENCIA
-    function actualizarAsistencia(id, valor) { //Pasaremos id como valor y recogeremos en la llamada un dato en este caso valor.
-        fetch(`/invitados/${id}/asistencia`, {
-                //Pasamos el metodo.
-                method: 'POST',
-                //Recogemos datos y el token csrf del formulario.
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                //Cuerpo , pasamos el valor a string.
-                body: JSON.stringify({
-                    asiste: valor
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (!data.success) {
-                    Swal.fire({
-                        title: "Error al actualizar asistencia.",
-                        icon: "warning",
-                        iconColor: "#05072e",
-                        confirmButtonColor: "#05072e"
-                    })
+    document.addEventListener('DOMContentLoaded', () => {
+        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        document.querySelectorAll('.js-asiste').forEach(chk => {
+            chk.addEventListener('change', async (e) => {
+                const el = e.currentTarget;
+                const eventoId = el.dataset.eventoId;
+                const invitadoId = el.dataset.invitadoId;
+                const valor = el.checked;
+
+                try {
+                    const res = await fetch(`/eventos/${eventoId}/invitados/${invitadoId}/asistencia`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': token
+                        },
+                        body: JSON.stringify({
+                            asiste: valor
+                        })
+                    });
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+                    const data = await res.json();
+                    if (!data.success) throw new Error('Respuesta inválida');
+
+                    // refresca contadores
+                    const t = document.getElementById('total-span');
+                    const a = document.getElementById('asisten-span');
+                    const na = document.getElementById('noasiste-span');
+                    if (data.totals) {
+                        if (t) t.textContent = data.totals.total;
+                        if (a) a.textContent = data.totals.asisten;
+                        if (na) na.textContent = data.totals.no_asiste;
+                    }
+                } catch (err) {
+                    el.checked = !valor; // revierte
+                    if (window.Swal) {
+                        Swal.fire({
+                            title: "Error al actualizar asistencia.",
+                            text: err.message || "",
+                            icon: "warning",
+                            confirmButtonColor: "#05072e"
+                        });
+                    } else {
+                        alert('Error al actualizar asistencia');
+                    }
                 }
-            })
-            .catch(() => {
-                Swal.fire({
-                    title: "Error de conexion.",
-                    icon: "warning",
-                    iconColor: "#05072e",
-                    confirmButtonColor: "#05072e"
-                })
-            })
-    }
+            });
+        });
+    });
 
     //FUNCION PARA COMPARAR FECHA DE CADUCIDAD DEL CARNET DE CONDUCIR CON LA ACTUAL.
     document.addEventListener('DOMContentLoaded', function() {

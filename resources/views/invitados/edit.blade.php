@@ -11,61 +11,75 @@
         @endif
     </div>
 
-    <!--MENSAJE DE ERROR-->
-    <div>
-        @if(session('error'))
-        <div class="alert alert-danger">
-            {{session('error')}}
-        </div>
-        @endif
-    </div>
+    @php
+    $vehiculoProp = old('vehiculo_prop' , $pivot->vehiculo_prop ?? $invitados->vehiculo_prop ?? null);
+    $vehiculoEmp = old('vehiculo_emp' , $pivot->vehiculo_emp ?? $invitados->vehiculo_emp ?? null);
+    $etiqueta = old('etiqueta' , $pivot->etiqueta ?? $invitados->etiqueta ?? null);
+    $etiqueta2 = old('etiqueta_2' , $pivot->etiqueta_2 ?? $invitados->etiqueta_2 ?? null);
+    $proteccion_datos = old('proteccion_datos' , $pivot->proteccion_datos ?? $invitados->proteccion_datos ?? null);
+    $kam = old('kam' , $pivot->kam ?? $invitados->kam ?? null);
+    @endphp
+
     <!--FORMULARIO NUEVO INVITADO-->
     <!---ENCTYPE SE PASA PORQUE RECOGEREMOS ARCHIVOS COMO IMAGENES , ETC.---->
-    <form method="POST" id="formulario" action="{{route('invitados.update' , $invitados->id)}}" enctype="multipart/form-data"
+    <form method="POST"
+        id="formulario"
+        action="{{ route('invitados.update', [$eventoId, $invitados->id]) }}"
+        enctype="multipart/form-data"
         class="m-auto mt-5 mb-5 d-flex flex-wrap justify-content-between gap-3" style="width: 70%;">
+        @php($p = $pivot ?? null)
         @csrf
         @method('PUT')
         <div class="col-12 col-sm-5">
             <!--NOMBRE-->
             <div class="mb-3">
                 <label for="nombre" class="form-label fw-bold">Nombre*</label>
-                <input type="text" class="form-control" id="nombre" name="nombre" value="{{$invitados->nombre}}">
+                <input type="text" class="form-control" id="nombre" name="nombre" value="{{ old('nombre', $p->nombre ?? $invitados->nombre) }}">
             </div>
 
             <!--APELLIDO-->
             <div class="mb-3">
                 <label for="apellido" class="form-label fw-bold">Apellidos*</label>
-                <input type="text" class="form-control" id="apellido" name="apellido" value="{{$invitados->apellido}}">
+                <input type="text" class="form-control" id="apellido" name="apellido" value="{{ old('apellido', $p->apellido ?? $invitados->apellido) }}">
             </div>
 
             <!--EMAIL-->
             <div class="mb-3">
                 <label for="email" class="form-label fw-bold">Email*</label>
-                <input type="email" class="form-control" name="email" id="email" aria-describedby="emailHelp" value="{{$invitados->email}}">
+                <input type="email" class="form-control" name="email" id="email" aria-describedby="emailHelp" value="{{ old('email', $p->email ?? $invitados->email) }}">
             </div>
 
             <!--TELEFONO-->
             <div class="mb-3">
                 <label for="telefono" class="form-label fw-bold">Telefono</label>
-                <input type="text" class="form-control" name="telefono" value="{{$invitados->telefono}}">
+                <input type="text" class="form-control" name="telefono" value="{{ old('telefono', $p->telefono ?? $invitados->telefono) }}">
             </div>
 
             <!--EMPRESA-->
             <div class="mb-3">
                 <label for="empresa" class="form-label fw-bold">Empresa</label>
-                <input type="text" class="form-control" name="empresa" value="{{$invitados->empresa}}">
+                <input type="text" class="form-control" name="empresa" value="{{ old('empresa', $p->empresa ?? $invitados->empresa) }}">
             </div>
 
             <!--CIF-->
             <div class="mb-3">
                 <label for="cif" class="form-label fw-bold">CIF</label>
-                <input type="text" class="form-control" name="cif" value="{{$invitados->cif}}">
+                <input type="text" class="form-control" name="cif" value="{{ old('cif', $p->cif ?? $invitados->cif) }}">
             </div>
 
             <!--DNI-->
             <div class="mb-3">
                 <label for="dni" class="form-label fw-bold">DNI*</label>
-                <input type="text" class="form-control" id="dni" name="dni" value="{{$invitados->dni}}">
+                <input type="text" class="form-control" id="dni" name="dni" value="{{ old('dni', $p->dni ?? $invitados->dni) }}">
+            </div>
+
+            <!--MENSAJE DE ERROR-->
+            <div>
+                @if(session('error'))
+                <div class="alert alert-danger">
+                    {{session('error')}}
+                </div>
+                @endif
             </div>
         </div>
 
@@ -77,118 +91,107 @@
                 <div class="mb-5 col-md-8">
                     <label for="vehiculo_prop" class="form-label fw-bold" style="margin-right: 2%">¿Cuenta con un vehiculo propio?</label>
                     <div class="form-check">
-                        <input id="btn_si" class="form-check-input" type="radio" value="si" name="vehiculo_prop"
-                            {{ $invitados->vehiculo_prop == 'si' ? 'checked' : '' }}>
+                        <input id="btn_si_prop" class="form-check-input" type="radio" value="si" name="vehiculo_prop"
+                            {{ $vehiculoProp === 'si' ? 'checked' : '' }}>
                         <label class="form-check-label" for="vehiculo_prop">Sí</label>
                     </div>
                     <div class="form-check">
-                        <input id="btn_no" class="form-check-input" type="radio" value="no" name="vehiculo_prop"
-                            {{ $invitados->vehiculo_prop == 'no' ? 'checked' : '' }}>
+                        <input id="btn_no_prop" class="form-check-input" type="radio" value="no" name="vehiculo_prop"
+                            {{ $vehiculoProp === 'no' ? 'checked' : '' }}>
                         <label class="form-check-label" for="vehiculo_prop">No</label>
                     </div>
                 </div>
 
                 <!----ETIQUETA (MOSTRAR)----->
                 <!----PASAMOS UNA CONDICION TERNARIA AL DISPLAY , SI ES SI EN CULQUIERA DE LOS DOS CAMPOS RECOGIDOS SE MUESTRA Y SINO SE COULTA EL CAMPO.---->
-                <div id="etiqueta-container" style="display: {{ ($invitados->vehiculo_prop === 'si' || $invitados->vehiculo_emp === 'si' || $invitados->etiqueta) ? 'block' : 'none' }};" class="mx-md-2">
-                    <label for="etiqueta" class="form-label fw-bold">Etiqueta</label>
+                <div id="etiqueta-container_prop"
+                    style="display: {{ $vehiculoProp === 'si' ? 'block' : 'none' }};" class="mx-md-2">
+                    <label class="form-label fw-bold d-block">Etiqueta</label>
+
                     <div class="div_etiqueta form-check">
                         <!---RECOGEMOS EL VALOR , SI ES UNA DE LAS OPCIONES QUE ME RECOGA EL VALOR Y SINO QUE LO DEJE EN VACIO EL CHECKED--->
-                        <input class="form-check-input" type="radio" value="B" name="etiqueta"
-                            {{$invitados->etiqueta == 'B' ? 'checked' : ''}}>
+                        <input class="form-check-input" type="radio" value="B" name="etiqueta" {{ $etiqueta === 'B'   ? 'checked' : '' }}>
                         <label class="form-check-label" for="etiqueta">B</label>
                     </div>
 
                     <div class="div_etiqueta form-check">
-                        <input class="form-check-input" type="radio" value="C" name="etiqueta"
-                            {{$invitados->etiqueta == 'C' ? 'checked' : ''}}>
+                        <input class="form-check-input" type="radio" value="C" name="etiqueta" {{ $etiqueta === 'C'   ? 'checked' : '' }}>
                         <label class="form-check-label" for="etiqueta">C</label>
                     </div>
 
                     <div class="div_etiqueta form-check">
-                        <input class="form-check-input" type="radio" value="ECO" name="etiqueta"
-                            {{$invitados->etiqueta == 'ECO' ? 'checked' : ''}}>
+                        <input class="form-check-input" type="radio" value="ECO" name="etiqueta" {{ $etiqueta === 'ECO' ? 'checked' : '' }}>
                         <label class="form-check-label" for="etiqueta">ECO</label>
                     </div>
 
                     <div class="div_etiqueta form-check">
-                        <input class="form-check-input" type="radio" value="0" name="etiqueta"
-                            {{$invitados->etiqueta == '0' ? 'checked' : ''}}>
+                        <input class="form-check-input" type="radio" value="0" name="etiqueta" {{ $etiqueta === '0'   ? 'checked' : '' }}>
                         <label class="form-check-label" for="etiqueta">0</label>
                     </div>
                 </div>
             </div>
 
-            <!---VEHICULO EMPRESA--->
-            <div class="mb-3">
-                <label for="vehiculo_emp" class="form-label fw-bold">¿Cuenta con un vehiculo de empresa?</label>
-                <div class="form-check">
-                    <!---RECOGEMOS EL VALOR , SI ES UNA DE LAS OPCIONES QUE ME RECOGA EL VALOR Y SINO QUE LO DEJE EN VACIO EL CHECKED--->
-                    <input id="btn_si_emp" class="form-check-input" type="radio" value="si" name="vehiculo_emp"
-                        {{ $invitados->vehiculo_emp == 'si' ? 'checked' : '' }}>
-                    <label class="form-check-label" for="vehiculo_emp">Sí</label>
+            <div class="d-flex flex-wrap mt-3">
+                <!---VEHICULO EMPRESA--->
+                <div class="mb-5 col-md-8">
+                    <label for="vehiculo_emp" style="margin-right: 2%;" class="form-label fw-bold">¿Cuenta con un vehiculo de empresa?</label>
+                    <div class="form-check">
+                        <!---RECOGEMOS EL VALOR , SI ES UNA DE LAS OPCIONES QUE ME RECOGA EL VALOR Y SINO QUE LO DEJE EN VACIO EL CHECKED--->
+                        <input id="btn_si_emp" class="form-check-input" type="radio" value="si" name="vehiculo_emp"
+                            {{ $vehiculoEmp === 'si' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="vehiculo_emp">Sí</label>
+                    </div>
+                    <div class="form-check">
+                        <input id="btn_no_emp" class="form-check-input" type="radio" value="no" name="vehiculo_emp"
+                            {{ $vehiculoEmp === 'no' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="vehiculo_emp">No</label>
+                    </div>
                 </div>
-                <div class="form-check">
-                    <input id="btn_no_emp" class="form-check-input" type="radio" value="no" name="vehiculo_emp"
-                        {{ $invitados->vehiculo_emp == 'no' ? 'checked' : '' }}>
-                    <label class="form-check-label" for="vehiculo_emp">No</label>
+
+                <!----PASAMOS UNA CONDICION TERNARIA AL DISPLAY , SI ES SI EN CULQUIERA DE LOS DOS CAMPOS RECOGIDOS SE MUESTRA Y SINO SE COULTA EL CAMPO.---->
+                <div id="etiqueta-container_emp"
+                    style="display: {{ $vehiculoEmp === 'si' ? 'block' : 'none' }};" class="mx-md-2">
+                    <label class="form-label fw-bold d-block">Etiqueta</label>
+
+                    <div class="div_etiqueta_2 form-check">
+                        <!---RECOGEMOS EL VALOR , SI ES UNA DE LAS OPCIONES QUE ME RECOGA EL VALOR Y SINO QUE LO DEJE EN VACIO EL CHECKED--->
+                        <input class="form-check-input" type="radio" value="B" name="etiqueta_2" {{ $etiqueta2 === 'B'   ? 'checked' : '' }}>
+                        <label class="form-check-label" for="etiqueta_2">B</label>
+                    </div>
+
+                    <div class="div_etiqueta_2 form-check">
+                        <input class="form-check-input" type="radio" value="C" name="etiqueta_2" {{ $etiqueta2 === 'C'   ? 'checked' : '' }}>
+                        <label class="form-check-label" for="etiqueta_2">C</label>
+                    </div>
+
+                    <div class="div_etiqueta_2 form-check">
+                        <input class="form-check-input" type="radio" value="ECO" name="etiqueta_2" {{ $etiqueta2 === 'ECO' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="etiqueta_2">ECO</label>
+                    </div>
+
+                    <div class="div_etiqueta_2 form-check">
+                        <input class="form-check-input" type="radio" value="0" name="etiqueta_2" {{ $etiqueta2 === '0'   ? 'checked' : '' }}>
+                        <label class="form-check-label" for="etiqueta_2">0</label>
+                    </div>
                 </div>
             </div>
-
-            <!---JS ETIQUETA--->
-            <script>
-                const boton_si = document.getElementById('btn_si');
-                const boton_no = document.getElementById('btn_no');
-                const boton_si_emp = document.getElementById('btn_si_emp');
-                const boton_no_emp = document.getElementById('btn_no_emp');
-                const etiquetaContainer = document.getElementById('etiqueta-container');
-
-                function mostrar() {
-                    if (boton_si.checked || boton_si_emp.checked) {
-                        etiquetaContainer.style.display = "block";
-                    } else {
-                        etiquetaContainer.style.display = "none";
-                    }
-                }
-
-                boton_si.addEventListener('click', () => {
-                    boton_no_emp.checked = true;
-                    mostrar();
-                })
-
-                boton_si_emp.addEventListener('click', () => {
-                    boton_no.checked = true;
-                    mostrar();
-                })
-
-                boton_no.addEventListener('click', () => {
-                    mostrar();
-                });
-
-                boton_no_emp.addEventListener('click', () => {
-                    mostrar();
-                })
-
-
-                window.addEventListener('DOMContentLoaded', mostrar);
-            </script>
 
             <!---FECHA CARNET DE CONDUCIR--->
             <div class="mb-3">
                 <label for="carnet_caducidad" class="form-label fw-bold">Fecha caducidad carnet conducir*</label>
-                <input type="date" class="form-control" id="carnet" name="carnet_caducidad" value="{{$invitados->carnet_caducidad->format('Y-m-d')}}">
+                <input type="date" class="form-control" id="carnet" name="carnet_caducidad" value="{{ old('carnet_caducidad', optional(\Carbon\Carbon::parse($p->carnet_caducidad ?? $invitados->carnet_caducidad))->format('Y-m-d')) }}">
             </div>
 
             <!---KAM--->
             <div class="mb-3">
                 <label for="kam" class="form-label fw-bold">KAM</label>
-                <input type="text" class="form-control" name="kam" value="{{$invitados->kam}}">
+                <input type="text" class="form-control" name="kam" value="{{ $kam }}">
             </div>
 
             <!---INTOLERANCIA ALIMENTARIA--->
             <div class="mb-3">
                 <label for="intolerancia" class="form-label fw-bold">¿Cuenta con alguna intolerancia alimentaria?</label>
-                <input type="text" class="form-control" name="intolerancia" value="{{$invitados->intolerancia}}">
+                <input type="text" class="form-control" name="intolerancia" value="{{ old('intolerancia', $p->intolerancia ?? $invitados->intolerancia) }}">
             </div>
 
             <!----PREFERENCIA--->
@@ -197,13 +200,11 @@
                 <div class="d-flex flex-wrap gap-5 justify-content-center">
                     <div class="form-check">
                         <!---RECOGEMOS EL VALOR , SI ES UNA DE LAS OPCIONES QUE ME RECOGA EL VALOR Y SINO QUE LO DEJE EN VACIO EL CHECKED--->
-                        <input class="form-check-input" type="radio" value="carne" name="preferencia"
-                            {{ $invitados->preferencia == 'carne' ? 'checked' : '' }}>
+                        <input class="form-check-input" type="radio" value="carne" name="preferencia" {{ old('preferencia', $p->preferencia ?? $invitados->preferencia) === 'carne'   ? 'checked' : '' }}>
                         <label class="form-check-label" for="preferencia">Carne</label>
                     </div>
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" value="pescado" name="preferencia"
-                            {{ $invitados->preferencia == 'pescado' ? 'checked' : '' }}>
+                        <input class="form-check-input" type="radio" value="pescado" name="preferencia" {{ old('preferencia', $p->preferencia ?? $invitados->preferencia) === 'pescado' ? 'checked' : '' }}>
                         <label class="form-check-label" for="preferencia">Pescado</label>
                     </div>
                 </div>
@@ -211,7 +212,8 @@
 
             <!---PROTECCION DE DATOS--->
             <div class="form-check mb-3 gap-2" style="display: flex; justify-content: flex-end;">
-                <input class="form-check-input" type="checkbox" value="1" name="proteccion_datos" id="proteccion_datos" required {{$invitados->proteccion_datos ? 'checked' : ''}}>
+                <input type="checkbox" value="1" name="proteccion_datos" id="proteccion_datos"
+                    {{ $proteccion_datos ? 'checked' : '' }}>
                 <label class="form-check-label" for="proteccion_datos">
                     <a href="#" data-bs-toggle="modal" data-bs-target="#modalDatos">Protección de Datos</a>
                 </label>
@@ -304,5 +306,49 @@
                 }
             })
         });
+
+
+        const boton_si_prop = document.getElementById('btn_si_prop');
+        const boton_no_prop = document.getElementById('btn_no_prop');
+        const etiquetaContainerProp = document.getElementById('etiqueta-container_prop');
+
+        function mostrar() {
+            if (boton_si_prop.checked) {
+                etiquetaContainerProp.style.display = "block";
+            } else {
+                etiquetaContainerProp.style.display = "none";
+            }
+        }
+
+        boton_si_prop.addEventListener('click', () => {
+            boton_no_prop.checked = false;
+            mostrar();
+        })
+
+        boton_no_prop.addEventListener('click', () => {
+            mostrar();
+        })
+
+
+        const boton_si_emp = document.getElementById('btn_si_emp');
+        const boton_no_emp = document.getElementById('btn_no_emp');
+        const etiquetaContainerEmp = document.getElementById('etiqueta-container_emp');
+
+        function mostrarEmp() {
+            if (boton_si_emp.checked) {
+                etiquetaContainerEmp.style.display = "block";
+            } else {
+                etiquetaContainerEmp.style.display = "none";
+            }
+        }
+
+        boton_si_emp.addEventListener('click', () => {
+            boton_no_emp.checked = false;
+            mostrarEmp();
+        })
+
+        boton_no_emp.addEventListener('click', () => {
+            mostrarEmp();
+        })
     })
 </script>
