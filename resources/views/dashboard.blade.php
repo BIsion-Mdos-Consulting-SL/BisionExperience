@@ -81,7 +81,7 @@
 
                             function reset() {
                                 input_nombre.value = "";
-                                window.location = "/";
+                                window.location = "{{route('dashboard')}}";
                             }
 
                             btn_reset.addEventListener('click', (e) => {
