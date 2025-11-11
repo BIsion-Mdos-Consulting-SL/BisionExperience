@@ -95,8 +95,6 @@
                     })
                 </script>
 
-                <!--AQUI VA EKL MODAL DE NORMAS DE USO Y POLITICAS DE PRIVACIDAD-->
-
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="text-start">
                         @if (Route::has('password.request'))
@@ -120,5 +118,6 @@
     <img class="m-auto" src="{{asset('images/footer_bision.png')}}" style="width: 200px;">
 </footer>
 @include('auth.politica_privacidad')
+@include('auth.normas_uso')
 @endsection
 
