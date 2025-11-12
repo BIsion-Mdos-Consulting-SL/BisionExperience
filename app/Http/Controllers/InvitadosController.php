@@ -346,16 +346,29 @@ class InvitadosController extends Controller
         $query = trim((string) $request->input('buscador', ''));
 
         $rel   = $evento->invitados();
-        $pivot = $rel->getTable(); // nombre de la tabla pivot
+        $pivot = $rel->getTable(); //Tabla pivot.
+        $related = $rel->getRelated()->getTable();//Coge datos de la relacion y la tabla invitados.
 
-        $filtro = function ($q) use ($pivot, $query) {
-            $q->where("$pivot.empresa",   'like', "%{$query}%")
-                ->orWhere("$pivot.cif",      'like', "%{$query}%")
-                ->orWhere("$pivot.nombre",   'like', "%{$query}%")
-                ->orWhere("$pivot.apellido", 'like', "%{$query}%")
-                ->orWhere("$pivot.email",    'like', "%{$query}%")
-                ->orWhere("$pivot.telefono", 'like', "%{$query}%")
-                ->orWhere("$pivot.kam",      'like', "%{$query}%");
+        $filtro = function ($q) use ($pivot, $related, $query) {
+            $q->where(function ($qq) use ($pivot, $related, $query) {
+                //Columnas en la TABLA PIVOT ---
+                $qq->where("$pivot.empresa",   'like', "%{$query}%")
+                    ->orWhere("$pivot.cif",      'like', "%{$query}%")
+                    ->orWhere("$pivot.nombre",   'like', "%{$query}%")
+                    ->orWhere("$pivot.apellido", 'like', "%{$query}%")
+                    ->orWhere("$pivot.email",    'like', "%{$query}%")
+                    ->orWhere("$pivot.telefono", 'like', "%{$query}%")
+                    ->orWhere("$pivot.kam",      'like', "%{$query}%");
+
+                //Columnas en la TABLA INVITADO ---
+                $qq->orWhere("$related.empresa",     'like', "%{$query}%")
+                    ->orWhere("$related.cif",  'like', "%{$query}%")
+                    ->orWhere("$related.nombre",      'like', "%{$query}%")
+                    ->orWhere("$related.apellido",   'like', "%{$query}%")
+                    ->orWhere("$related.email",  'like', "%{$query}%")
+                    ->orWhere("$related.telefono", 'like', "%{$query}%")
+                    ->orWhere("$related.kam",      'like', "%{$query}%");
+            });
         };
 
         $invitados = $rel
@@ -378,7 +391,7 @@ class InvitadosController extends Controller
             })
             ->count();
 
-        return view('invitados.index', compact('invitados', 'total', 'evento' , 'asisten' , 'no_asiste'));
+        return view('invitados.index', compact('invitados', 'total', 'evento', 'asisten', 'no_asiste'));
     }
 
     public function actualizarAsistencia(Request $request, Evento $evento, Conductor $invitado)
