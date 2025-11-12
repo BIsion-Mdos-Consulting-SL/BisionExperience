@@ -56,7 +56,7 @@
                 Swal.fire({
                     icon: 'error',
                     iconColor: "#05072e",
-                    title: 'Correo no existe en la BD',
+                    title: 'Ya existe una cuenta asociada a este correo electronico.',
                     confirmButtonColor: "#05072e"
                 });
             });
@@ -124,7 +124,7 @@
                 {{ __('Ya registrado?') }}
             </a>
 
-            <button type="submit" class="ms-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 btn_color">
+            <button type="submit" class="ms-4 px-4 py-2  text-white rounded-md btn_color" style="background-color: #05072e;">
                 {{ __('Registrarse') }}
             </button>
         </div>
