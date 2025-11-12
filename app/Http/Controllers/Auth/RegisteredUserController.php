@@ -11,7 +11,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
@@ -33,7 +32,12 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
+        // Usa el nombre real de la tabla de Conductor (evita hardcodear 'conductor')
+        $conductorTable = (new Conductor)->getTable();
+        $usersTable     = (new User)->getTable();
+
+        $validated = $request->validate([
+            // Déjalo nullable si tu columna users.name es nullable; si NO lo es, cambia a 'required'
             'name' => ['nullable', 'string', 'max:255'],
             'email' => [
                 'required',
@@ -41,26 +45,28 @@ class RegisteredUserController extends Controller
                 'lowercase',
                 'email',
                 'max:255',
-                Rule::exists('conductor', 'email'), // Solo correos en tabla conductor.
+                // Debe existir en la tabla de conductores (correo autorizado)
+                Rule::exists($conductorTable, 'email'),
+                // Y NO debe existir ya en users (evita constraint violation)
+                Rule::unique($usersTable, 'email'),
             ],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        //Si el usuario ya existe en User lo recogemos.
-        $user = User::where('email', strtolower($request->email))->first();
+        // Normaliza a minúsculas por las dudas
+        $email = mb_strtolower($validated['email']);
 
-        //Creamos usuario.
+        // Crea el usuario (usa solo lo validado)
         $user = User::create([
-            'name' => $request->name,
-            'email' => strtolower($request->email),
-            'password' => Hash::make($request->password),
-            'rol' => 'cliente' //Cuando un cliente se registra  se le coloca rol = cliente.
+            'name'     => $validated['name'] ?? null,
+            'email'    => $email,
+            'password' => Hash::make($validated['password']),
+            'rol'      => 'cliente', // rol por defecto al registrarse
         ]);
 
         event(new Registered($user));
-
         Auth::login($user);
 
-        return redirect(route('cliente.dashboard'));
+        return redirect()->route('cliente.dashboard');
     }
 }
