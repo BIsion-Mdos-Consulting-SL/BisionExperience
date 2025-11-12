@@ -40,14 +40,23 @@
                             <label class="form-label fw-bold" style="color: black;">Nombre</label>
                             <input name="nombre" type="text" class="form-control border rounded" value="{{ old('nombre') }}">
                         </div>
+
                         <div class="mb-3">
                             <label class="form-label fw-bold" style="color: black;">Descripción</label>
                             <textarea name="descripcion" rows="5" class="form-control border rounded">{{ old('descripcion') }}</textarea>
                         </div>
+
+                        <!---IMAGEN--->
                         <div class="mb-3">
                             <label class="form-label fw-bold" style="color: black;">Imagen* (jpg, jpeg, png)</label>
-                            <input name="foto_restaurante" type="file" class="form-control border rounded p-1">
+                            <input id="foto_restaurante_crear" name="foto_restaurante_crear" type="file"
+                                class="form-control border rounded p-1" accept="image/*">
+
+                            <!-- PREVIEW IMAGEN CREAR -->
+                            <img id="preview-crear" class="mt-2 rounded d-none"
+                                style="max-height: 120px; margin: auto;" alt="Vista previa">
                         </div>
+
                         <div class="mb-3">
                             <label class="form-label fw-bold" style="color: black;">Enlace</label>
                             <input name="enlace" type="text" class="form-control border rounded" value="{{ old('enlace') }}">
@@ -85,10 +94,14 @@
                         <!-- FOTO RESTAURANTE -->
                         <div class="mb-3">
                             <label for="foto_restaurante" class="form-label fw-bold" style="color: black;">Imagen* (jpg, jpeg, png)</label>
-                            <input id="foto_restaurante" name="foto_restaurante" type="file" accept="image/*" class="form-control border rounded p-1">
-                            @if(!empty($restaurante->foto_restaurante))
-                            <img src="{{ Storage::url($restaurante->foto_restaurante) }}" class="mt-2 rounded" style="max-height:120px;margin:auto;" alt="Actual">
-                            @endif
+                            <input id="foto_restaurante_editar" name="foto_restaurante" type="file"
+                                accept="image/*" class="form-control border rounded p-1">
+
+                            <!-- PREVIEW IMAGEN EDITAR -->
+                            <img id="preview-editar"
+                                src="{{ !empty($restaurante->foto_restaurante) ? Storage::url($restaurante->foto_restaurante) : '#' }}"
+                                class="mt-2 rounded {{ !empty($restaurante->foto_restaurante) ? '' : 'd-none' }}"
+                                style="max-height:120px;margin:auto;" alt="Vista previa">
                         </div>
 
                         <!-- ENLACE -->
@@ -120,21 +133,50 @@
 </div>
 
 <script>
-    document.querySelectorAll('.form-eliminar').forEach(formEl => {
-        formEl.addEventListener('submit', function(e) {
-            e.preventDefault();
-            Swal.fire({
-                title: "¿Seguro que quieres eliminar?",
-                icon: "warning",
-                iconColor: "#05072e",
-                showDenyButton: true,
-                denyButtonColor: "#05072e",
-                confirmButtonText: "Sí",
-                confirmButtonColor: "#05072e",
-                denyButtonText: "No"
-            }).then(result => {
-                if (result.isConfirmed) this.submit();
+    document.addEventListener('DOMContentLoaded', function() {
+        // Confirmación eliminar (tu código)
+        document.querySelectorAll('.form-eliminar').forEach(formEl => {
+            formEl.addEventListener('submit', function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: "¿Seguro que quieres eliminar?",
+                    icon: "warning",
+                    iconColor: "#05072e",
+                    showDenyButton: true,
+                    denyButtonColor: "#05072e",
+                    confirmButtonText: "Sí",
+                    confirmButtonColor: "#05072e",
+                    denyButtonText: "No"
+                }).then(result => {
+                    if (result.isConfirmed) this.submit();
+                });
             });
         });
+
+        //FUNCION PARA VER IMAGENES.
+        function previewImage(inputId, previewId) {
+            const input = document.getElementById(inputId);
+            const preview = document.getElementById(previewId);
+            if (!input || !preview) return;
+
+            input.addEventListener('change', function() {
+                const file = this.files && this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        preview.src = e.target.result;
+                        preview.classList.remove('d-none');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    preview.src = '#';
+                    preview.classList.add('d-none');
+                }
+            });
+        }
+
+        // Inicializa crear y editar
+        previewImage('foto_restaurante_crear', 'preview-crear');
+        previewImage('foto_restaurante_editar', 'preview-editar');
     });
 </script>
