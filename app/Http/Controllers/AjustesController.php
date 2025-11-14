@@ -40,7 +40,7 @@ class AjustesController extends Controller
             ->distinct()
             ->orderBy('c.empresa')
             ->pluck('c.empresa')
-            ->filter(fn($empresa) => !empty($empresa)) //Elimina null y cadenas vacias por si no hay datos en la tabla invitados.
+            ->filter(fn($empresa) => !empty($empresa))
             ->toArray();
 
         $parada = null;
@@ -241,12 +241,10 @@ class AjustesController extends Controller
     public function storeBanner(Request $request, Evento $evento)
     {
         $data = $request->validate([
-            'evento_id' => 'required|integer|exists:evento,id',
             'empresa' => [
-                'required',
+                'nullable',
                 'string',
                 'max:45',
-                //Evita duplicados 
                 Rule::unique('banner')->where(
                     fn($q) =>
                     $q->where('evento_id', $evento->id)
@@ -257,21 +255,27 @@ class AjustesController extends Controller
             'imagen' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
             'frase' => 'nullable|string|max:255',
             'contacto' => 'nullable|string|max:255',
-            'texto' => 'nullable|string|max:255'
+            'texto' => 'nullable|string|max:255',
         ]);
 
-        //Subimos imagen
-        $data['imagen'] = $request->file('imagen')->store('banners', 'public');
-        //Subimos video
+        // Subimos imagen
+        if ($request->hasFile('imagen')) {
+            $data['imagen'] = $request->file('imagen')->store('banners', 'public');
+        }
+
+        // Subimos video
         if ($request->hasFile('video')) {
             $data['video'] = $request->file('video')->store('banners/videos', 'public');
         }
 
+        // Forzamos el evento desde la ruta
         $data['evento_id'] = $evento->id;
 
         Banner::create($data);
+
         return back()->toast('success', 'Banner creado');
     }
+
 
     /** ACTUALIZAMOS EL BANNER */
     public function updateBanner(Request $request, Evento $evento, Banner $banner)
@@ -293,9 +297,9 @@ class AjustesController extends Controller
             'enlace' => ['nullable', 'url', 'max:255'],
             'imagen' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'video'  => ['nullable', 'file', 'mimetypes:video/mp4,video/webm,video/ogg', 'max:262144'],
-            'frase' => ['nullable' , 'string' , 'max:255'],
-            'contacto' => ['nullable' , 'string' , 'max:255'],
-            'texto' => ['nullable' , 'string' , 'max:255'],
+            'frase' => ['nullable', 'string', 'max:255'],
+            'contacto' => ['nullable', 'string', 'max:255'],
+            'texto' => ['nullable', 'string', 'max:255'],
         ]);
 
         // Imagen (solo si suben una nueva)
