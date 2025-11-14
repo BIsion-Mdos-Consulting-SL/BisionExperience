@@ -1,5 +1,5 @@
 <div class="modal fade" id="modalBanner" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content p-4">
             <div class="d-flex justify-content-end mb-1">
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -49,58 +49,79 @@
                         <h5 class="fs-2 fw-bold" style="color:#05072e;">Añadir Banner</h5>
                     </div>
 
-                    <form method="POST" action="{{ route('store.banner', $evento) }}" class="mt-4" enctype="multipart/form-data">
+                    <form method="POST"
+                        action="{{ route('store.banner', $evento) }}"
+                        class="mt-4 row g-3"
+                        enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="evento_id" value="{{ $evento->id }}">
+                        <!-- COLUMNA IZQUIERDA -->
+                        <div class="col-12 col-md-6">
+                            <!-- EMPRESA -->
+                            <div class="mb-3">
+                                <label for="empresa" class="form-label fw-bold" style="color:black;">Empresa</label>
+                                <select name="empresa" id="empresa"
+                                    class="form-select border rounded">
+                                    <option value="">Selecciona empresa</option>
+                                    @foreach($empresas as $empresa)
+                                    <option value="{{ $empresa }}">{{ $empresa }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
 
-                        <!-- EMPRESA -->
-                        <div class="mb-3">
-                            <label for="empresa" class="form-label fw-bold" style="color:black;">Empresa</label>
-                            <select name="empresa" id="empresa" class="form-select border rounded" required>
-                                <option value="">Selecciona empresa</option>
-                                @foreach($empresas as $empresa)
-                                <option value="{{ $empresa }}">{{ $empresa }}</option>
-                                @endforeach
-                            </select>
+                            <!-- VIDEO -->
+                            <div class="mb-3">
+                                <label for="video" class="form-label fw-bold" style="color:black;">Video</label>
+                                <input name="video" id="video" type="file"
+                                    class="form-control border rounded p-2">
+                            </div>
+
+                            <!-- ENLACE -->
+                            <div class="mb-3">
+                                <label for="enlace" class="form-label fw-bold" style="color:black;">Enlace</label>
+                                <input id="enlace" name="enlace" type="text" class="form-control border rounded" value="{{ old('enlace') }}">
+                            </div>
+
+                            <!-- FRASE -->
+                            <div class="mb-3">
+                                <label for="frase" class="form-label fw-bold" style="color:black;">Frase</label>
+                                <input id="frase" name="frase" type="text" class="form-control  border rounded" value="{{ old('frase') }}">
+                            </div>
                         </div>
 
-                        <!-- VIDEO -->
-                        <div class="mb-3">
-                            <label for="video" class="form-label fw-bold" style="color:black;">Video</label>
-                            <input name="video" id="video" type="file" class="form-control border rounded p-1">
-                        </div>
+                        <!-- COLUMNA DERECHA -->
+                        <div class="col-12 col-md-6">
+                            <!-- CONTACTO -->
+                            <div class="mb-3">
+                                <label for="contacto" class="form-label fw-bold" style="color:black;">Contacto</label>
+                                <input id="contacto" name="contacto" type="text" class="form-control border rounded" value="{{ old('contacto') }}">
+                            </div>
 
-                        <!-- ENLACE -->
-                        <div class="mb-3">
-                            <label for="enlace" class="form-label fw-bold" style="color:black;">Enlace</label>
-                            <input id="enlace" name="enlace" type="text" class="form-control border rounded" value="{{ old('enlace') }}">
-                        </div>
+                            <!-- TEXTO -->
+                            <div class="mb-3">
+                                <label for="texto" class="form-label fw-bold" style="color:black;">Texto</label>
+                                <input id="texto" name="texto" type="text" class="form-control  border rounded" value="{{ old('texto') }}">
+                            </div>
 
-                        <!-- FRASE -->
-                        <div class="mb-3">
-                            <label for="frase" class="form-label fw-bold" style="color:black;">Frase</label>
-                            <input id="frase" name="frase" type="text" class="form-control border rounded" value="{{ old('frase') }}">
-                        </div>
+                            <!-- IMAGEN -->
+                            <div class="mb-3">
+                                <label for="imagen" class="form-label fw-bold" style="color:black;">
+                                    Imagen* (jpg, jpeg, png)
+                                </label>
 
-                        <!-- CONTACTO -->
-                        <div class="mb-3">
-                            <label for="contacto" class="form-label fw-bold" style="color:black;">Contacto</label>
-                            <input id="contacto" name="contacto" type="text" class="form-control border rounded" value="{{ old('contacto') }}">
-                        </div>
+                                <!---El input esta oculto--->
+                                <input type="file" class="form-control d-none" id="imagen" name="imagen" accept="image/">
 
-                        <!-- TEXTO -->
-                        <div class="mb-3">
-                            <label for="texto" class="form-label fw-bold" style="color:black;">Texto</label>
-                            <input id="texto" name="texto" type="text" class="form-control border rounded" value="{{ old('texto') }}">
-                        </div>
-
-                        <!-- IMAGEN -->
-                        <div class="mb-3">
-                            <label for="imagen" class="form-label fw-bold" style="color:black;">Imagen</label>
-                            <input id="imagen-crear" name="imagen" type="file" class="form-control border rounded p-1" accept="image/*" required>
-
-                            <!---CONTENEDOR DE IMAGEN--->
-                            <img id="preview-crear" class="mt-2"></img>
+                                <!---El input que dispara el input--->
+                                <div id="preview_container"
+                                    class="text-end"
+                                    style="cursor:pointer; max-width: 300px; margin: 0 auto;">
+                                    <i class="bi bi-folder-plus"
+                                        id="preview_icon"
+                                        title="Selecciona imagen"
+                                        style="color: black; font-size: 10rem;"></i>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="d-flex justify-content-end">
@@ -110,8 +131,7 @@
                 </div>
 
                 <!-- EDITAR -->
-                <div
-                    class="tab-pane fade {{ ($hasSelected || $hasBanners) ? 'show active' : '' }}"
+                <div class="tab-pane fade {{ ($hasSelected || $hasBanners) ? 'show active' : '' }}"
                     id="banner-editar" role="tabpanel" aria-labelledby="editar-tab">
 
                     <div class="modal-header">
@@ -137,60 +157,97 @@
                     <div id="editar-form-wrapper">
                         @isset($banner)
                         @if($banner)
-                        <form id="formBanner" method="POST" action="{{route('evento.banner.update' , ['evento' => $evento->id , 'banner' => $banner->id])}}" class="mt-4" enctype="multipart/form-data">
+                        <form id="formBanner"
+                            method="POST"
+                            action="{{ route('evento.banner.update' , ['evento' => $evento->id , 'banner' => $banner->id]) }}"
+                            class="mt-4 row g-3"
+                            enctype="multipart/form-data">
                             @csrf
                             @method('PUT')
-                            <!-- IMAGEN -->
-                            <div class="mb-3">
-                                <label for="imagen-editar" class="form-label fw-bold" style="color:black;">Imagen</label>
-                                <input id="imagen-editar" name="imagen" type="file" class="form-control border rounded p-1" accept="image/*">
-                                <div id="preview-editar" class="mt-2">
-                                    @if(!empty($banner?->imagen))
-                                    <img
-                                        src="{{ \Illuminate\Support\Facades\Storage::url($banner->imagen) }}"
-                                        alt="Imagen actual"
-                                        class="img-fluid"
-                                        style="max-height: 150px; margin: auto;">
-                                    @endif
+
+                            <!-- COLUMNA IZQUIERDA -->
+                            <div class="col-12 col-md-6">
+                                <!-- VIDEO -->
+                                <div class="mb-3">
+                                    <label for="video" class="form-label fw-bold" style="color:black;">Video</label>
+                                    <input name="video" id="video" type="file" class="form-control border rounded p-2">
+                                </div>
+
+                                <!-- ENLACE -->
+                                <div class="mb-3">
+                                    <label for="enlace" class="form-label fw-bold" style="color:black;">Enlace</label>
+                                    <input id="enlace"
+                                        name="enlace"
+                                        type="text"
+                                        class="form-control border rounded"
+                                        value="{{ old('enlace', $banner->enlace ?? '') }}">
+                                </div>
+
+                                <!-- FRASE -->
+                                <div class="mb-3">
+                                    <label for="frase" class="form-label fw-bold" style="color:black;">Frase</label>
+                                    <input id="frase"
+                                        name="frase"
+                                        type="text"
+                                        class="form-control border rounded"
+                                        value="{{ old('frase', $banner->frase ?? '') }}">
                                 </div>
                             </div>
 
-                            <!-- VIDEO -->
-                            <div class="mb-3">
-                                <label for="video" class="form-label fw-bold" style="color:black;">Video</label>
-                                <input name="video" id="video" type="file" class="form-control border rounded p-1">
-                            </div>
+                            <!-- COLUMNA DERECHA -->
+                            <div class="col-12 col-md-6">
+                                <!-- CONTACTO -->
+                                <div class="mb-3">
+                                    <label for="contacto" class="form-label fw-bold" style="color:black;">Contacto</label>
+                                    <input id="contacto"
+                                        name="contacto"
+                                        type="text"
+                                        class="form-control border rounded"
+                                        value="{{ old('contacto', $banner->contacto ?? '') }}">
+                                </div>
 
-                            <!-- ENLACE -->
-                            <div class="mb-3">
-                                <label for="enlace" class="form-label fw-bold" style="color:black;">Enlace</label>
-                                <input id="enlace" name="enlace" type="text" class="form-control border rounded" value="{{ old('enlace', $banner->enlace ?? '') }}">
-                            </div>
+                                <!-- TEXTO -->
+                                <div class="mb-3">
+                                    <label for="texto" class="form-label fw-bold" style="color:black;">Texto</label>
+                                    <input id="texto"
+                                        name="texto"
+                                        type="text"
+                                        class="form-control border rounded"
+                                        value="{{ old('texto', $banner->texto ?? '') }}">
+                                </div>
 
-                            <!-- FRASE -->
-                            <div class="mb-3">
-                                <label for="frase" class="form-label fw-bold" style="color:black;">Frase</label>
-                                <input id="frase" name="frase" type="text" class="form-control border rounded" value="{{ old('frase', $banner->frase ?? '') }}">
-                            </div>
+                                <!-- IMAGEN -->
+                                <div class="mb-3">
+                                    <label for="imagen-editar" class="form-label fw-bold" style="color:black;">Imagen</label>
+                                    <input id="imagen-editar"
+                                        name="imagen"
+                                        type="file"
+                                        class="form-control border rounded p-2"
+                                        accept="image/*">
 
-                            <!-- CONTACTO -->
-                            <div class="mb-3">
-                                <label for="contacto" class="form-label fw-bold" style="color:black;">Contacto</label>
-                                <input id="contacto" name="contacto" type="text" class="form-control border rounded" value="{{ old('contacto', $banner->contacto ?? '') }}">
+                                    <div id="preview-editar" class="mt-2 text-center">
+                                        @if(!empty($banner?->imagen))
+                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($banner->imagen) }}"
+                                            alt="Imagen actual"
+                                            class="img-fluid"
+                                            style="max-height:150px; margin:auto;">
+                                        @endif
+                                    </div>
+                                </div>
                             </div>
-
-                            <!-- TEXTO -->
-                            <div class="mb-3">
-                                <label for="texto" class="form-label fw-bold" style="color:black;">Texto</label>
-                                <input id="texto" name="texto" type="text" class="form-control border rounded" value="{{ old('texto', $banner->texto ?? '') }}">
-                            </div>
-
                         </form>
 
                         <div class="d-flex justify-content-end gap-2 mt-3">
-                            <button type="submit" class="p-2 rounded" style="background-color:#05072e;" form="formBanner">Guardar</button>
+                            <button type="submit"
+                                class="p-2 rounded"
+                                style="background-color:#05072e;"
+                                form="formBanner">
+                                Guardar
+                            </button>
 
-                            <form method="POST" action="{{route('eliminarBanner' , ['evento' => $evento->id , $banner->id])}}" class="d-inline form-eliminar">
+                            <form method="POST"
+                                action="{{ route('eliminarBanner' , ['evento' => $evento->id , 'id' => $banner->id]) }}"
+                                class="d-inline form-eliminar">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-danger">
@@ -210,14 +267,6 @@
 
 <script>
     window.onload = function() {
-        /**Busca el input , genera el preview en la parte de crear. */
-        var inputCrear = document.getElementById("imagen-crear");
-        if (inputCrear) {
-            inputCrear.onchange = function(e) {
-                readfileCrear(e.target);
-            };
-        }
-
         bindEditarPreview(); // Se usara para poder re-enlazar tras inyectar HTML
 
         // EDITAR: cargar formulario por AJAX
@@ -266,22 +315,8 @@
                     });
             });
         }
+        mostrarImagen();
     };
-
-    //FUNCION CREAR IMAGEN 
-    function readfileCrear(input) {
-        var file = input.files[0];
-
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            var filePreview = document.getElementById('preview-crear');
-            filePreview.src = e.target.result;
-            filePreview.style.display = 'block';
-            filePreview.style.height = '150px';
-            filePreview.style.margin = 'auto';
-        };
-        reader.readAsDataURL(file);
-    }
 
     //**Esta funcion busca el input de imagen-editar , si existe lo engancha con un onChange que llama a readFileEditar. */
     function bindEditarPreview() {
@@ -316,6 +351,7 @@
         reader.readAsDataURL(file);
     }
 
+    //Funcion para eliminar coche (SWEET ALERT)
     function bindEliminarConfirm() {
         document.querySelectorAll('.form-eliminar').forEach(form => {
             form.addEventListener('submit', function(e) {
@@ -336,6 +372,34 @@
                     }
                 });
             })
+        })
+    }
+
+    function mostrarImagen() {
+        const input = document.getElementById('imagen');
+        const previewContainer = document.getElementById('preview_container');
+        const previewIcon = document.getElementById('preview_icon');
+
+        //Disparamos con el click el input.
+        previewContainer.addEventListener('click', function() {
+            input.click();
+        })
+
+        input.addEventListener('change', function() {
+            const file = this.files[0];
+
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    previewContainer.innerHTML = `
+                    <img src="${e.target.result}" alt="Vista previa" style="max-width: 400px; max-height: 250px; border-radius: 10px;">
+                `;
+                }
+                reader.readAsDataURL(file);
+            } else {
+                alert('Por favor selecciona una imagen valida');
+            }
         })
     }
 </script>

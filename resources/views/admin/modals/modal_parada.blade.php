@@ -29,21 +29,25 @@
                     <form method="POST" action="{{ route('store.paradas', $evento) }}" class="mt-4">
                         @csrf
 
+                        <!----NOMBRE---->
                         <div class="mb-3">
                             <label for="nombre" class="form-label fw-bold" style="color: black;">Nombre</label>
                             <input id="nombre" name="nombre" type="text" class="form-control border rounded" value="{{ old('nombre') }}">
                         </div>
 
+                        <!----DESCRIPCION---->
                         <div class="mb-3">
                             <label for="descripcion" class="form-label fw-bold" style="color: black;">Descripción</label>
                             <textarea id="descripcion" name="descripcion" rows="5" class="form-control border rounded">{{ old('descripcion') }}</textarea>
                         </div>
 
+                        <!----ENLACE---->
                         <div class="mb-3">
                             <label for="enlace" class="form-label fw-bold" style="color: black;">Enlace</label>
                             <input id="enlace" name="enlace" type="text" class="form-control border rounded" value="{{ old('enlace') }}">
                         </div>
 
+                        <!----ORDEN---->
                         <div class="mb-4 col-5">
                             <label for="orden" class="form-label fw-bold" style="color: black;">Orden</label>
                             <input id="orden" name="orden" type="number" min="1" class="form-control border rounded" value="{{ old('orden') }}">
@@ -52,6 +56,7 @@
                             @enderror
                         </div>
 
+                        
                         <div class="d-flex justify-content-end">
                             <button type="submit" class="p-2 rounded" style="background-color:#05072e;">Guardar</button>
                         </div>

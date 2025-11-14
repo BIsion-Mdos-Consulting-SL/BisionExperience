@@ -93,7 +93,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="w-100 d-flex justify-content-end gap-2">
                     <!-- BOTÓN GUARDAR EVENTO -->
                     <button type="submit" class="btn_color">Guardar</button>
@@ -162,10 +162,18 @@
                 const reader = new FileReader();
 
                 reader.onload = function(e) {
-                    // Reemplaza el ícono con la imagen seleccionada
                     previewContainer.innerHTML = `
-                    <img src="${e.target.result}" alt="Vista previa" style="max-width: 400px; max-height: 250px; border-radius: 10px;">
-                `;
+                        <img src="${e.target.result}"
+                            alt="Vista previa"
+                            style="
+                                max-width:100%;
+                                max-height:100%;
+                                width:auto;
+                                height:auto;
+                                object-fit:contain;
+                                border-radius:10px;
+                        ">
+                    `;
                 };
 
                 reader.readAsDataURL(file);
