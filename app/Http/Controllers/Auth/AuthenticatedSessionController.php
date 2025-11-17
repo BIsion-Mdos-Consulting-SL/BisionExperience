@@ -33,8 +33,8 @@ class AuthenticatedSessionController extends Controller
             return redirect()->intended(route('dashboard', absolute: true));
         } elseif (Auth::user()->rol === 'cliente') {
             return redirect()->intended(route('cliente.dashboard', absolute: true));
-        }elseif(Auth::user()->rol === 'dealer'){
-            return redirect()->intended(route('dealer.dashboard' , absolute:true));
+        } elseif (Auth::user()->rol === 'dealer') {
+            return redirect()->intended(route('dealer.dashboard', absolute: true));
         } else {
             return redirect("/");
         }
@@ -54,7 +54,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect()->route('inicio');
+        return redirect()->route('cliente.login');
     }
 
     public function createAdmin()
@@ -70,7 +70,7 @@ class AuthenticatedSessionController extends Controller
         if (Auth::check() && Auth::user()->rol === 'admin') {
             return redirect()->route('dashboard');
         }
-        
+
         // En cualquier otro caso → mostrar formulario de login
         return view('auth.login');
     }
