@@ -161,7 +161,7 @@
             <!--Imagen-->
             <div class="mb-3 col-lg-6">
                 <label for="imagen" class="form-label fw-bold ">Imagen (JPG, PNG)*</label>
-                <input type="file" class="form-control validar" name="imagen" accept=".jpg, .png" placeholder="Selecciona imagen">
+                <input type="file" class="form-control" name="imagen" accept=".jpg, .png" placeholder="Selecciona imagen">
             </div>
 
             @if(!empty($evento->imagen))

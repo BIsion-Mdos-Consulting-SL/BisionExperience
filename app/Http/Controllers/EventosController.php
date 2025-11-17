@@ -198,7 +198,6 @@ class EventosController extends Controller
             $evento->coste_evento = $request->coste_evento;
             $evento->aforo = $request->aforo;
             $evento->coste_unitario = $request->coste_unitario;
-            $evento->imagen = $request->imagen;
             $evento->texto_invitacion = $request->texto_invitacion;
 
             // Manejamos la documentación con la siguiente condicion.
