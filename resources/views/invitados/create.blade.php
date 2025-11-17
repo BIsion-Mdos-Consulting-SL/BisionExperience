@@ -212,7 +212,7 @@
 
             <!---KAM--->
             <div class="mb-3">
-                <label for="kam" class="form-label fw-bold">KAM</label>
+                <label for="kam" class="form-label fw-bold">KAM - ( ¿Quien te ha invitado? )</label>
                 <input type="text" class="form-control" name="kam" value="{{ old('kam')}}">
             </div>
 
