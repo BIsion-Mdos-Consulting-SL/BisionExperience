@@ -9,7 +9,7 @@
     <title>{{ config('app.name', 'Laravel') }}</title>
 
     <!--FAVICON (LOGO NAVEGACION)-->
-    <link rel="icon" type="image/png" href="{{asset('images/header_logo.png')}}">
+    <link rel="icon" type="image/png" href="{{ asset('storage/images/logo(4).png') }}">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">

@@ -9,8 +9,8 @@
     <title>Bision-io</title>
 
     <!-- Fonts -->
-     <!--FAVICON (LOGO NAVEGACION)-->
-    <link rel="icon" type="image/png" href="{{asset('images/header_logo.png')}}">
+    <!--FAVICON (LOGO NAVEGACION)-->
+    <link rel="icon" type="image/png" href="{{ asset('storage/images/logo(4).png') }}">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">

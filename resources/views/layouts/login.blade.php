@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Bision-io</title>
     <!--FAVICON (LOGO NAVEGACION)-->
-    <link rel="icon" type="image/png" href="{{ asset('images/header_logo.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('storage/images/logo(4).png') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
@@ -77,61 +77,6 @@
         text-align: center;
         margin-top: 2rem;
     }
-
-    /* ====== ANIMACIÓN DE APARICIÓN ====== */
-    /* @keyframes fadeInUp {
-        0% {
-            opacity: 0;
-            transform: translateY(40px);
-        }
-
-        100% {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    } */
-
-    /* ====== CADA ITEM ====== */
-    /* .menu-item {
-        text-decoration: none;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        opacity: 0;
-        animation: fadeInUp 1.2s ease forwards;
-        transition: transform 0.4s ease, filter 0.4s ease;
-    } */
-
-    /*Retraso progresivo (efecto secuencial) */
-    /* .menu-item:nth-child(1) {
-        animation-delay: 0.5s;
-    }
-
-    .menu-item:nth-child(2) {
-        animation-delay: 0.6s;
-    }
-
-    .menu-item:nth-child(3) {
-        animation-delay: 0.9s;
-    }
-
-    /* ====== IMAGEN ====== */
-    /* .menu-item img {
-        width: 280px;
-        height: auto;
-        border-radius: 16px;
-        transition: all 0.6s ease;
-    } */
-
-    /* ====== TEXTO ====== */
-    /* .menu-item p {
-        font-size: 26px;
-        font-family: 'Poppins', sans-serif;
-        color: #fff;
-        font-weight: 600;
-        text-align: center;
-    } */
-    */
 
     /**FONDO BOTONES , (NO DEPENDE DEL MENU) */
     .fondo_botones {

@@ -185,6 +185,7 @@ class EventosController extends Controller
             'enlace' => 'nullable',
             'documentacion' => 'nullable',
             'texto_invitacion' => 'required',
+            'imagen' => 'nullable'
         ]);
 
         try {
@@ -197,6 +198,7 @@ class EventosController extends Controller
             $evento->coste_evento = $request->coste_evento;
             $evento->aforo = $request->aforo;
             $evento->coste_unitario = $request->coste_unitario;
+            $evento->imagen = $request->imagen;
             $evento->texto_invitacion = $request->texto_invitacion;
 
             // Manejamos la documentación con la siguiente condicion.
@@ -209,6 +211,16 @@ class EventosController extends Controller
                 // Guardar la nueva documentación en "images/eventos_documentacion"
                 $pathDocumentacion = $request->file('documentacion')->store('images/eventos_documentacion', 'public');
                 $evento->documentacion = $pathDocumentacion; // Guarda la ruta relativa en la base de datos
+            }
+
+            //Manejamos la imagen con la siguiente condicion.
+            if ($request->hasFile('imagen')) {
+                if ($evento->imagen && Storage::exists('public/' . $evento->imagen)) {
+                    Storage::delete('public/' . $evento->imagen);
+                }
+
+                $pathImagen = $request->file('imagen')->store('images/eventos', 'public');
+                $evento->imagen = $pathImagen;
             }
 
             $evento->save();

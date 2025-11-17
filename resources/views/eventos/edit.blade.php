@@ -157,6 +157,26 @@
             </div>
         </div>
 
+        <div class="d-flex flex-wrap gap-1 col-12 justify-content-between">
+            <!--Imagen-->
+            <div class="mb-3 col-lg-6">
+                <label for="imagen" class="form-label fw-bold ">Imagen (JPG, PNG)*</label>
+                <input type="file" class="form-control validar" name="imagen" accept=".jpg, .png" placeholder="Selecciona imagen">
+            </div>
+
+            @if(!empty($evento->imagen))
+            <div class="mb-3 col-12 col-sm-12 col-lg-5 d-flex flex-column align-items-center text-center mx-lg-0 mx-auto">
+
+                <label class="form-label fw-bold">Imagen actual</label><br>
+
+                <img src="{{ asset('storage/' . $evento->imagen) }}"
+                    alt="Imagen del evento"
+                    class="img-fluid"
+                    style="max-width: 300px; border-radius: 8px; margin-bottom: 10px;">
+            </div>
+            @endif
+        </div>
+
         <!--TEXTO INVITACION-->
         <div class="w-100">
             <label for="texto_invitacion" class="form-label fw-bold">Texto invitacion*</label>
