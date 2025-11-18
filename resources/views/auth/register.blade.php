@@ -10,7 +10,7 @@
             <x-text-input id="name" class="block mt-1 w-full validar" type="text" name="name" :value="old('name')" autofocus autocomplete="name" />
             <x-input-error :messages="$errors->get('name')" class="mt-2" />
         </div>
-       
+
 
         <!-- Email Address -->
         <div class="mt-4">
@@ -39,7 +39,7 @@
 
         <!-- Confirm Password -->
         <div class="mt-4">
-            <x-input-label  for="password_confirmation" :value="__('Confirmar contraseña')" />
+            <x-input-label for="password_confirmation" :value="__('Confirmar contraseña')" />
             <div class="input-group">
                 <x-text-input type="password" name="password_confirmation" autocomplete="new-password" class="form-control password validar" />
                 <span class="input-group-text toggle-password" style="cursor: pointer;">
@@ -56,7 +56,7 @@
                 Swal.fire({
                     icon: 'error',
                     iconColor: "#05072e",
-                    title: 'Ya existe una cuenta asociada a este correo electronico.',
+                    title: "{{ $errors->first('email') }}",
                     confirmButtonColor: "#05072e"
                 });
             });

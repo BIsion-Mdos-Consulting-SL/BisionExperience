@@ -32,12 +32,10 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        // Usa el nombre real de la tabla de Conductor (evita hardcodear 'conductor')
         $conductorTable = (new Conductor)->getTable();
         $usersTable     = (new User)->getTable();
 
         $validated = $request->validate([
-            // Déjalo nullable si tu columna users.name es nullable; si NO lo es, cambia a 'required'
             'name' => ['nullable', 'string', 'max:255'],
             'email' => [
                 'required',
@@ -45,24 +43,50 @@ class RegisteredUserController extends Controller
                 'lowercase',
                 'email',
                 'max:255',
-                // Debe existir en la tabla de conductores (correo autorizado)
                 Rule::exists($conductorTable, 'email'),
-                // Y NO debe existir ya en users (evita constraint violation)
-                Rule::unique($usersTable, 'email'),
             ],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ], [
+            //mensaje para cuando NO existe en conductor
+            'email.exists' => 'El correo introducido no existe en la BD.',
         ]);
 
-        // Normaliza a minúsculas por las dudas
+        // Normaliza el email
         $email = mb_strtolower($validated['email']);
 
-        // Crea el usuario (usa solo lo validado)
-        $user = User::create([
-            'name'     => $validated['name'] ?? null,
-            'email'    => $email,
-            'password' => Hash::make($validated['password']),
-            'rol'      => 'cliente', // rol por defecto al registrarse
-        ]);
+        // ¿Ya existe un usuario con este email?
+        $user = User::where('email', $email)->first();
+
+        if ($user) {
+            //CASO 1: ya habia usuario en users con este email
+
+            // Si YA tiene contraseña, ya esta registrado
+            if (!is_null($user->password)) {
+                return back()
+                    ->withErrors([
+                        'email' => 'Este correo ya tiene una cuenta registrada. Inicia sesión en lugar de crear una nueva.',
+                    ])
+                    ->withInput($request->except('password', 'password_confirmation'));
+            }
+
+            // Si NO tenia contraseña → lo completamos como cliente
+            $user->name     = $user->name ?? ($validated['name'] ?? null);
+            $user->password = Hash::make($validated['password']);
+
+            if (empty($user->rol)) {
+                $user->rol = 'cliente';
+            }
+
+            $user->save();
+        } else {
+            // CASO 2: no existe en users → lo creamos normal
+            $user = User::create([
+                'name'     => $validated['name'] ?? null,
+                'email'    => $email,
+                'password' => Hash::make($validated['password']),
+                'rol'      => 'cliente',
+            ]);
+        }
 
         event(new Registered($user));
         Auth::login($user);
