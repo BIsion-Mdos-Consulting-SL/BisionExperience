@@ -30,6 +30,14 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
+
+    /**
+     * La función `store` gestiona el proceso de registro de usuarios, comprobando si un correo electrónico ya existe en la base de datos y creando un nuevo usuario si es necesario, luego iniciando sesión al usuario y redirigiéndolo al panel de control del cliente.
+     
+     * @param Request request La función `store` que proporcionaste parece gestionar el proceso de registro de usuarios en tu aplicación. Permíteme explicar el flujo de la función basándome en el código que compartiste:
+     
+     * @return RedirectResponse La función `store` devuelve un objeto `RedirectResponse`. Este redirige a la ruta 'cliente.dashboard' después de procesar la entrada del usuario y crear o actualizar un usuario en la base de datos.
+     */
     public function store(Request $request): RedirectResponse
     {
         $conductorTable = (new Conductor)->getTable();

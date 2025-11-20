@@ -50,39 +50,42 @@
     - [📁 Estructura de carpetas](#-estructura-de-carpetas-5)
     - [🧩 Vistas comunes](#-vistas-comunes-5)
   - [👁️ Controlador (Controllers)](#️-controlador-controllers)
-    - [`EventosController`](#eventoscontroller)
+    - [`Auth/RegisteredUserController`](#authregisteredusercontroller)
     - [🧩 Métodos principales](#-métodos-principales)
+      - [RUTAS RegisteredUserController](#rutas-registeredusercontroller)
+    - [`EventosController`](#eventoscontroller)
+    - [🧩 Métodos principales](#-métodos-principales-1)
       - [RUTAS EventosController](#rutas-eventoscontroller)
       - [Datos extras funcion exportarInvitados():](#datos-extras-funcion-exportarinvitados)
     - [`InvitadosController`](#invitadoscontroller)
-    - [🧩 Métodos principales](#-métodos-principales-1)
+    - [🧩 Métodos principales](#-métodos-principales-2)
       - [RUTAS InvitadosController](#rutas-invitadoscontroller)
     - [`CochesController`](#cochescontroller)
-    - [🧩 Métodos principales](#-métodos-principales-2)
+    - [🧩 Métodos principales](#-métodos-principales-3)
       - [RUTAS CochesController](#rutas-cochescontroller)
     - [`TrazabilidadController`](#trazabilidadcontroller)
-    - [🧩 Métodos principales](#-métodos-principales-3)
+    - [🧩 Métodos principales](#-métodos-principales-4)
       - [RUTAS TrazabilidadController](#rutas-trazabilidadcontroller)
     - [`AjustesController`](#ajustescontroller)
-    - [🧩 Métodos principales](#-métodos-principales-4)
+    - [🧩 Métodos principales](#-métodos-principales-5)
       - [RUTAS AjustesController](#rutas-ajustescontroller)
     - [`ClienteController`](#clientecontroller)
-    - [🧩 Métodos principales](#-métodos-principales-5)
+    - [🧩 Métodos principales](#-métodos-principales-6)
       - [RUTAS ClienteController](#rutas-clientecontroller)
     - [`PruebaDinamicaController`](#pruebadinamicacontroller)
-    - [🧩 Métodos principales](#-métodos-principales-6)
+    - [🧩 Métodos principales](#-métodos-principales-7)
       - [RUTAS ReservaController](#rutas-reservacontroller)
     - [`PruebaDinamicaController`](#pruebadinamicacontroller-1)
-    - [🧩 Métodos principales](#-métodos-principales-7)
+    - [🧩 Métodos principales](#-métodos-principales-8)
       - [RUTAS PruebaDinamicaController](#rutas-pruebadinamicacontroller)
     - [`TimingController`](#timingcontroller)
-    - [🧩 Métodos principales](#-métodos-principales-8)
+    - [🧩 Métodos principales](#-métodos-principales-9)
       - [RUTAS TimingController](#rutas-timingcontroller)
     - [`PatrocinadoresController`](#patrocinadorescontroller)
-    - [🧩 Métodos principales](#-métodos-principales-9)
+    - [🧩 Métodos principales](#-métodos-principales-10)
       - [RUTAS PatrocinadoresController](#rutas-patrocinadorescontroller)
     - [`EventoConductorController`](#eventoconductorcontroller)
-    - [🧩 Métodos principales](#-métodos-principales-10)
+    - [🧩 Métodos principales](#-métodos-principales-11)
       - [RUTAS EventoConductorController](#rutas-eventoconductorcontroller)
   - [📌 Conclusión](#-conclusión)
     - [✅ Logros principales:](#-logros-principales)
@@ -1289,8 +1292,23 @@ En este proyecto, los controladores siguen el patrón MVC proporcionado por Lara
     AuthController
     Controla los procesos de autenticación: login, logout, registro, etc.
 
-### `EventosController`
+### `Auth/RegisteredUserController`
 
+### 🧩 Métodos principales
+
+| Método                    | Descripción                                                         |
+| ------------------------- | ------------------------------------------------------------------- |
+| `create()`                | Muestra la ventana de creacion para poder visualizar el formulario. |
+| `store(Request $request)` | Permite la creacion de un nuevo usuario.                            |  |
+
+#### RUTAS RegisteredUserController 
+``` php
+    Route::get('register', [RegisteredUserController::class, 'create'])
+        ->name('register');
+
+    Route::post('register', [RegisteredUserController::class, 'store']);
+```
+### `EventosController`
 
 ### 🧩 Métodos principales
 
