@@ -38,7 +38,7 @@
                                 <a href="{{ route('invitados.create', $evento->id) }}" class="btn_color">Nueva invitación</a>
                                 @endif
                                 <a href="{{ route('coches.index' , $evento->id) }}" class="btn_color">
-                                    <i class="bi bi-list-columns" title="Listado coches"></i>
+                                    <i class="bi bi-car-front-fill" title="Listado de coches"></i>
                                 </a>
                             </div>
                         </form>
