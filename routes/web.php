@@ -10,6 +10,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\EventosController;
 use App\Http\Controllers\InvitadosController;
 use App\Http\Controllers\PatrocinadoresController;
+use App\Http\Controllers\PreReservaController;
 use App\Http\Controllers\PruebaDinamicaController;
 use App\Http\Controllers\ReservaController;
 use App\Http\Controllers\TimingController;
@@ -65,19 +66,6 @@ Route::middleware(['auth',  CheckRole::class . ':admin'])->group(function () {
     Route::get('/eventos/{evento_id}/exportar-invitados', [EventosController::class, 'exportarInvitados'])->name('eventos.exportarInvitados');
 
     /**------------------------------------------------------------------------------------------------*/
-
-    /***CRUD INVITADOS(CONDUCTORES) */
-    /* Route::get('/invitados/{id}', [InvitadosController::class, 'index'])->name('invitados.index'); */
-    /*Route::get('/invitados/create/{id}', [InvitadosController::class, 'create'])->name('invitados.create');
-    Route::post('/invitados/store/{id}', [InvitadosController::class, 'store'])->name('invitados.store');
-    Route::delete('/invitados/delete/{id}', [InvitadosController::class, 'delete'])->name('invitados.delete');
-    Route::get('/invitados/edit/{id}', [InvitadosController::class, 'edit'])->name('invitados.edit');
-    Route::put('/invitados/update/{id}', [InvitadosController::class, 'update'])->name('invitados.update');
-
-    Route::get('/invitados/show/{id}', [InvitadosController::class, 'show'])->name('invitados.show');
-    Route::post('/invitados/{id}/asistencia', [InvitadosController::class, 'actualizarAsistencia']);
-    //IMPORTAR INVITADOS 
-    Route::post('/invitados/importar/{id}', [InvitadosController::class, 'importarInvitados'])->name('invitados.importar'); */
     Route::prefix('eventos/{evento:id}')->group(function () {
         Route::get('invitados', [InvitadosController::class, 'index'])->name('invitados.index');
         Route::get('invitados/create', [InvitadosController::class, 'create'])->name('invitados.create');
@@ -154,6 +142,10 @@ Route::middleware(['auth',  CheckRole::class . ':admin'])->group(function () {
     Route::post('/ajustes/{evento:id}/timing', [AjustesController::class, 'storeTiming'])->name('store.timing');
     Route::put('/ajustes/{evento:id}/timing/{timing}', [AjustesController::class, 'updateTiming'])->name('evento.timing.update');
     Route::delete('/ajustes/{evento:id}/timing/{id}', [AjustesController::class, 'deleteTiming'])->name('eliminarTiming');
+
+
+    /**RUTAS PARA PRE - RESERVA */
+    Route::get('pre_reserva/{id}', [PreReservaController::class, 'index'])->name('pre_reserva.index');
 });
 
 // RUTAS PARA CLIENTES
