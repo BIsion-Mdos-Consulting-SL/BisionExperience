@@ -18,9 +18,11 @@
                                     <input class="form-control mb-3 rounded-3" id="input" name="buscador" type="text" placeholder="Introducir nombre y otro campos">
                                 </div>
                                 <!---BOTONES---->
-                                <div class="col-12 col-lg-3 d-flex gap-1">
+                                <div class="col-12 col-lg-4 d-flex gap-2">
                                     <button type="submit" class="btn_color txt col-4 col-sm-4 col-lg-4 mb-3 mx-lg-2">Buscar</button>
                                     <button type="submit" class="btn_color txt col-3 btn_secundario col-sm-4 col-lg-4 mb-3" id="reset">Limpiar</button>
+
+                                    <a href="{{route('pre_reserva.index' , $evento->id)}}" class="btn_color txt col-4 col-sm-4 col-lg-4 mb-3 mx-lg-2">Pre reserva</a>
                                 </div>
                             </div>
                         </form>
@@ -191,17 +193,17 @@
 @endsection
 
 <script>
-    document.addEventListener('DOMContentLoaded' , function() {
+    document.addEventListener('DOMContentLoaded', function() {
         const input = document.getElementById('input');
         const btn_reset = document.getElementById('reset');
         const resetUrl = "{{route('trazabilidad.index' , [ 'evento' => $evento->id])}}";
 
-        function reset(){
+        function reset() {
             input.value = '';
             window.location = resetUrl;
         }
 
-        btn_reset.addEventListener('click' , (e) =>{
+        btn_reset.addEventListener('click', (e) => {
             e.preventDefault();
             reset();
         })
