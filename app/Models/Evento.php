@@ -145,7 +145,7 @@ class Evento extends Model
 	* 
 	* @return El método `getRouteKeyName()` devuelve la cadena `'public_id'`. Este método se utiliza en
 	* Laravel para especificar el atributo que se debe usar al recuperar un modelo por su clave de ruta. En
-	* este caso, la clave de ruta para el modelo será el atributo `public_id`.
+	* este caso, la clave de ruta para el modelo será el atributo `public_id`. Es mucho mas seguro asi ya que nadie podra ver ni cambiar en la url por un numero , etc. (IMPORTANTE NO TOCAR ESTO , SERIA TU FUNERAL , AYUDA AL QR Y A IDENTIFAR CIERTOS PUNTOS DEL EVENTO)
 	*/
 	public function getRouteKeyName()
 	{

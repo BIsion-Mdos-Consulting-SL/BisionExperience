@@ -12,6 +12,12 @@ use Illuminate\Support\Facades\DB;
 
 class ReservaController extends Controller
 {
+    public function index($id)
+    {
+        $evento = Evento::find($id);
+        return view('coches.pre_reserva', compact('evento'));
+    }
+
     public function cargaDatos()
     {
         $userId = Auth::id();
