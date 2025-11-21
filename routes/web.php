@@ -145,7 +145,7 @@ Route::middleware(['auth',  CheckRole::class . ':admin'])->group(function () {
 
 
     /**RUTAS PARA PRE - RESERVA */
-    Route::get('pre_reserva/{id}', [PreReservaController::class, 'index'])->name('pre_reserva.index');
+    Route::get('pre_reserva/{id}', [ReservaController::class, 'index'])->name('pre_reserva.index');
 });
 
 // RUTAS PARA CLIENTES
@@ -176,7 +176,7 @@ Route::middleware(['auth', CheckRole::class . ':cliente'])->group(function () {
 
     /***-----------------RESERVA DE PARADAS------------------------------ */
     Route::get('/cargarDatos', [ReservaController::class, 'cargaDatos'])->name('cargar.datos');
-    Route::post('/reserva/store/{evento}/{parada}', [ReservaController::class, 'storeReserva'])->name('store.reserva');
+    Route::post('/reserva/store/{evento:public_id}/{parada}', [ReservaController::class, 'storeReserva'])->name('store.reserva');
 
     /***-----------------PRUEBAS DINAMICAS------------------------------ */
     Route::get('/cargarDatos/pruebaDinamica', [PruebaDinamicaController::class, 'cargaDatos'])->name('cargarDatos.pruebaDinamica');

@@ -156,8 +156,8 @@
                     progreso
                 } = payload;
 
-                if (!evento?.id || !parada?.id) throw new Error("Faltan IDs de evento/parada.");
-                EVENTO_ID = evento.id;
+                if (!evento?.public_id || !parada?.id) throw new Error("Faltan IDs de evento/parada.");
+                EVENTO_ID = evento.public_id;
                 PARADA_ID = parada.id;
 
                 h2Parada.textContent = (parada && parada.orden != null) ? `Parada ${parada.orden}` : "Parada —";
