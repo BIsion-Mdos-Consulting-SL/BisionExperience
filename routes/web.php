@@ -146,6 +146,8 @@ Route::middleware(['auth',  CheckRole::class . ':admin'])->group(function () {
 
     /**RUTAS PARA PRE - RESERVA */
     Route::get('pre_reserva/{id}', [ReservaController::class, 'index'])->name('pre_reserva.index');
+    Route::get('pre_reserva/show/{id}', [ReservaController::class, 'show'])->name('pre_reserva.show');
+    Route::get('pre_reserva/exportar/{evento:public_id}' , [ReservaController::class , 'export'])->name('pre_reserva.export');
 });
 
 // RUTAS PARA CLIENTES

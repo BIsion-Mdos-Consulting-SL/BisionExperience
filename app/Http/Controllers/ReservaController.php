@@ -2,20 +2,68 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\PreReservaExport;
 use App\Models\Coch;
 use App\Models\Evento;
 use App\Models\Parada;
 use App\Models\Reserva;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ReservaController extends Controller
 {
     public function index($id)
     {
-        $evento = Evento::find($id);
-        return view('coches.pre_reserva', compact('evento'));
+        $evento = Evento::findorFail($id);
+
+        $pares = Reserva::where('evento_id', $id)
+            ->select('parada_id', 'coche_id')
+            ->distinct()
+            ->orderBy('parada_id')
+            ->orderBy('coche_id')
+            ->paginate(6);
+
+        $reservasPagina = Reserva::where('evento_id', $id)
+            ->where(function ($q) use ($pares) {
+                foreach ($pares as $par) {
+                    $q->orWhere(function ($qq) use ($par) {
+                        $qq->where('parada_id', $par->parada_id)
+                            ->where('coche_id', $par->coche_id);
+                    });
+                }
+            })
+            ->with(['user:id,name', 'coch:id,modelo,matricula'])
+            ->get(['id', 'user_id', 'parada_id', 'coche_id', 'tipo']);
+
+        $paradasIds = $pares->pluck('parada_id')->unique()->values();
+        $cochesIds = $pares->pluck('coche_id')->unique()->values();
+
+        $paradas = Parada::whereIn('id', $paradasIds)
+            ->orderBy('nombre')
+            ->get(['id', 'nombre'])
+            ->keyBy('id');
+
+        $coches = Coch::whereIn('id', $cochesIds)
+            ->get(['id', 'modelo', 'matricula'])
+            ->keyBy('id');
+
+        $reservasMap = $reservasPagina->groupBy(['parada_id', 'coche_id']);
+
+        $total = $pares->total();
+        $totalPagina = $pares->count();
+
+        return view('coches.pre_reserva', [
+            'evento' => $evento,
+            'pares' => $pares,
+            'paradas' => $paradas,
+            'coches' => $coches,
+            'reservasMap' => $reservasMap,
+            'total' => $total,
+            'totalPagina' => $totalPagina
+        ]);
     }
 
     public function cargaDatos()
@@ -308,5 +356,94 @@ class ReservaController extends Controller
         }
 
         return back()->with('success', 'Reserva creada con éxito.');
+    }
+
+    public function show(Request $request, $id)
+    {
+        $query = trim($request->input('buscador', ''));
+        $evento = Evento::findOrFail($id);
+
+        $reservasQuery = $evento->paradas()->with([
+            'reservas.user:id,name,email',
+            'reservas.coch:id,modelo,matricula',
+        ]);
+
+        if ($query !== '') {
+            $reservasQuery->where(function ($q) use ($query) {
+                $q->where('nombre', 'like', "%{$query}%")
+                    ->orWhereHas('reservas.coch', function ($qq) use ($query) {
+                        $qq->where('modelo', 'like', "%{$query}%")
+                            ->orWhere('matricula', 'like', "%{$query}%");
+                    })
+                    ->orWhereHas('reservas.user', function ($qq) use ($query) {
+                        $qq->where('name', 'like', "%{$query}%")
+                            ->orWhere('email', 'like', "%{$query}%");
+                    });
+            });
+        }
+
+        $paradas = $reservasQuery
+            ->paginate(6)
+            ->withQueryString();
+
+        $total = $paradas->total();
+        $totalPagina = $paradas->count();
+
+        $matchPorNombreParada = false;
+        if ($query !== '') {
+            $matchPorNombreParada = \App\Models\Parada::where('evento_id', $id)
+                ->where('nombre', 'like', "%{$query}%")
+                ->exists();
+        }
+
+        // 4) Traer RESERVAS de las paradas de esta página
+        $paradaIds = $paradas->getCollection()->pluck('id');
+
+        $reservasQuery = Reserva::with([
+            'user:id,name,email',
+            'coch:id,modelo,matricula',
+        ])
+            ->whereIn('parada_id', $paradaIds);
+
+        //  Si el usuario buscó por nombre de parada, NO filtres por coche/user.
+        //    Si no hubo match por nombre de parada, entonces sí filtramos por coche/user.
+        if ($query !== '' && !$matchPorNombreParada) {
+            $reservasQuery->where(function ($q) use ($query) {
+                $q->whereHas('coch', function ($qq) use ($query) {
+                    $qq->where('modelo', 'like', "%{$query}%")
+                        ->orWhere('matricula', 'like', "%{$query}%");
+                })
+                    ->orWhereHas('user', function ($qq) use ($query) {
+                        $qq->where('name', 'like', "%{$query}%")
+                            ->orWhere('email', 'like', "%{$query}%");
+                    });
+            });
+        }
+
+        $reservas = $reservasQuery->get();
+
+        // 5) Data para tu Blade
+        $reservasMap = $reservas->groupBy(['parada_id', 'coche_id']);
+        $cocheIds    = $reservas->pluck('coche_id')->unique()->values();
+        $coches      = Coch::whereIn('id', $cocheIds)->get();
+
+        return view('coches.pre_reserva', compact(
+            'evento',
+            'paradas',
+            'total',
+            'totalPagina',
+            'query',
+            'coches',
+            'reservasMap'
+        ));
+    }
+
+
+    public function export(Evento $evento)
+    {
+        $fecha = Carbon::parse($evento->fecha)->format('Y-m-d');
+        $filename = 'Lista Pre - reservas ' . $evento->nombre . '-' . $fecha . '.xlsx';
+
+        return Excel::download(new PreReservaExport($evento), $filename);
     }
 }
