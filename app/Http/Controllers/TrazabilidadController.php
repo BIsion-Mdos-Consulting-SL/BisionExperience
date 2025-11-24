@@ -45,6 +45,7 @@ class TrazabilidadController extends Controller
         $cocheIds  = $pares->pluck('coche_id')->unique()->values();
 
         $paradas = Parada::whereIn('id', $paradaIds)
+            ->orderBy('nombre')
             ->get(['id', 'nombre'])
             ->keyBy('id');
 
@@ -115,7 +116,7 @@ class TrazabilidadController extends Controller
         // 4) Traer RESERVAS de las paradas de esta página
         $paradaIds = $paradas->getCollection()->pluck('id');
 
-        $reservasQuery = \App\Models\Reserva::with([
+        $reservasQuery = Reserva::with([
             'user:id,name,email',
             'coch:id,modelo,matricula',
         ])
@@ -141,7 +142,7 @@ class TrazabilidadController extends Controller
         // 5) Data para tu Blade
         $reservasMap = $reservas->groupBy(['parada_id', 'coche_id']);
         $cocheIds    = $reservas->pluck('coche_id')->unique()->values();
-        $coches      = \App\Models\Coch::whereIn('id', $cocheIds)->get();
+        $coches      = Coch::whereIn('id', $cocheIds)->get();
 
         return view('coches.trazabilidad', compact(
             'evento',
