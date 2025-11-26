@@ -7,7 +7,7 @@
                 <!--CONTENEDOR CARDS -->
                 <div class="container py-5">
                     <div class="p-6 text-gray-900">
-                        <h2 class="fw-bold text-gray-800 leading-tight mb-3" style="font-size: xx-large">
+                        <h2 class="fw-bold text-xl text-gray-800 leading-tight mb-3" style="font-size: x-large;">
                             TRAZABILIDAD DE PARADAS
                         </h2>
 
@@ -31,7 +31,7 @@
                             <!--RESULTADOS - BOTON(EXPORTAR)--->
                             <div class="d-flex flex-wrap gap-2 text-end">
                                 <!---BOTON PARA EXPORTAR COCHES DENTRO DE ESE EVENTO--->
-                                <a href="{{route('reservas.export' , $evento->id)}}" class="btn_color">
+                                <a href="{{route('reservas.export' , $evento)}}" class="btn_color">
                                     <i class="bi bi-file-earmark-excel-fill" title="Exportar"></i>
                                 </a>
 
@@ -49,55 +49,20 @@
 
                         <!---CARD TAMAÑO SM - MD , se muestra al ocultar la tabla.--->
                         <div class="row d-block d-lg-none">
-                            @isset($paradas, $coches, $reservasMap)
-                            @foreach($paradas as $parada)
-                            @foreach($coches as $coche)
-                            @php
-                            // Grupo de reservas (parada y coche)
-                            $grupo = data_get($reservasMap, "{$parada->id}.{$coche->id}", collect());
-                            if (!($grupo instanceof \Illuminate\Support\Collection)) {
-                            $grupo = collect($grupo);
-                            }
-                            // Saltar si no hay reservas para esta combinación
-                            if ($grupo->isEmpty()) { continue; }
-
-                            $norm = fn($s) => mb_strtolower($s ?? '', 'UTF-8');
-                            $conductor = $grupo->first(fn($r) => $norm($r->tipo) === 'conductor');
-
-                            $acompanantesNombres = $grupo
-                            ->filter(fn($r) => in_array($norm($r->tipo), ['acompanante','acompañante']))
-                            ->pluck('user.name')
-                            ->unique()
-                            ->values()
-                            ->join(', ');
-
-                            // Horas desde reservas (rango agregado)
-                            $horaInicioRaw = $grupo->pluck('hora_inicio')->filter()->min();
-                            $horaFinRaw = $grupo->pluck('hora_fin')->filter()->max();
-
-                            $fmt = function ($t) {
-                            try { return $t ? \Carbon\Carbon::createFromFormat('H:i:s', $t)->format('H:i') : null; }
-                            catch (\Exception $e) { return $t; }
-                            };
-                            $horaInicio = $fmt($horaInicioRaw);
-                            $horaFin = $fmt($horaFinRaw);
-                            $rango = trim(($horaInicio ?: '') . ' - ' . ($horaFin ?: ''));
-                            @endphp
-
+                            @foreach($reservas as $reserva)
                             <div class="col-12 mb-3">
                                 <div class="card">
                                     <div class="card-body gap-2">
-                                        <p class="card-text mb-1"><strong>Parada:</strong> {{ $parada->nombre }}</p>
-                                        <p class="card-text mb-1"><strong>Hora inicio - Hora fin:</strong> {{ $rango ?: '—' }}</p>
-                                        <p class="card-text mb-1"><strong>Modelo:</strong> {{ $coche->modelo }}</p>
-                                        <p class="card-text mb-1"><strong>Matricula:</strong> {{ $coche->matricula }}</p>
-                                        <p class="card-text mb-1"><strong>Conductor:</strong> {{ optional(optional($conductor)->user)->name }}</p>
+                                        <p class="card-text mb-1"><strong>Parada: </strong> {{ $reserva->parada->nombre }}</p>
+                                        <p class="card-text mb-1"><strong>Hora inicio - Hora fin: </strong> {{ $reserva->hora_inicio}} -{{$reserva->hora_fin}}</p>
+                                        <p class="card-text mb-1"><strong>Modelo: </strong> {{ $reserva->coch->modelo }}</p>
+                                        <p class="card-text mb-1"><strong>Matricula: </strong> {{ $reserva->coch->matricula }}</p>
+                                        <p class="card-text mb-1"><strong>Usuario: </strong> {{ $reserva->user->name }}</p>
+                                        <p class="card-text mb-1"><strong>Tipo: </strong> {{ ucfirst($reserva->tipo) }}</p>
                                     </div>
                                 </div>
                             </div>
                             @endforeach
-                            @endforeach
-                            @endisset
                         </div>
 
                         <!--TABLA INVITADOS GRANDE-->
@@ -108,77 +73,24 @@
                                     <th>Hora inicio - Hora fin</th>
                                     <th>Modelo</th>
                                     <th>Matricula</th>
-                                    <th>Conductor</th>
+                                    <th>Usuario</th>
+                                    <th>Tipo</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @isset($paradas, $coches, $reservasMap)
-                                @foreach($paradas as $parada)
-                                @foreach($coches as $coche)
-                                @php
-                                // Grupo de reservas (parada y coche)
-                                $grupo = data_get($reservasMap, "{$parada->id}.{$coche->id}", collect());
-                                if (!($grupo instanceof \Illuminate\Support\Collection)) {
-                                $grupo = collect($grupo);
-                                }
-
-                                $norm = fn($s) => mb_strtolower($s ?? '', 'UTF-8');
-                                $conductor = $grupo->first(fn($r) => $norm($r->tipo) === 'conductor');
-
-                                $acompanantesNombres = $grupo
-                                ->filter(fn($r) => in_array($norm($r->tipo), ['acompanante','acompañante']))
-                                ->pluck('user.name')
-                                ->unique()
-                                ->values()
-                                ->join(', ');
-
-                                // Horas desde reservas (rango agregado)
-                                $horaInicioRaw = $grupo->pluck('hora_inicio')->filter()->min();
-                                $horaFinRaw = $grupo->pluck('hora_fin')->filter()->max();
-
-                                $fmt = function ($t) {
-                                try { return $t ? \Carbon\Carbon::createFromFormat('H:i:s', $t)->format('H:i') : null; }
-                                catch (\Exception $e) { return $t; }
-                                };
-                                $horaInicio = $fmt($horaInicioRaw);
-                                $horaFin = $fmt($horaFinRaw);
-                                @endphp
-
-                                {{-- Oculta filas sin reservas --}}
-                                @continue($grupo->isEmpty())
-
+                                @foreach($reservas as $reserva)
                                 <tr>
-                                    <td>{{ $parada->nombre }}</td>
-                                    <td>{{ trim(($horaInicio ?: '') . ' - ' . ($horaFin ?: '')) ?: '—' }}</td>
-                                    <td>{{ $coche->modelo }}</td>
-                                    <td>{{ $coche->matricula }}</td>
-                                    <td>{{ optional(optional($conductor)->user)->name }}</td>
+                                    <td>{{ $reserva->parada->nombre }}</td>
+                                    <td>{{ $reserva->hora_inicio }} - {{$reserva->hora_fin}}</td>
+                                    <td>{{ $reserva->coch->modelo }}</td>
+                                    <td>{{ $reserva->coch->matricula }}</td>
+                                    <td>{{ $reserva->user->name }}</td>
+                                    <td>{{ ucfirst($reserva->tipo)}}</td>
                                 </tr>
                                 @endforeach
-                                @endforeach
-                                @endisset
                             </tbody>
                         </table>
-
-                        {{-- Normalizar $paradas a un paginador si vienes de index() --}}
-                        @php
-                        $esPaginadorParadas =
-                        isset($paradas) && (
-                        $paradas instanceof \Illuminate\Contracts\Pagination\Paginator
-                        || $paradas instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator
-                        );
-
-                        if (!$esPaginadorParadas) {
-                        if (isset($pares) && (
-                        $pares instanceof \Illuminate\Contracts\Pagination\Paginator
-                        || $pares instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator
-                        )) {
-                        // Reusar $paradas para que tu línea existente no falle
-                        $paradas = $pares->withQueryString();
-                        }
-                        }
-                        @endphp
-                        {{ $paradas->links() }}
+                        {{ $reservas->links() }}
                     </div>
                 </div>
             </div>
