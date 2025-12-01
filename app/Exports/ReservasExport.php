@@ -56,6 +56,7 @@ class ReservasExport implements FromCollection, WithHeadings, WithMapping, Shoul
         $paradasTable = (new Parada())->getTable();
 
         $reservas = Reserva::where('reservas.evento_id', $this->evento->id)
+            ->whereNotNull('reservas.hora_inicio')
             ->join($paradasTable . ' as p', 'reservas.parada_id', '=', 'p.id')
             ->with([
                 'user:id,name',

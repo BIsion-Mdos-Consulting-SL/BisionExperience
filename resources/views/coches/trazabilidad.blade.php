@@ -8,7 +8,7 @@
                 <div class="container py-5">
                     <div class="p-6 text-gray-900">
                         <h2 class="fw-bold text-xl text-gray-800 leading-tight mb-3" style="font-size: x-large;">
-                            TRAZABILIDAD DE PARADAS
+                            TRAZABILIDAD DE PARADAS - PRUEBA DINAMICA
                         </h2>
 
                         <!----FORMULARIO PARA BUSCAR---->
