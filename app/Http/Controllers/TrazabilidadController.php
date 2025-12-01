@@ -20,6 +20,7 @@ class TrazabilidadController extends Controller
         $evento = Evento::findOrFail($id);
 
         $reservas = Reserva::where('reservas.evento_id', $id)
+            ->whereNotNull('reservas.hora_inicio')
             ->join('parada as p', 'reservas.parada_id', '=', 'p.id')
             ->with([
                 'user:id,name',
@@ -50,6 +51,7 @@ class TrazabilidadController extends Controller
         $paradasTable = (new Parada())->getTable();
 
         $reservasQuery = Reserva::where('reservas.evento_id', $id)
+            ->whereNotNull('reservas.hora_inicio')
             ->join($paradasTable . ' as p', 'reservas.parada_id', '=', 'p.id')
             ->with([
                 'user:id,name',
