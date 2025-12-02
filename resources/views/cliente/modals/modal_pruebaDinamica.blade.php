@@ -95,9 +95,8 @@
         </option>`
                 ).join('');
 
-            
-                const horaInicio = reserva?.hora_inicio ?? '—';//Creamos una constante para recoger la hora inicio de la reserva.
-                const horaFin = reserva?.hora_fin ?? '—';//Creamos una constante para recoger la hora de fin de la reserva.
+                const horaInicio = reserva?.hora_inicio ?? '—'; //Creamos una constante para recoger la hora inicio de la reserva.
+                const horaFin = reserva?.hora_fin ?? '—'; //Creamos una constante para recoger la hora de fin de la reserva.
 
                 const disabledByState = (!previousOk || isDone);
                 const disabledAttr = disabledByState ? 'disabled' : '';
@@ -105,7 +104,7 @@
 
                 /**Creamos una constante para poder crear una card que es la que se presentara en la prueba dinamica en donde se le pasara la clase disabledClass que nos ocultara la card. */
                 const card = document.createElement('div');
-                card.className = `card mb-3 ${disabledClass}`;//Pasamos la clase.
+                card.className = `card mb-3 ${disabledClass}`; //Pasamos la clase.
                 /** Creamos el cuerpo de la card para recoger toda la informacion.*/
                 card.innerHTML = `
         <div class="card-body">
@@ -131,6 +130,10 @@
               <input class="form-check-input" type="radio" name="accion_${parada.id}" id="fin_${parada.id}" value="fin" ${disabledAttr}>
               <label class="form-check-label text-danger fw-bold" for="fin_${parada.id}">Stop</label>
             </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="accion_${parada.id}" id="reset_${parada.id}" value="reset" ${disabledAttr}>
+              <label class="form-check-label text-secondary fw-bold" for="reset_${parada.id}">Reset</label>
+            </div>
           </div>
 
           <div class="small text-muted mb-2 text-end">
@@ -138,7 +141,7 @@
           </div>
         </div>
       `;
-                cards.appendChild(card);//Se volcara toda las informacion en esta card(appendChild)
+                cards.appendChild(card); //Se volcara toda las informacion en esta card(appendChild)
             });
         };
 
@@ -167,14 +170,13 @@
                 //Recogemos el evento id.
                 EVENTO_ID = json.evento.id;
 
-
                 const reservasMap = Array.isArray(json.reservas) ?
                     Object.fromEntries(json.reservas.map(r => [r.parada_id, r])) :
                     (json.reservas || {});
 
                 DATA = {
                     /**En el DATA recogeremos la informacion tanto de paradas , coches y reservas.*/
-                    paradas: json.paradas || [],//Json o [] vacio.
+                    paradas: json.paradas || [], //Json o [] vacio.
                     //Recorremos el array de coches y traemos la informacion importante , la que queremos y utilizaremos.
                     coches: (json.coches || []).map(c => ({
                         ...c,
@@ -199,11 +201,11 @@
             accion
         }) => {
             const payload = new FormData();
-            payload.append('_token', '{{ csrf_token() }}');//Recoge el token de verificacion.
-            payload.append('evento_id', EVENTO_ID);//Recoge el EVENTO_ID para la prueba dinamica.
-            payload.append('parada_id', paradaId);//Recoge la paradaId que se le pasa en el postAction.
-            payload.append('coche_id', cocheId);//Recoge el cocheId que se le pasa en el postAction.
-            payload.append('accion', accion);//Recoge la accion que se le pasa en el postAction.
+            payload.append('_token', '{{ csrf_token() }}'); //Recoge el token de verificacion.
+            payload.append('evento_id', EVENTO_ID); //Recoge el EVENTO_ID para la prueba dinamica.
+            payload.append('parada_id', paradaId); //Recoge la paradaId que se le pasa en el postAction.
+            payload.append('coche_id', cocheId); //Recoge el cocheId que se le pasa en el postAction.
+            payload.append('accion', accion); //Recoge la accion que se le pasa en el postAction.
 
             /**Envio de la ruta POST_URL*/
             return request(POST_URL, {
@@ -220,7 +222,8 @@
             const select = cards.querySelector(`select[name="coche_id_${paradaId}"]`);
             const rInicio = cards.querySelector(`#inicio_${paradaId}`);
             const rFin = cards.querySelector(`#fin_${paradaId}`);
-            [select, rInicio, rFin].forEach(el => {
+            const rReset = cards.querySelector(`#reset_${paradaId}`);
+            [select, rInicio, rFin, rReset].forEach(el => {
                 if (el) el.disabled = !enabled;
             });
         };
@@ -285,12 +288,12 @@
                     return;
                 }
 
-                if (status === 422 && json?.code === 'min_time_not_reached') {
+                if (status === 422 && json?.code === 'same_car_other_stop') {
                     radio.checked = false;
                     Swal.fire({
-                        icon: 'info',
-                        title: 'Aún no puedes finalizar',
-                        text: json.message || 'Debes esperar 15 minutos desde el inicio.',
+                        icon: 'warning',
+                        title: 'Coche ya usado en otra parada',
+                        text: json.message || 'No puedes usar el mismo coche en paradas distintas del mismo evento.',
                         timer: 2200,
                         showConfirmButton: false
                     });
@@ -310,6 +313,8 @@
                     setCardEnabled(paradaId, true);
                     return;
                 }
+
+                // (Regla de 15 min eliminada: ya no comprobamos min_time_not_reached)
 
                 // Si vino algo no-OK no tipificado arriba
                 if (json?.ok === false || (!json && status >= 400)) {
@@ -338,9 +343,16 @@
                         bsModal.hide();
                     }, 1600);
                 } else {
-                    const titulo = json.message || (accion === 'inicio' ?
-                        `Parada ${numeroParada} iniciada.` :
-                        `Parada ${numeroParada} finalizada.`);
+                    let titulo = json.message;
+                    if (!titulo) {
+                        if (accion === 'inicio') {
+                            titulo = `Parada ${numeroParada} iniciada.`;
+                        } else if (accion === 'fin') {
+                            titulo = `Parada ${numeroParada} finalizada.`;
+                        } else if (accion === 'reset') {
+                            titulo = `Parada ${numeroParada} reseteada.`;
+                        }
+                    }
                     Swal.fire({
                         icon: 'success',
                         title: titulo,
@@ -373,8 +385,10 @@
             const paradaId = select.name.split('_')[2];
             const rInicio = cards.querySelector(`#inicio_${paradaId}`);
             const rFin = cards.querySelector(`#fin_${paradaId}`);
+            const rReset = cards.querySelector(`#reset_${paradaId}`);
             if (rInicio) rInicio.checked = false;
             if (rFin) rFin.checked = false;
+            if (rReset) rReset.checked = false;
         });
 
     });

@@ -60,7 +60,7 @@ class PruebaDinamicaController extends Controller
             'evento_id' => ['required', 'integer', 'exists:evento,id'],
             'parada_id' => ['required', 'integer', 'exists:parada,id'],
             'coche_id'  => ['required', 'integer', 'exists:coches,id'],
-            'accion'    => ['required', 'in:inicio,fin'],
+            'accion'    => ['required', 'in:inicio,fin,reset'], //Acciones que me ayudaran a dar inicio , fin y reiniciar mediante botones (accion del cliente - usuario)
         ]);
 
         $userId = Auth::id();
@@ -68,6 +68,19 @@ class PruebaDinamicaController extends Controller
 
         // IMPORTANTE: transacción + bloqueo para evitar carreras
         return DB::transaction(function () use ($data, $userId, $now) {
+
+            $mismoCocheOtraParada = Reserva::where('evento_id', $data['evento_id'])
+                ->where('user_id', $userId)
+                ->where('coche_id', $data['coche_id'])
+                ->where('parada_id', '!=', $data['parada_id'])
+                ->exists();
+
+            if ($mismoCocheOtraParada) {
+                return response()->json([
+                    'ok' => false,
+                    'message' => 'No puedes usar el mismo coche en paradas distintas del mismo evento.'
+                ], 422);
+            }
 
             // Reserva (del usuario) para esta parada
             $reserva = Reserva::firstOrCreate(
@@ -96,7 +109,7 @@ class PruebaDinamicaController extends Controller
                     ->lockForUpdate() // bloquea filas candidatas
                     ->first();
 
-                    //Si el coche que esta usando el usuario1  lo ve el usuario2 y le quiere usar , sale la alerta.
+                //Si el coche que esta usando el usuario1  lo ve el usuario2 y le quiere usar , sale la alerta , si otro usuario esta usando ese coche , bloqueamos.
                 if ($cocheEnUso && $cocheEnUso->user_id !== $userId) {
                     return response()->json([
                         'ok' => false,
@@ -121,7 +134,7 @@ class PruebaDinamicaController extends Controller
 
                 //Hora inicio formateada.
                 $reserva->hora_inicio = $now->format('H:i:s');
-                $reserva->save();//Guardamos cambios realizados.
+                $reserva->save(); //Guardamos cambios realizados.
 
                 //Mensaje de inicio de parada.
                 return response()->json([
@@ -135,6 +148,45 @@ class PruebaDinamicaController extends Controller
                 ], 200);
             }
 
+            // ====== ACCION: RESET ======
+            if ($data['accion'] === "reset") {
+                //Si aun no ha iciado , no tiene sentido reinicar , asi que añadimos una condicion.
+                if (!$reserva->hora_inicio) {
+                    return response()->json([
+                        'ok' => false,
+                        'code' => 'no_start',
+                        'message' => 'Debes iniciar la parada antes de resetearla.'
+                    ], 422);
+                }
+
+                //Si ya tenia hora_fin , ya estaba parada  por lo cual se le agrega otra condicion.
+                if ($reserva->hora_fin) {
+                    return response()->json([
+                        'ok' => true,
+                        'message' => 'La parada ya estaba detenida.',
+                        'reserva_id' => $reserva->id,
+                        'hora_inicio' => (string) $reserva->hora_inicio,
+                        'hora_fin'    => (string) $reserva->hora_fin,
+                        'avanzar'     => false,
+                        'finalizado'  => false,
+                    ], 200);
+                }
+
+                //Se marca fin para liberar el coche y guardar trazabilidad.
+                $reserva->hora_fin = $now->format('H:i:s');
+                $reserva->save();
+
+                return response()->json([
+                    'ok' => true,
+                    'message'     => 'Parada ' . $reserva->parada_id . ' reseteada (tiempo detenido).',
+                    'reserva_id' => $reserva->id,
+                    'hora_inicio' => (string) $reserva->hora_inicio,
+                    'hora_fin' => (string) $reserva->hora_fin,
+                    'avanzar'     => false,
+                    'finalizado'  => false
+                ], 200);
+            }
+
             // ====== ACCIÓN: FIN ======
             // Validar que exista hora_inicio , muestra el alert si le das a stop primero.
             if (!$reserva->hora_inicio) {
@@ -145,27 +197,9 @@ class PruebaDinamicaController extends Controller
                 ], 422);
             }
 
-            //Reconstruccion con fecha de hoy.
-            $inicio = Carbon::today('Europe/Madrid')->setTimeFromTimeString($reserva->hora_inicio);
-
-            //Condicion de 15 min de espera para finalizar parada.
-            $minutos = $inicio->diffInMinutes($now, false); // false → puede ser negativo
-            $minimo = 15;
-            if ($minutos < $minimo) {
-                // $restan (variable) , forzamos como int .Luego realizamos operacion 15- $minutos = $inicio para ver el tiempo restante en pantalla(sweetAlert).
-                $restan = (int) ($minimo - max(0, $minutos)); //Forzamos a un cast para ver los min redondeados.
-                //Devolvemos respuesta.
-                return response()->json([
-                    'ok' => false,
-                    'code' => 'min_time_not_reached',
-                    'message' => "Debes esperar 15 minutos desde el inicio para finalizar. Te faltan {$restan} min.",
-                    'faltan_min' => $restan,
-                ], 422);
-            }
-
             //Hora fin formateada.
             $reserva->hora_fin = $now->format('H:i:s');
-            $reserva->save();//Guardamos cambios.
+            $reserva->save(); //Guardamos cambios.
 
             //Contamos el total de las paradas de cada evento.
             $totalParadas = Parada::where('evento_id', $data['evento_id'])->count();
@@ -177,8 +211,8 @@ class PruebaDinamicaController extends Controller
                 ->distinct('parada_id')
                 ->count('parada_id');
 
-                /**Comprobamos si el usuario finalizo todas las paradas del evento */
-                //Si hay paradas ($totalParadas > 0), si las finalizadas son iguales o más que las paradas totales ($finalizadas >= $totalParadas) → entonces $finalizadoTodo es true.
+            /**Comprobamos si el usuario finalizo todas las paradas del evento */
+            //Si hay paradas ($totalParadas > 0), si las finalizadas son iguales o más que las paradas totales ($finalizadas >= $totalParadas) → entonces $finalizadoTodo es true.
 
             $finalizadoTodo = $totalParadas > 0 && $finalizadas >= $totalParadas;
 
