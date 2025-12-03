@@ -78,6 +78,7 @@ class PruebaDinamicaController extends Controller
             if ($mismoCocheOtraParada) {
                 return response()->json([
                     'ok' => false,
+                    'code' => 'same_car_other_stop',
                     'message' => 'No puedes usar el mismo coche en paradas distintas del mismo evento.'
                 ], 422);
             }
@@ -132,6 +133,11 @@ class PruebaDinamicaController extends Controller
                     ], 200);
                 }
 
+                if ($reserva->hora_fin) {
+                    $reserva->hora_fin = null; // Limpia el fin para permitir un nuevo lfujo en la tabal de traazabilidad.
+                    $reserva->motivo_fin = null; //No arrastra el motivo anterior a este.
+                }
+
                 //Hora inicio formateada.
                 $reserva->hora_inicio = $now->format('H:i:s');
                 $reserva->save(); //Guardamos cambios realizados.
@@ -174,6 +180,8 @@ class PruebaDinamicaController extends Controller
 
                 //Se marca fin para liberar el coche y guardar trazabilidad.
                 $reserva->hora_fin = $now->format('H:i:s');
+                $reserva->motivo_fin = 'reset';
+
                 $reserva->save();
 
                 return response()->json([
@@ -182,6 +190,7 @@ class PruebaDinamicaController extends Controller
                     'reserva_id' => $reserva->id,
                     'hora_inicio' => (string) $reserva->hora_inicio,
                     'hora_fin' => (string) $reserva->hora_fin,
+                    'motivo_fin' => $reserva->motivo_fin,
                     'avanzar'     => false,
                     'finalizado'  => false
                 ], 200);
@@ -199,6 +208,8 @@ class PruebaDinamicaController extends Controller
 
             //Hora fin formateada.
             $reserva->hora_fin = $now->format('H:i:s');
+            $reserva->motivo_fin = 'fin';
+
             $reserva->save(); //Guardamos cambios.
 
             //Contamos el total de las paradas de cada evento.
@@ -223,6 +234,7 @@ class PruebaDinamicaController extends Controller
                 'reserva_id'    => $reserva->id,
                 'hora_inicio'   => (string) $reserva->hora_inicio,
                 'hora_fin'      => (string) $reserva->hora_fin,
+                'motivo_fin'    => $reserva->motivo_fin,
                 'avanzar'       => true,
                 'finalizado'    => $finalizadoTodo,
                 'final_message' => $finalizadoTodo ? '¡Gracias por participar!' : null,

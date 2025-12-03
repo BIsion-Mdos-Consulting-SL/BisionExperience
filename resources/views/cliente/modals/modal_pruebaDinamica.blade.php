@@ -15,7 +15,6 @@
         </div>
     </div>
 </div>
-
 <script>
     /**Funcion para poder redcoger los datos y poder crear las PRUEBAS DINAMICAS */
     document.addEventListener('DOMContentLoaded', () => {
@@ -67,38 +66,68 @@
         const render = () => {
             //Se inicia en vacio la card hasta que carguen los datos.
             cards.innerHTML = '';
-            const {
-                paradas,
-                coches,
-                reservas
-            } = DATA;
+            const { paradas, coches, reservas } = DATA;
 
             /**Recorremos el array de paradas con un index el cual empezara en 0 para identificar el id de cada una de ellas. */
             paradas.forEach((parada, idx) => {
                 //Recogemos las reservas y el valor de sus id.
                 const reserva = reservas[parada.id] || null;
-                /**Se le pasa una constante que posicionara al index en la posicion 0 , si es true y sino de cada reserva se eliminara 1 para que empiece desde el id 1 y donde recogera la hora inicio. */
-                const previousOk = (idx === 0) ?
-                    true :
-                    !!(reservas[paradas[idx - 1].id] && reservas[paradas[idx - 1].id].hora_fin);
 
-                const isDone = !!(reserva && reserva.hora_fin);
+                // Coches usados en paradas anteriores
+                const usadosAntes = new Set();
+                for (let i = 0; i < idx; i++) {
+                    const paradaPrev = paradas[i];
+                    const rPrev = reservas[paradaPrev.id];
+                    if (rPrev && rPrev.coche_id) {
+                        usadosAntes.add(+rPrev.coche_id);
+                    }
+                }
+
+                /**Se le pasa una constante que posicionara al index en la posicion 0 , si es true y sino de cada reserva se eliminara 1 para que empiece desde el id 1 y donde recogera la hora inicio. */
+                const previousOk = (idx === 0)
+                    ? true
+                    : !!(
+                        reservas[paradas[idx - 1].id] &&
+                        reservas[paradas[idx - 1].id].hora_fin &&
+                        reservas[paradas[idx - 1].id].motivo_fin === 'fin'
+                    );
+
+                // Solo consideramos "finalizada" si el motivo es 'fin'
+                const isFinalizada = !!(
+                    reserva &&
+                    reserva.hora_fin &&
+                    reserva.motivo_fin === 'fin'
+                );
 
                 /**Span para poder condicionar si parada esta completada. Si es distinto a la posicion que se usa en la constante de previousoK pues directamente saldra un span en donde te pondra un mensaje para condicionar que se tiene completar antes la parada anterior, y sino la parada ha sido completada. */
-                const stateBadge = !previousOk ?
-                    '<span class="badge bg-secondary">Completa la parada anterior</span>' :
-                    (isDone ? '<span class="badge bg-success">Completada</span>' : '');
-                /**Select opciones: Aqui recorreremos todos los coches que tiene coches[] , colocaremos una option para sacar como valor el id de cada uno de los coches seleccionados para poder recoger la informacion que se pintara en el select (join)*/
-                const selOptions = coches.map(c =>
-                    `<option value="${c.id}" ${reserva && +reserva.coche_id === +c.id ? 'selected' : ''}>
-          ${c.marca} ${c.modelo}${c.matricula ? ' - ' + c.matricula : ''}
-        </option>`
-                ).join('');
+                const stateBadge = !previousOk
+                    ? '<span class="badge bg-secondary">Completa la parada anterior</span>'
+                    : (isFinalizada ? '<span class="badge bg-success">Completada</span>' : '');
+
+                /**Select opciones: Aqui recorreremos todos los coches que tiene coches[] , colocaremos una option para sacar como valor el id de cada uno de los coches seleccionados para poder recoger la informacion que se pintara en el select (join) , ademas el select de coches ya usados estan deshabilitados.*/
+                const selOptions = coches.map(c => {
+                    const selected = (reserva && +reserva.coche_id === +c.id) ? 'selected' : '';
+                    // si se usó en una parada anterior y NO es el de esta reserva, lo deshabilitamos
+                    const disabled = (usadosAntes.has(+c.id) && !selected) ? 'disabled' : '';
+                    return `
+                <option value="${c.id}" ${selected} ${disabled}>
+                    ${c.marca} ${c.modelo}${c.matricula ? ' - ' + c.matricula : ''}
+                </option>
+            `;
+                }).join('');
 
                 const horaInicio = reserva?.hora_inicio ?? '—'; //Creamos una constante para recoger la hora inicio de la reserva.
                 const horaFin = reserva?.hora_fin ?? '—'; //Creamos una constante para recoger la hora de fin de la reserva.
 
-                const disabledByState = (!previousOk || isDone);
+                let estadoFinTexto = '';
+                if (reserva?.motivo_fin === 'reset') {
+                    estadoFinTexto = '<span class="badge bg-secondary ms-1">Reseteada</span>';
+                } else if (reserva?.motivo_fin === 'fin') {
+                    estadoFinTexto = '<span class="badge bg-success ms-1">Finalizada</span>';
+                }
+
+                // 🔥 Solo deshabilitamos por estado si está finalizada de verdad
+                const disabledByState = (!previousOk || isFinalizada);
                 const disabledAttr = disabledByState ? 'disabled' : '';
                 const disabledClass = disabledByState ? 'opacity-50 pe-none' : '';
 
@@ -137,7 +166,7 @@
           </div>
 
           <div class="small text-muted mb-2 text-end">
-            <strong>Guardado:</strong> Inicio: ${horaInicio} | Fin: ${horaFin}
+            <strong>Guardado:</strong> Inicio: ${horaInicio} | Fin: ${horaFin} ${estadoFinTexto}
           </div>
         </div>
       `;
@@ -150,13 +179,7 @@
             /** Agregamso un mensaje de texto en un div.*/
             cards.innerHTML = '<div class="text-center p-3">Cargando...</div>';
             try {
-                const {
-                    /**Se pasa toda la informacion que tenemos */
-                    ok,
-                    status,
-                    json,
-                    text
-                } = await request(GET_URL, {
+                const { ok, status, json, text } = await request(GET_URL, {
                     /**Recoge la ruta get */
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
@@ -170,9 +193,9 @@
                 //Recogemos el evento id.
                 EVENTO_ID = json.evento.id;
 
-                const reservasMap = Array.isArray(json.reservas) ?
-                    Object.fromEntries(json.reservas.map(r => [r.parada_id, r])) :
-                    (json.reservas || {});
+                const reservasMap = Array.isArray(json.reservas)
+                    ? Object.fromEntries(json.reservas.map(r => [r.parada_id, r]))
+                    : (json.reservas || {});
 
                 DATA = {
                     /**En el DATA recogeremos la informacion tanto de paradas , coches y reservas.*/
@@ -195,11 +218,7 @@
         });
 
         // POST para enviar la informacion (parada, coche , accion)
-        const postAccion = ({
-            paradaId,
-            cocheId,
-            accion
-        }) => {
+        const postAccion = ({ paradaId, cocheId, accion }) => {
             const payload = new FormData();
             payload.append('_token', '{{ csrf_token() }}'); //Recoge el token de verificacion.
             payload.append('evento_id', EVENTO_ID); //Recoge el EVENTO_ID para la prueba dinamica.
@@ -239,7 +258,7 @@
             const select = cards.querySelector(`select[name="coche_id_${paradaId}"]`);
 
             const rState = DATA.reservas[paradaId];
-            if (rState && rState.hora_fin) {
+            if (rState && rState.hora_fin && accion != 'inicio') {
                 radio.checked = false;
                 Swal.fire({
                     icon: 'info',
@@ -264,11 +283,7 @@
             setCardEnabled(paradaId, false);
 
             try {
-                const {
-                    status,
-                    json,
-                    text
-                } = await postAccion({
+                const { status, json, text } = await postAccion({
                     paradaId,
                     cocheId: select.value,
                     accion
@@ -326,6 +341,7 @@
                 DATA.reservas[paradaId].coche_id = +select.value;
                 DATA.reservas[paradaId].hora_inicio = json.hora_inicio ?? DATA.reservas[paradaId].hora_inicio ?? null;
                 DATA.reservas[paradaId].hora_fin = json.hora_fin ?? DATA.reservas[paradaId].hora_fin ?? null;
+                DATA.reservas[paradaId].motivo_fin = json.motivo_fin ?? DATA.reservas[paradaId].motivo_fin ?? null;
 
                 const numeroParada = getParadaNumero(paradaId);
 
@@ -373,7 +389,7 @@
                 });
             } finally {
                 const s = DATA.reservas[paradaId];
-                const done = s && s.hora_fin;
+                const done = s && s.hora_fin && s.motivo_fin === 'fin';
                 if (!done) setCardEnabled(paradaId, true);
             }
         });
@@ -393,3 +409,4 @@
 
     });
 </script>
+
