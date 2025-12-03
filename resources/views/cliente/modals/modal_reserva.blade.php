@@ -126,10 +126,6 @@
                     }
 
                     opt.disabled = disabled;
-
-                    }
-
-                    opt.disabled = disabled;
                     selectCoches.appendChild(opt);
                 });
                 selectCoches.disabled = false;
