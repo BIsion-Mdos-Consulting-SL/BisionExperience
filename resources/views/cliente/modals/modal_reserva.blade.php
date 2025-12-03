@@ -107,18 +107,26 @@
 
                     opt.textContent = label;
 
-                    // reglas de disabled
+                    // Reglas de disabled
                     let disabled = false;
-                    //if (c.usado) disabled = true;
-                    /* else if (tipo === "conductor" && c.conductor_asignado) disabled = true;
-                    else if (tipo === "acompañante" && c.lleno) disabled = true; */
 
-                    if (tipo === "acompañante" && c.usado) {
+                    // Si este usuario ya usó ese coche → no puede repetirlo
+                    if (c.usado) {
                         disabled = true;
-                    } else if (tipo === "conductor" && c.conductor_asignado) {
+                    }
+
+                    // Si quiere ser conductor y el coche ya tiene conductor asignado
+                    if (!disabled && tipo === "conductor" && c.conductor_asignado) {
                         disabled = true;
-                    } else if (tipo === "acompañante" && c.lleno) {
+                    }
+
+                    // Si quiere ser acompañante y está lleno
+                    if (!disabled && tipo === "acompañante" && c.lleno) {
                         disabled = true;
+                    }
+
+                    opt.disabled = disabled;
+
                     }
 
                     opt.disabled = disabled;
