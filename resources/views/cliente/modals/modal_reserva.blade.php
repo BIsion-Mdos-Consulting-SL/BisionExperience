@@ -107,11 +107,20 @@
 
                     opt.textContent = label;
 
-                    // reglas de disabled
+                    //Reglas de disabled
                     let disabled = false;
-                    if (c.usado) disabled = true;
-                    else if (tipo === "conductor" && c.conductor_asignado) disabled = true;
-                    else if (tipo === "acompañante" && c.lleno) disabled = true;
+
+                    if (c.usado) {
+                        disabled = true;
+                    }
+
+                    if (!disabled && tipo === "conductor" && c.conductor_asignado) {
+                        disabled = true;
+                    }
+
+                    if (!disabled && tipo === "acompañante" && c.lleno) {
+                        disabled = true;
+                    }
 
                     opt.disabled = disabled;
                     selectCoches.appendChild(opt);
@@ -211,7 +220,8 @@
                         const maybeJson = await res.json();
                         if (maybeJson?.error) serverMsg = maybeJson.error;
                     } catch (_) {
-                        /* ignore */ }
+                        /* ignore */
+                    }
 
                     const text = serverMsg || (await res.text());
                     throw new Error(`Error al guardar (${res.status}) ${text || ""}`);

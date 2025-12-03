@@ -180,8 +180,6 @@ class ReservaController extends Controller
         ]);
     }
 
-
-
     public function storeReserva(Request $request, Evento $evento, Parada $parada)
     {
         $data = $request->validate([
