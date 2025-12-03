@@ -54,7 +54,15 @@
                                 <div class="card">
                                     <div class="card-body gap-2">
                                         <p class="card-text mb-1"><strong>Parada: </strong> {{ $reserva->parada->nombre }}</p>
-                                        <p class="card-text mb-1"><strong>Hora inicio - Hora fin: </strong> {{ $reserva->hora_inicio}} -{{$reserva->hora_fin}}</p>
+
+                                        <p class="card-text mb-1"><strong>Hora inicio - Hora fin: </strong> {{ $reserva->hora_inicio}} -{{$reserva->hora_fin}}
+                                            @if($reserva->motivo_fin === 'reset')
+                                            <span class="badge bg-secondary ms-1">Reseteada</span>
+                                            @elseif($reserva->motivo_fin === 'fin')
+                                            <span class="badge bg-success ms-1">Finalizada</span>
+                                            @endif
+                                        </p>
+
                                         <p class="card-text mb-1"><strong>Modelo: </strong> {{ $reserva->coch->modelo }}</p>
                                         <p class="card-text mb-1"><strong>Matricula: </strong> {{ $reserva->coch->matricula }}</p>
                                         <p class="card-text mb-1"><strong>Usuario: </strong> {{ $reserva->user->name }}</p>
@@ -81,7 +89,14 @@
                                 @foreach($reservas as $reserva)
                                 <tr>
                                     <td>{{ $reserva->parada->nombre }}</td>
-                                    <td>{{ $reserva->hora_inicio }} - {{$reserva->hora_fin}}</td>
+                                    <td>{{ $reserva->hora_inicio }} - {{$reserva->hora_fin}}
+
+                                        @if($reserva->motivo_fin === 'reset')
+                                        <span class="badge bg-secondary ms-1">Reseteada</span>
+                                        @elseif($reserva->motivo_fin === 'fin')
+                                        <span class="badge bg-success ms-1">Finalizada</span>
+                                        @endif
+                                    </td>
                                     <td>{{ $reserva->coch->modelo }}</td>
                                     <td>{{ $reserva->coch->matricula }}</td>
                                     <td>{{ $reserva->user->name }}</td>

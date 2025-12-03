@@ -19,14 +19,22 @@ return new class extends Migration
         // 2) Rellena sólo los NULL o vacíos
         DB::statement("UPDATE evento SET public_id = UUID() WHERE public_id IS NULL OR public_id = ''");
 
-        // 3) Índice único (evita duplicados futuros)
-        // Si ya existiera un índice con este nombre, comenta esta línea.
-        Schema::table('evento', function ($table) {
-            $table->unique('public_id', 'evento_public_id_unique');
-            $table->index('public_id', 'evento_public_id_index');
+        // 3) Índices sobre public_id, PERO solo si no existen ya 👇
+        // ------------------------------------------------------
+        $hasUnique = !empty(DB::select("SHOW INDEX FROM evento WHERE Key_name = 'evento_public_id_unique'"));
+
+        $hasIndex = !empty(DB::select("SHOW INDEX FROM evento WHERE Key_name = 'evento_public_id_index'"));
+
+        Schema::table('evento', function ($table) use ($hasUnique, $hasIndex) {
+            if (!$hasUnique) {
+                $table->unique('public_id', 'evento_public_id_unique');
+            }
+
+            if (!$hasIndex) {
+                $table->index('public_id', 'evento_public_id_index');
+            }
         });
     }
-
     public function down(): void
     {
         // No deshacemos el backfill (podrías quitar los índices si quieres)
