@@ -3,12 +3,14 @@
 namespace App\Exports;
 
 use App\Models\Evento;
+use App\Models\Parada;
 use App\Models\Reserva;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Illuminate\Support\Collection;
+use Laravel\Prompts\Table;
 
 class PreReservaExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize
 {
@@ -28,7 +30,8 @@ class PreReservaExport implements FromCollection, WithHeadings, WithMapping, Sho
             'Parada',
             'Modelo',
             'Matricula',
-            'Conductor'
+            'Usuario',
+            'Tipo'
         ];
     }
 
@@ -44,41 +47,46 @@ class PreReservaExport implements FromCollection, WithHeadings, WithMapping, Sho
             $row['parada'],
             $row['modelo'],
             $row['matricula'],
-            $row['conductor'],
+            $row['usuario'],
+            $row['tipo']
         ];
     }
 
-    //Coleccion de informacion en la tabla
+    /**
+     * La función crea una colección de filas con información sobre las reservas para un evento específico, ordenadas por orden de parada e ID del vehículo.
+     * 
+     * @return Collection Se devuelve una colección de filas. Cada fila contiene información sobre una reserva, incluyendo el nombre de la parada, el modelo del vehículo, la matrícula, el nombre de usuario y el tipo de reserva.
+     */
+
+
     private function buildRows(): Collection
     {
-        $reservas = Reserva::with(['user:id,name', 'coch:id,modelo,matricula', 'parada:id,nombre'])
-            ->where('evento_id', $this->evento->id)
-            ->get(['id', 'user_id', 'parada_id', 'coche_id', 'tipo']);
+        //Llamamos a la tabla de paradas.
+        $paradasTable = (new Parada())->getTable();
 
-        $grouped = $reservas->groupBy(['parada_id', 'coche_id']);
+        $reservas = Reserva::where('reservas.evento_id', $this->evento->id)
+            ->join($paradasTable . ' as p', 'reservas.parada_id', '=', 'p.id')
+            ->with([
+                'user:id,name',
+                'coch:id,modelo,matricula',
+                'parada:id,nombre,orden',
+            ])
+            ->select('reservas.*')
+            ->orderBy('p.orden', 'asc')
+            ->orderBy('reservas.coche_id', 'asc')
+            ->get();
 
         $rows = collect();
-        $norm = fn($s) => mb_strtolower($s ?? '', 'UTF-8');
 
-        foreach ($grouped as $paradaId => $byCar) {
-            foreach ($byCar as $cocheId => $items) {
-                $parada = optional($items->first()->parada)->nombre ?? '';
-                $coche  = $items->first()->coch;
-
-                //Conductor.
-                $conductor = optional(
-                    $items->first(fn($r) => $norm($r->tipo) === 'conductor')
-                )->user->name ?? '';
-
-                $rows->push([
-                    'parada'       => $parada,
-                    'modelo'       => $coche->modelo ?? '',
-                    'matricula'    => $coche->matricula ?? '',
-                    'conductor'    => $conductor,
-                ]);
-            }
+        foreach ($reservas as $reserva) {
+            $rows->push([
+                'parada'    => $reserva->parada->nombre,
+                'modelo'    => $reserva->coch->modelo,
+                'matricula' => $reserva->coch->matricula,
+                'usuario'   => $reserva->user->name,
+                'tipo'      => ucfirst($reserva->tipo),
+            ]);
         }
-
         return $rows;
     }
 }

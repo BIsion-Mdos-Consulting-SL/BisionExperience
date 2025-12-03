@@ -17,54 +17,31 @@ class ReservaController extends Controller
 {
     public function index($id)
     {
-        $evento = Evento::findorFail($id);
+        $evento = Evento::findOrFail($id);
 
-        $pares = Reserva::where('evento_id', $id)
-            ->select('parada_id', 'coche_id')
-            ->distinct()
-            ->orderBy('parada_id')
-            ->orderBy('coche_id')
-            ->paginate(6);
+        $reservas = Reserva::where('reservas.evento_id', $id)
+            ->join('parada as p', 'reservas.parada_id', '=', 'p.id')
+            ->with([
+                'user:id,name',
+                'coch:id,modelo,matricula',
+                'parada:id,nombre,orden', // asegúrate de que 'orden' existe en la tabla parada
+            ])
+            ->orderBy('p.orden', 'asc')         // primero orden por número de parada
+            ->orderBy('reservas.coche_id', 'asc') // luego por coche si quieres
+            ->select('reservas.*')              // importante cuando haces join
+            ->paginate(6);                      // 6 reservas por página
 
-        $reservasPagina = Reserva::where('evento_id', $id)
-            ->where(function ($q) use ($pares) {
-                foreach ($pares as $par) {
-                    $q->orWhere(function ($qq) use ($par) {
-                        $qq->where('parada_id', $par->parada_id)
-                            ->where('coche_id', $par->coche_id);
-                    });
-                }
-            })
-            ->with(['user:id,name', 'coch:id,modelo,matricula'])
-            ->get(['id', 'user_id', 'parada_id', 'coche_id', 'tipo']);
-
-        $paradasIds = $pares->pluck('parada_id')->unique()->values();
-        $cochesIds = $pares->pluck('coche_id')->unique()->values();
-
-        $paradas = Parada::whereIn('id', $paradasIds)
-            ->orderBy('nombre')
-            ->get(['id', 'nombre'])
-            ->keyBy('id');
-
-        $coches = Coch::whereIn('id', $cochesIds)
-            ->get(['id', 'modelo', 'matricula'])
-            ->keyBy('id');
-
-        $reservasMap = $reservasPagina->groupBy(['parada_id', 'coche_id']);
-
-        $total = $pares->total();
-        $totalPagina = $pares->count();
+        $total       = $reservas->total();   // total de reservas del evento
+        $totalPagina = $reservas->count();   // reservas en esta página
 
         return view('coches.pre_reserva', [
-            'evento' => $evento,
-            'pares' => $pares,
-            'paradas' => $paradas,
-            'coches' => $coches,
-            'reservasMap' => $reservasMap,
-            'total' => $total,
-            'totalPagina' => $totalPagina
+            'evento'      => $evento,
+            'reservas'    => $reservas,
+            'total'       => $total,
+            'totalPagina' => $totalPagina,
         ]);
     }
+
 
     public function cargaDatos()
     {
@@ -237,16 +214,19 @@ class ReservaController extends Controller
                 }
             }
 
-            // El usuario no puede reutilizar el mismo coche en paradas posteriores
-            $cocheUsadoAntes = Reserva::where('evento_id', $evento->id)
-                ->where('user_id', $userId)
-                ->where('coche_id', $coche->id)
-                ->whereHas('parada', fn($q) => $q->where('orden', '<', $parada->orden))
-                ->lockForUpdate()
-                ->exists();
+            if ($data['tipo'] === 'acompañante') {
 
-            if ($cocheUsadoAntes) {
-                return ['error' => 'No puedes volver a elegir ese coche en otra parada.'];
+                // El usuario no puede reutilizar el mismo coche en paradas posteriores
+                $cocheUsadoAntes = Reserva::where('evento_id', $evento->id)
+                    ->where('user_id', $userId)
+                    ->where('coche_id', $coche->id)
+                    ->whereHas('parada', fn($q) => $q->where('orden', '<', $parada->orden))
+                    ->lockForUpdate()
+                    ->exists();
+
+                if ($cocheUsadoAntes) {
+                    return ['error' => 'No puedes volver a elegir ese coche en otra parada.'];
+                }
             }
 
             // Capacidad de acompañantes POR PARADA (con capacidad fija)
@@ -300,9 +280,10 @@ class ReservaController extends Controller
             // Parada sobre la que pintaremos la lista (la siguiente si existe; si no, la actual)
             $paradaTarget = $siguiente ?? $parada;
 
-            // Coches ya usados por el usuario (para deshabilitar repetir coche)
+            // Coches ya usados por el usuario (para deshabilitar repetir coche) , permite repetir coche como conductor pero no como acompañante.
             $usados = Reserva::where('evento_id', $evento->id)
                 ->where('user_id', $userId)
+                ->where('tipo', 'acompañante')
                 ->pluck('coche_id')
                 ->all();
 
@@ -358,84 +339,55 @@ class ReservaController extends Controller
 
     public function show(Request $request, $id)
     {
-        $query = trim($request->input('buscador', ''));
+        $query  = trim($request->input('buscador', ''));
         $evento = Evento::findOrFail($id);
 
-        $reservasQuery = $evento->paradas()->with([
-            'reservas.user:id,name,email',
-            'reservas.coch:id,modelo,matricula',
-        ]);
+        //Nombre de la tabla parada
+        $paradasTable = (new Parada())->getTable(); // te devolverá "parada"
+
+        $reservasQuery = Reserva::where('reservas.evento_id', $id)
+            ->join($paradasTable . ' as p', 'reservas.parada_id', '=', 'p.id')
+            ->with([
+                'user:id,name',
+                'coch:id,modelo,matricula',
+                'parada:id,nombre,orden',
+            ])
+            ->select('reservas.*')
+            ->orderBy('p.orden', 'asc')          
+            ->orderBy('reservas.coche_id', 'asc');
 
         if ($query !== '') {
             $reservasQuery->where(function ($q) use ($query) {
-                $q->where('nombre', 'like', "%{$query}%")
-                    ->orWhereHas('reservas.coch', function ($qq) use ($query) {
+                $q->whereHas('parada', function ($qq) use ($query) {
+                    $qq->where('nombre', 'like', "%{$query}%");
+                })
+                    ->orWhereHas('coch', function ($qq) use ($query) {
                         $qq->where('modelo', 'like', "%{$query}%")
                             ->orWhere('matricula', 'like', "%{$query}%");
                     })
-                    ->orWhereHas('reservas.user', function ($qq) use ($query) {
-                        $qq->where('name', 'like', "%{$query}%")
-                            ->orWhere('email', 'like', "%{$query}%");
-                    });
-            });
-        }
-
-        $paradas = $reservasQuery
-            ->paginate(6)
-            ->withQueryString();
-
-        $total = $paradas->total();
-        $totalPagina = $paradas->count();
-
-        $matchPorNombreParada = false;
-        if ($query !== '') {
-            $matchPorNombreParada = \App\Models\Parada::where('evento_id', $id)
-                ->where('nombre', 'like', "%{$query}%")
-                ->exists();
-        }
-
-        // 4) Traer RESERVAS de las paradas de esta página
-        $paradaIds = $paradas->getCollection()->pluck('id');
-
-        $reservasQuery = Reserva::with([
-            'user:id,name,email',
-            'coch:id,modelo,matricula',
-        ])
-            ->whereIn('parada_id', $paradaIds);
-
-        //  Si el usuario buscó por nombre de parada, NO filtres por coche/user.
-        //    Si no hubo match por nombre de parada, entonces sí filtramos por coche/user.
-        if ($query !== '' && !$matchPorNombreParada) {
-            $reservasQuery->where(function ($q) use ($query) {
-                $q->whereHas('coch', function ($qq) use ($query) {
-                    $qq->where('modelo', 'like', "%{$query}%")
-                        ->orWhere('matricula', 'like', "%{$query}%");
-                })
                     ->orWhereHas('user', function ($qq) use ($query) {
                         $qq->where('name', 'like', "%{$query}%")
-                            ->orWhere('email', 'like', "%{$query}%");
+                            ->orWhere('tipo', 'like', "%{$query}%");
                     });
             });
         }
 
-        $reservas = $reservasQuery->get();
+        //Paginamos RESERVAS
+        $reservas = $reservasQuery
+            ->paginate(6)
+            ->withQueryString();//Guarda los filtros en la URL.
 
-        // 5) Data para tu Blade
-        $reservasMap = $reservas->groupBy(['parada_id', 'coche_id']);
-        $cocheIds    = $reservas->pluck('coche_id')->unique()->values();
-        $coches      = Coch::whereIn('id', $cocheIds)->get();
+        $total       = $reservas->total();
+        $totalPagina = $reservas->count();
 
         return view('coches.pre_reserva', compact(
             'evento',
-            'paradas',
+            'reservas',
             'total',
             'totalPagina',
-            'query',
-            'coches',
-            'reservasMap'
+            'query'
         ));
     }
-
 
     public function export(Evento $evento)
     {

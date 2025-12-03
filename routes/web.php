@@ -109,7 +109,7 @@ Route::middleware(['auth',  CheckRole::class . ':admin'])->group(function () {
     /************************************TRAZABILIDAD DE PARADAS (TABLA ADMIN)*************************************** */
     Route::get('/trazabilidad/{evento}', [TrazabilidadController::class, 'index'])->name('trazabilidad.index');
     Route::get('/trazabilidad/show/{id}', [TrazabilidadController::class, 'show'])->name('show.trazabilidad');
-    Route::get('/eventos/{evento}/reservas/export', [TrazabilidadController::class, 'export'])->name('reservas.export');
+    Route::get('/eventos/{evento:public_id}/reservas/export', [TrazabilidadController::class, 'export'])->name('reservas.export');
 
     /***** RUTAS PARA AJUSTE (BOTON) */
 

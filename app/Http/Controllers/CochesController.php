@@ -242,7 +242,7 @@ class CochesController extends Controller
 
             return redirect()
                 ->route('coches.show', $evento->id)
-                ->with('success', 'Coches importados correctamente. Duplicados ignorados: ' . $duplicados);
+                ->toast('success', 'Coches importados correctamente. Duplicados ignorados: ' . $duplicados);
         } catch (Exception $e) {
             return redirect()
                 ->back()
