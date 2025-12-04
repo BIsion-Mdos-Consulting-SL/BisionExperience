@@ -97,11 +97,18 @@
 
                     // Texto que se muestra
                     let label = `${c.marca ?? ''} ${c.modelo ?? ''} - ${c.matricula ?? ''}`.trim() || `Vehículo #${c.id}`;
+
                     const badges = [];
-                    if (c.usado) badges.push("En uso");
+
+                    if (c.usado) badges.push("Ya lo estan usando");
                     if (tipo === "conductor" && c.conductor_asignado) badges.push("Conductor asignado");
                     if (tipo === "acompañante" && c.lleno) badges.push("Sin plazas");
-                    if (badges.length) label += " (" + badges.join(", ") + ")";
+                    if (tipo === "acompañante" && c.ocupado_en_parada && !c.usado)
+                        badges.push("Reservado en esta parada por otro usuario");
+
+                    if (badges.length)
+                        label += " (" + badges.join(", ") + ")";
+
                     if (tipo === "acompañante" && typeof c.plazas_disponibles === "number")
                         label += ` — ${c.plazas_disponibles} libres`;
 
@@ -110,19 +117,12 @@
                     // Reglas de disabled
                     let disabled = false;
 
-                    // Si este usuario ya usó ese coche → no puede repetirlo
-                    if (c.usado) {
-                        disabled = true;
-                    }
-
-                    // Si quiere ser conductor y el coche ya tiene conductor asignado
-                    if (!disabled && tipo === "conductor" && c.conductor_asignado) {
-                        disabled = true;
-                    }
-
-                    // Si quiere ser acompañante y está lleno
-                    if (!disabled && tipo === "acompañante" && c.lleno) {
-                        disabled = true;
+                    if (tipo === "conductor" && c.conductor_asignado) {
+                        disabled = true; //Ya tiene conductor en esta parada.
+                    } else if (tipo === "acompañante" && c.lleno) {
+                        disabled = true; //Sin plazas en esta parada.
+                    } else if (tipo === "acompañante" && c.ocupado_en_parada) {
+                        disabled = true; //Reservado en esta parada por otro usuario.
                     }
 
                     opt.disabled = disabled;
@@ -138,7 +138,7 @@
             }
         };
 
-        //Re-pintar cuando cambias entre Conductor/Acompañante
+        // Re-pintar cuando cambias entre Conductor/Acompañante
         modal.addEventListener("change", (e) => {
             if (e.target.name === "tipo") {
                 renderCoches(__ULTIMOS_COCHES__);
@@ -155,6 +155,7 @@
                     },
                     cache: "no-store"
                 });
+
                 if (!res.ok) {
                     const text = await res.text();
                     throw new Error(`Error al obtener datos (${res.status}) ${text || ""}`);
@@ -168,11 +169,17 @@
                     progreso
                 } = payload;
 
-                if (!evento?.public_id || !parada?.id) throw new Error("Faltan IDs de evento/parada.");
+                if (!evento?.public_id || !parada?.id) {
+                    throw new Error("Faltan IDs de evento/parada.");
+                }
+
                 EVENTO_ID = evento.public_id;
                 PARADA_ID = parada.id;
 
-                h2Parada.textContent = (parada && parada.orden != null) ? `Parada ${parada.orden}` : "Parada —";
+                h2Parada.textContent =
+                    parada && parada.orden != null ?
+                    `Parada ${parada.orden}` :
+                    "Parada —";
 
                 renderCoches(coches);
 
@@ -191,7 +198,7 @@
                 selectCoches.disabled = true;
                 form.action = "";
                 btnSubmit.disabled = true;
-                //SweetAlert error.
+
                 Swal.fire({
                     icon: 'error',
                     title: 'No se pudieron cargar los datos',
@@ -206,8 +213,12 @@
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
             setLoading(true);
+
             try {
                 const fd = new FormData(form);
+
+                console.log("➡️ POST a:", form.action); // debug
+
                 const res = await fetch(form.action, {
                     method: "POST",
                     body: fd,
@@ -216,29 +227,42 @@
                     }
                 });
 
-                if (!res.ok) {
-                    // Si backend devuelve JSON con error, lo leemos para mostrarlo
-                    let serverMsg = '';
-                    try {
-                        const maybeJson = await res.json();
-                        if (maybeJson?.error) serverMsg = maybeJson.error;
-                    } catch (_) {
-                        /* ignore */
-                    }
+                const contentType = res.headers.get("Content-Type") || "";
+                let json = null;
+                let text = "";
 
-                    const text = serverMsg || (await res.text());
-                    throw new Error(`Error al guardar (${res.status}) ${text || ""}`);
+                // Leemos el body UNA sola vez
+                try {
+                    if (contentType.includes("application/json")) {
+                        json = await res.json();
+                    } else {
+                        text = await res.text();
+                    }
+                } catch (_) {
+                    // si peta el parseo, json queda null y text vacío
                 }
 
-                const json = await res.json();
+                // Si la respuesta NO es OK (4xx/5xx)
+                if (!res.ok) {
+                    const msg =
+                        (json && (json.error || json.message)) ||
+                        text ||
+                        `Error al guardar (${res.status})`;
 
-                //Si backend devuelve { error: '...' } (p.ej. yaReservoEstaParada)
-                if (json?.error) {
+                    throw new Error(msg);
+                }
+
+                // A partir de aquí asumimos éxito de backend
+                if (!json) {
+                    throw new Error("Respuesta inválida del servidor.");
+                }
+
+                if (json.error) {
                     throw new Error(json.error);
                 }
 
-                if (!json?.ok) {
-                    throw new Error(json?.message || "No se pudo crear la reserva.");
+                if (!json.ok) {
+                    throw new Error(json.message || "No se pudo crear la reserva.");
                 }
 
                 // Progreso
@@ -250,8 +274,10 @@
                 // ¿Hay siguiente parada?
                 if (prog.siguiente_id) {
                     PARADA_ID = prog.siguiente_id;
-                    h2Parada.textContent = (prog.siguiente_orden != null) ?
-                        `Parada ${prog.siguiente_orden}` : "Parada —";
+                    h2Parada.textContent =
+                        prog.siguiente_orden != null ?
+                        `Parada ${prog.siguiente_orden}` :
+                        "Parada —";
 
                     form.action = routeTemplate
                         .replace("EVENTO_ID", encodeURIComponent(EVENTO_ID))
@@ -269,7 +295,6 @@
                     selectCoches.selectedIndex = 0;
                 }
 
-                //Sweet alert de éxito (opcional)
                 Swal.fire({
                     icon: 'success',
                     iconColor: "#05072e",
@@ -280,7 +305,6 @@
                 });
             } catch (err) {
                 console.error(err);
-                // SweetAlert de error
                 Swal.fire({
                     icon: 'error',
                     iconColor: "#05072e",
