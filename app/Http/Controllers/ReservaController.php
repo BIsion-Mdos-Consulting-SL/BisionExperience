@@ -42,22 +42,20 @@ class ReservaController extends Controller
         ]);
     }
 
-
     public function cargaDatos()
     {
         $userId = Auth::id();
 
-        // 1) Evento activo (mantengo tu criterio: el último)
+        // 1) Evento activo (el último creado)
         $evento = Evento::latest('id')->first();
         if (!$evento) {
             return response()->json([
-                'error' => 'SIN_EVENTO',
+                'error'   => 'SIN_EVENTO',
                 'message' => 'No hay evento activo'
             ], 404);
         }
 
-        // 2) Siguiente parada pendiente del usuario (no la 1 siempre)
-        //    Tomamos la mayor "orden" ya reservada por el user y buscamos la siguiente.
+        // 2) Siguiente parada pendiente del usuario
         $ultimaOrdenHecha = Reserva::where('reservas.evento_id', $evento->id)
             ->where('reservas.user_id', $userId)
             ->join('parada', 'parada.id', '=', 'reservas.parada_id')
@@ -69,17 +67,16 @@ class ReservaController extends Controller
             ->where('orden', $siguienteOrden)
             ->first();
 
-        // Fallback: si ya no hay más paradas pendientes, devolvemos la última para no romper el front
+        // Fallback: si ya no hay más paradas pendientes, devolvemos la última
         if (!$parada) {
             $parada = Parada::where('evento_id', $evento->id)
                 ->orderByDesc('orden')
                 ->first();
 
-            // Si tampoco hay paradas, devolvemos 404 coherente
             if (!$parada) {
                 return response()->json([
-                    'error' => 'SIN_PARADA',
-                    'message' => 'No hay paradas para el evento',
+                    'error'     => 'SIN_PARADA',
+                    'message'   => 'No hay paradas para el evento',
                     'evento_id' => $evento->id
                 ], 404);
             }
@@ -89,14 +86,14 @@ class ReservaController extends Controller
         $capacidadFija = 3;
 
         // 4) Progreso
-        $totalParadas  = Parada::where('evento_id', $evento->id)->count();
+        $totalParadas = Parada::where('evento_id', $evento->id)->count();
 
         $completadas = Reserva::where('evento_id', $evento->id)
             ->where('user_id', $userId)
             ->distinct('parada_id')
             ->count('parada_id');
 
-        $siguienteParada  = Parada::where('evento_id', $evento->id)
+        $siguienteParada = Parada::where('evento_id', $evento->id)
             ->where('orden', '>', $parada->orden)
             ->orderBy('orden')
             ->first();
@@ -109,23 +106,46 @@ class ReservaController extends Controller
             ->pluck('coche_id')
             ->all();
 
-        // Coches con conductor asignado en TODO el evento
+        // 👇 Coches con conductor asignado SOLO en esta parada
         $conductores = Reserva::where('evento_id', $evento->id)
+            ->where('parada_id', $parada->id)
             ->where('tipo', 'conductor')
             ->pluck('coche_id')
             ->all();
 
-        // Ocupación de acompañantes SOLO en la parada actual (la que vamos a mostrar)
+        // Ocupación de acompañantes SOLO en la parada actual
         $ocupacion = Reserva::select('coche_id', DB::raw("SUM(CASE WHEN tipo = 'acompañante' THEN 1 ELSE 0 END) as acomp"))
             ->where('evento_id', $evento->id)
             ->where('parada_id', $parada->id)
             ->groupBy('coche_id')
             ->pluck('acomp', 'coche_id');
 
+        // 👇 Coches reservados por OTROS usuarios en ESTA parada
+        $reservadosEnParada = Reserva::where('evento_id', $evento->id)
+            ->where('parada_id', $parada->id)
+            ->where('user_id', '!=', $userId)
+            ->pluck('coche_id')
+            ->toArray();
+
+        // 👇 Coches que ESTE usuario ya tiene reservados en ESTA parada
+        $cocheIdsUsuarioEnParada = Reserva::where('evento_id', $evento->id)
+            ->where('parada_id', $parada->id)
+            ->where('user_id', $userId)
+            ->pluck('coche_id')
+            ->all();
+
+        // Query base de coches del evento
+        $cochesQuery = Coch::where('evento_id', $evento->id);
+
+        // Si el usuario ya tiene reserva en esta parada -> solo mostramos ese/estos coches
+        if (!empty($cocheIdsUsuarioEnParada)) {
+            $cochesQuery->whereIn('id', $cocheIdsUsuarioEnParada);
+        }
+
         // Construcción de lista de coches con flags
-        $coches = Coch::where('evento_id', $evento->id)
+        $coches = $cochesQuery
             ->get(['id', 'marca', 'modelo', 'matricula'])
-            ->map(function ($c) use ($usados, $conductores, $ocupacion, $capacidadFija) {
+            ->map(function ($c) use ($usados, $conductores, $ocupacion, $capacidadFija, $reservadosEnParada) {
                 $acompanantes = (int) ($ocupacion[$c->id] ?? 0);
                 $plazasDisp   = max(0, $capacidadFija - $acompanantes);
 
@@ -135,27 +155,30 @@ class ReservaController extends Controller
                     'modelo'             => $c->modelo,
                     'matricula'          => $c->matricula,
                     'usado'              => in_array($c->id, $usados, true),
-                    'conductor_asignado' => in_array($c->id, $conductores, true),
+                    'conductor_asignado' => in_array($c->id, $conductores, true), // ahora SOLO esta parada
                     'plazas_disponibles' => $plazasDisp,
                     'lleno'              => $plazasDisp <= 0,
+                    'ocupado_en_parada'  => in_array($c->id, $reservadosEnParada, true),
                 ];
             })
             ->values();
 
-        // 6) Respuesta (misma forma que espera tu JS)
+        // 6) Respuesta para el JS
         return response()->json([
             'evento'   => $evento,
-            'parada'   => $parada, // <- ahora es la siguiente pendiente
+            'parada'   => $parada, // siguiente pendiente o última
             'coches'   => $coches,
             'progreso' => [
-                'total'          => $totalParadas,
-                'completadas'    => $completadas,
-                'actual_orden'   => $parada->orden,
-                'siguiente_id'   => $siguienteParada?->id,
+                'total'           => $totalParadas,
+                'completadas'     => $completadas,
+                'actual_orden'    => $parada->orden,
+                'siguiente_id'    => $siguienteParada?->id,
                 'siguiente_orden' => $siguienteParada?->orden,
             ],
         ]);
     }
+
+
 
     public function storeReserva(Request $request, Evento $evento, Parada $parada)
     {
@@ -164,8 +187,7 @@ class ReservaController extends Controller
             'coche_id' => 'required|exists:coches,id',
         ]);
 
-        //Capacidad maxima de plazas del coche
-        $capacidadFija = 3;
+        $capacidadFija = 3; // acompañantes por parada
 
         $coche  = Coch::findOrFail($data['coche_id']);
         $userId = Auth::id();
@@ -186,7 +208,7 @@ class ReservaController extends Controller
 
         $result = DB::transaction(function () use ($evento, $parada, $coche, $data, $userId, $capacidadFija) {
 
-            // Evita que el mismo usuario haga dos reservas en la misma parada
+            // Evitar reservas duplicadas en la misma parada
             $yaReservoEstaParada = Reserva::where([
                 'evento_id' => $evento->id,
                 'parada_id' => $parada->id,
@@ -199,7 +221,23 @@ class ReservaController extends Controller
                 return ['error' => 'Ya tienes una reserva en esta parada.'];
             }
 
-            // Un conductor por coche para todo el evento
+            // El mismo usuario no puede volver a usar el mismo coche en paradas anteriores (< orden actual)
+            $cocheUsadoAntes = Reserva::where('evento_id', $evento->id)
+                ->where('user_id', $userId)
+                ->where('coche_id', $coche->id)
+                ->whereHas('parada', function ($q) use ($parada) {
+                    $q->where('orden', '<', $parada->orden);
+                })
+                ->lockForUpdate()
+                ->exists();
+
+            if ($cocheUsadoAntes) {
+                return [
+                    'error' => 'No puedes volver a escoger este coche, ya lo escogiste en una parada anterior.'
+                ];
+            }
+
+            // Solo un conductor por coche en todo el evento
             if ($data['tipo'] === 'conductor') {
                 $yaTieneConductor = Reserva::where([
                     'evento_id' => $evento->id,
@@ -214,22 +252,7 @@ class ReservaController extends Controller
                 }
             }
 
-            if ($data['tipo'] === 'acompañante') {
-
-                // El usuario no puede reutilizar el mismo coche en paradas posteriores
-                $cocheUsadoAntes = Reserva::where('evento_id', $evento->id)
-                    ->where('user_id', $userId)
-                    ->where('coche_id', $coche->id)
-                    ->whereHas('parada', fn($q) => $q->where('orden', '<', $parada->orden))
-                    ->lockForUpdate()
-                    ->exists();
-
-                if ($cocheUsadoAntes) {
-                    return ['error' => 'No puedes volver a elegir ese coche en otra parada.'];
-                }
-            }
-
-            // Capacidad de acompañantes POR PARADA (con capacidad fija)
+            // Capacidad acompañantes por parada
             if ($data['tipo'] === 'acompañante') {
                 $ocupadosEnParada = Reserva::where([
                     'evento_id' => $evento->id,
@@ -263,50 +286,60 @@ class ReservaController extends Controller
                 : back()->with('error', $result['error'] ?? 'No se pudo crear la reserva.');
         }
 
+        // RESPUESTA JSON PARA AJAX
         if ($request->expectsJson()) {
-            // Progreso (barra bootstramp)
+
+            // Progreso
             $total = Parada::where('evento_id', $evento->id)->count();
             $completadas = Reserva::where('evento_id', $evento->id)
                 ->where('user_id', $userId)
                 ->distinct('parada_id')
                 ->count('parada_id');
 
-            // Siguiente parada (orden > actual)
+            // siguiente parada
             $siguiente = Parada::where('evento_id', $evento->id)
                 ->where('orden', '>', $parada->orden)
                 ->orderBy('orden')
                 ->first();
 
-            // Parada sobre la que pintaremos la lista (la siguiente si existe; si no, la actual)
             $paradaTarget = $siguiente ?? $parada;
 
-            // Coches ya usados por el usuario (para deshabilitar repetir coche) , permite repetir coche como conductor pero no como acompañante.
+            // USADOS SOLO EN ESTA PARADA (paradaTarget)
             $usados = Reserva::where('evento_id', $evento->id)
+                ->where('parada_id', $paradaTarget->id)
                 ->where('user_id', $userId)
                 ->where('tipo', 'acompañante')
                 ->pluck('coche_id')
-                ->all();
+                ->toArray();
 
-            // Coches que ya tienen conductor asignado en el evento
+            // conductores en ESTA parada
             $conductores = Reserva::where('evento_id', $evento->id)
+                ->where('parada_id', $paradaTarget->id)
                 ->where('tipo', 'conductor')
                 ->pluck('coche_id')
-                ->all();
+                ->toArray();
 
-            // Ocupación de acompañantes POR parada target
-            //SUM(CASE WHEN tipo = 'acompañante' THEN 1 ELSE 0 END) → suma 1 por cada acompañante, 0 en caso contrario → resultado: número de acompañantes por coche.
+            // ocupación por paradaTarget
             $ocupacion = Reserva::select('coche_id', DB::raw("SUM(CASE WHEN tipo = 'acompañante' THEN 1 ELSE 0 END) as acomp"))
                 ->where('evento_id', $evento->id)
                 ->where('parada_id', $paradaTarget->id)
                 ->groupBy('coche_id')
                 ->pluck('acomp', 'coche_id');
 
-            // Construcción de lista de coches SIN pedir columna inexistente
+            // reservados por otro usuario en ESTA PARADA
+            $reservadosEnParada = Reserva::where('evento_id', $evento->id)
+                ->where('parada_id', $paradaTarget->id)
+                ->where('user_id', '!=', $userId)
+                ->pluck('coche_id')
+                ->toArray();
+
+            // construir lista coches
             $coches = Coch::where('evento_id', $evento->id)
                 ->get(['id', 'marca', 'modelo', 'matricula'])
-                ->map(function ($c) use ($usados, $conductores, $ocupacion, $capacidadFija) {
-                    $acompanantes = (int) ($ocupacion[$c->id] ?? 0);
-                    $plazasDisp   = max(0, $capacidadFija - $acompanantes);
+                ->map(function ($c) use ($usados, $conductores, $ocupacion, $capacidadFija, $reservadosEnParada) {
+
+                    $acompanantes = (int)($ocupacion[$c->id] ?? 0);
+                    $plazasDisp = max(0, $capacidadFija - $acompanantes);
 
                     return [
                         'id'                 => $c->id,
@@ -317,6 +350,7 @@ class ReservaController extends Controller
                         'conductor_asignado' => in_array($c->id, $conductores, true),
                         'plazas_disponibles' => $plazasDisp,
                         'lleno'              => $plazasDisp <= 0,
+                        'ocupado_en_parada'  => in_array($c->id, $reservadosEnParada, true),
                     ];
                 })
                 ->values();
@@ -329,13 +363,13 @@ class ReservaController extends Controller
                     'siguiente_id'    => $siguiente?->id,
                     'siguiente_orden' => $siguiente?->orden,
                 ],
-                // listado para repintar el select en el front
                 'coches' => $coches,
             ]);
         }
 
         return back()->with('success', 'Reserva creada con éxito.');
     }
+
 
     public function show(Request $request, $id)
     {
@@ -353,7 +387,7 @@ class ReservaController extends Controller
                 'parada:id,nombre,orden',
             ])
             ->select('reservas.*')
-            ->orderBy('p.orden', 'asc')          
+            ->orderBy('p.orden', 'asc')
             ->orderBy('reservas.coche_id', 'asc');
 
         if ($query !== '') {
@@ -375,7 +409,7 @@ class ReservaController extends Controller
         //Paginamos RESERVAS
         $reservas = $reservasQuery
             ->paginate(6)
-            ->withQueryString();//Guarda los filtros en la URL.
+            ->withQueryString(); //Guarda los filtros en la URL.
 
         $total       = $reservas->total();
         $totalPagina = $reservas->count();
