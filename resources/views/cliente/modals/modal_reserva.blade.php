@@ -100,7 +100,7 @@
 
                     const badges = [];
 
-                    if (c.usado) badges.push("Ya lo estan usando");
+                    if (c.usado) badges.push("Ya lo estas usando");
                     if (tipo === "conductor" && c.conductor_asignado) badges.push("Conductor asignado");
                     if (tipo === "acompañante" && c.lleno) badges.push("Sin plazas");
                     if (tipo === "acompañante" && c.ocupado_en_parada && !c.usado)

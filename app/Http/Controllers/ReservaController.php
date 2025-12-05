@@ -138,7 +138,7 @@ class ReservaController extends Controller
         $cochesQuery = Coch::where('evento_id', $evento->id);
 
         // Si el usuario ya tiene reserva en esta parada -> solo mostramos ese/estos coches
-        if (!empty($cocheIdsUsuarioEnParada)) {
+        if ($completadas < $totalParadas && !empty($cocheIdsUsuarioEnParada)) {
             $cochesQuery->whereIn('id', $cocheIdsUsuarioEnParada);
         }
 
