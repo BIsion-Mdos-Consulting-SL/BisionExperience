@@ -67,7 +67,7 @@ class ReservaController extends Controller
             ->where('orden', $siguienteOrden)
             ->first();
 
-        // Fallback: si ya no hay más paradas pendientes, devolvemos la última
+        //Si ya no hay más paradas pendientes, devolvemos la última
         if (!$parada) {
             $parada = Parada::where('evento_id', $evento->id)
                 ->orderByDesc('orden')
@@ -98,7 +98,7 @@ class ReservaController extends Controller
             ->orderBy('orden')
             ->first();
 
-        // 5) Flags para el <select>
+        // 5) Select
 
         // Coches ya usados por este usuario en el evento (no puede repetir coche en paradas posteriores)
         $usados = Reserva::where('evento_id', $evento->id)
@@ -106,7 +106,7 @@ class ReservaController extends Controller
             ->pluck('coche_id')
             ->all();
 
-        // 👇 Coches con conductor asignado SOLO en esta parada
+        // Coches con conductor asignado SOLO en esta parada
         $conductores = Reserva::where('evento_id', $evento->id)
             ->where('parada_id', $parada->id)
             ->where('tipo', 'conductor')
@@ -120,14 +120,14 @@ class ReservaController extends Controller
             ->groupBy('coche_id')
             ->pluck('acomp', 'coche_id');
 
-        // 👇 Coches reservados por OTROS usuarios en ESTA parada
+        // Coches reservados por OTROS usuarios en ESTA parada
         $reservadosEnParada = Reserva::where('evento_id', $evento->id)
             ->where('parada_id', $parada->id)
             ->where('user_id', '!=', $userId)
             ->pluck('coche_id')
             ->toArray();
 
-        // 👇 Coches que ESTE usuario ya tiene reservados en ESTA parada
+        // Coches que ESTE usuario ya tiene reservados en ESTA parada
         $cocheIdsUsuarioEnParada = Reserva::where('evento_id', $evento->id)
             ->where('parada_id', $parada->id)
             ->where('user_id', $userId)
@@ -235,21 +235,6 @@ class ReservaController extends Controller
                 return [
                     'error' => 'No puedes volver a escoger este coche, ya lo escogiste en una parada anterior.'
                 ];
-            }
-
-            // Solo un conductor por coche en todo el evento
-            if ($data['tipo'] === 'conductor') {
-                $yaTieneConductor = Reserva::where([
-                    'evento_id' => $evento->id,
-                    'coche_id'  => $coche->id,
-                    'tipo'      => 'conductor',
-                ])
-                    ->lockForUpdate()
-                    ->exists();
-
-                if ($yaTieneConductor) {
-                    return ['error' => 'Ese coche ya tiene conductor.'];
-                }
             }
 
             // Capacidad acompañantes por parada

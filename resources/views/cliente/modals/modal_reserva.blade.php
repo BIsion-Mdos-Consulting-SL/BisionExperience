@@ -217,7 +217,7 @@
             try {
                 const fd = new FormData(form);
 
-                console.log("➡️ POST a:", form.action); // debug
+                console.log("POST a:", form.action); // debug
 
                 const res = await fetch(form.action, {
                     method: "POST",
