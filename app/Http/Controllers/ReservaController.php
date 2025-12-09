@@ -318,7 +318,7 @@ class ReservaController extends Controller
                 ->pluck('coche_id')
                 ->toArray();
 
-            // construir lista coches
+            //Construir lista coches
             $coches = Coch::where('evento_id', $evento->id)
                 ->get(['id', 'marca', 'modelo', 'matricula'])
                 ->map(function ($c) use ($usados, $conductores, $ocupacion, $capacidadFija, $reservadosEnParada) {

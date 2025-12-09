@@ -15,6 +15,7 @@
         </div>
     </div>
 </div>
+
 <script>
     /**Funcion para poder redcoger los datos y poder crear las PRUEBAS DINAMICAS */
     document.addEventListener('DOMContentLoaded', () => {
@@ -66,7 +67,11 @@
         const render = () => {
             //Se inicia en vacio la card hasta que carguen los datos.
             cards.innerHTML = '';
-            const { paradas, coches, reservas } = DATA;
+            const {
+                paradas,
+                coches,
+                reservas
+            } = DATA;
 
             /**Recorremos el array de paradas con un index el cual empezara en 0 para identificar el id de cada una de ellas. */
             paradas.forEach((parada, idx) => {
@@ -84,9 +89,9 @@
                 }
 
                 /**Se le pasa una constante que posicionara al index en la posicion 0 , si es true y sino de cada reserva se eliminara 1 para que empiece desde el id 1 y donde recogera la hora inicio. */
-                const previousOk = (idx === 0)
-                    ? true
-                    : !!(
+                const previousOk = (idx === 0) ?
+                    true :
+                    !!(
                         reservas[paradas[idx - 1].id] &&
                         reservas[paradas[idx - 1].id].hora_fin &&
                         reservas[paradas[idx - 1].id].motivo_fin === 'fin'
@@ -100,9 +105,9 @@
                 );
 
                 /**Span para poder condicionar si parada esta completada. Si es distinto a la posicion que se usa en la constante de previousoK pues directamente saldra un span en donde te pondra un mensaje para condicionar que se tiene completar antes la parada anterior, y sino la parada ha sido completada. */
-                const stateBadge = !previousOk
-                    ? '<span class="badge bg-secondary">Completa la parada anterior</span>'
-                    : (isFinalizada ? '<span class="badge bg-success">Completada</span>' : '');
+                const stateBadge = !previousOk ?
+                    '<span class="badge bg-secondary">Completa la parada anterior</span>' :
+                    (isFinalizada ? '<span class="badge bg-success">Completada</span>' : '');
 
                 /**Select opciones: Aqui recorreremos todos los coches que tiene coches[] , colocaremos una option para sacar como valor el id de cada uno de los coches seleccionados para poder recoger la informacion que se pintara en el select (join) , ademas el select de coches ya usados estan deshabilitados.*/
                 const selOptions = coches.map(c => {
@@ -179,7 +184,12 @@
             /** Agregamso un mensaje de texto en un div.*/
             cards.innerHTML = '<div class="text-center p-3">Cargando...</div>';
             try {
-                const { ok, status, json, text } = await request(GET_URL, {
+                const {
+                    ok,
+                    status,
+                    json,
+                    text
+                } = await request(GET_URL, {
                     /**Recoge la ruta get */
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
@@ -193,9 +203,9 @@
                 //Recogemos el evento id.
                 EVENTO_ID = json.evento.id;
 
-                const reservasMap = Array.isArray(json.reservas)
-                    ? Object.fromEntries(json.reservas.map(r => [r.parada_id, r]))
-                    : (json.reservas || {});
+                const reservasMap = Array.isArray(json.reservas) ?
+                    Object.fromEntries(json.reservas.map(r => [r.parada_id, r])) :
+                    (json.reservas || {});
 
                 DATA = {
                     /**En el DATA recogeremos la informacion tanto de paradas , coches y reservas.*/
@@ -218,13 +228,18 @@
         });
 
         // POST para enviar la informacion (parada, coche , accion)
-        const postAccion = ({ paradaId, cocheId, accion }) => {
+        const postAccion = ({
+            paradaId,
+            cocheId,
+            accion
+        }) => {
             const payload = new FormData();
             payload.append('_token', '{{ csrf_token() }}'); //Recoge el token de verificacion.
             payload.append('evento_id', EVENTO_ID); //Recoge el EVENTO_ID para la prueba dinamica.
             payload.append('parada_id', paradaId); //Recoge la paradaId que se le pasa en el postAction.
             payload.append('coche_id', cocheId); //Recoge el cocheId que se le pasa en el postAction.
             payload.append('accion', accion); //Recoge la accion que se le pasa en el postAction.
+            payload.append('tipo', 'acompañante'); // 👈 importante para que pase la validación del backend
 
             /**Envio de la ruta POST_URL*/
             return request(POST_URL, {
@@ -258,7 +273,9 @@
             const select = cards.querySelector(`select[name="coche_id_${paradaId}"]`);
 
             const rState = DATA.reservas[paradaId];
-            if (rState && rState.hora_fin && accion != 'inicio') {
+
+            // 👉 Solo bloqueamos si está finalizada de verdad (motivo_fin === 'fin')
+            if (rState && rState.hora_fin && rState.motivo_fin === 'fin' && accion !== 'inicio') {
                 radio.checked = false;
                 Swal.fire({
                     icon: 'info',
@@ -283,7 +300,11 @@
             setCardEnabled(paradaId, false);
 
             try {
-                const { status, json, text } = await postAccion({
+                const {
+                    status,
+                    json,
+                    text
+                } = await postAccion({
                     paradaId,
                     cocheId: select.value,
                     accion
@@ -409,4 +430,3 @@
 
     });
 </script>
-
