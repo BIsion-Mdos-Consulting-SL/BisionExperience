@@ -1,4 +1,5 @@
-<div class="modal fade" id="modalPruebaDinamica" tabindex="-1" aria-labelledby="modalPruebaDinamicaLabel" aria-hidden="true">
+<div class="modal fade" id="modalPruebaDinamica" tabindex="-1" aria-labelledby="modalPruebaDinamicaLabel"
+    aria-hidden="true">
     <div class="modal-dialog modal-md modal-dialog-centered">
         <div class="modal-content p-4">
 
@@ -121,8 +122,10 @@
             `;
                 }).join('');
 
-                const horaInicio = reserva?.hora_inicio ?? '—'; //Creamos una constante para recoger la hora inicio de la reserva.
-                const horaFin = reserva?.hora_fin ?? '—'; //Creamos una constante para recoger la hora de fin de la reserva.
+                const horaInicio = reserva?.hora_inicio ??
+                    '—'; //Creamos una constante para recoger la hora inicio de la reserva.
+                const horaFin = reserva?.hora_fin ??
+                    '—'; //Creamos una constante para recoger la hora de fin de la reserva.
 
                 let estadoFinTexto = '';
                 if (reserva?.motivo_fin === 'reset') {
@@ -131,7 +134,7 @@
                     estadoFinTexto = '<span class="badge bg-success ms-1">Finalizada</span>';
                 }
 
-                // 🔥 Solo deshabilitamos por estado si está finalizada de verdad
+                // Solo deshabilitamos por estado si está finalizada de verdad
                 const disabledByState = (!previousOk || isFinalizada);
                 const disabledAttr = disabledByState ? 'disabled' : '';
                 const disabledClass = disabledByState ? 'opacity-50 pe-none' : '';
@@ -223,7 +226,8 @@
                 //Error me saca el alert mediante un catch(err).
             } catch (err) {
                 console.error(err);
-                cards.innerHTML = '<div class="alert alert-danger">No se pudo cargar la información.</div>';
+                cards.innerHTML =
+                    '<div class="alert alert-danger">No se pudo cargar la información.</div>';
             }
         });
 
@@ -239,7 +243,16 @@
             payload.append('parada_id', paradaId); //Recoge la paradaId que se le pasa en el postAction.
             payload.append('coche_id', cocheId); //Recoge el cocheId que se le pasa en el postAction.
             payload.append('accion', accion); //Recoge la accion que se le pasa en el postAction.
-            payload.append('tipo', 'acompañante'); // 👈 importante para que pase la validación del backend
+
+
+            let tipo = 'acompañante';
+
+            const r = DATA.reservas[paradaId];
+            if (r && r.tipo) {
+                tipo = r.tipo;
+            }
+
+            payload.append('tipo', tipo);
 
             /**Envio de la ruta POST_URL*/
             return request(POST_URL, {
@@ -274,7 +287,7 @@
 
             const rState = DATA.reservas[paradaId];
 
-            // 👉 Solo bloqueamos si está finalizada de verdad (motivo_fin === 'fin')
+            //Solo bloqueamos si está finalizada de verdad (motivo_fin === 'fin')
             if (rState && rState.hora_fin && rState.motivo_fin === 'fin' && accion !== 'inicio') {
                 radio.checked = false;
                 Swal.fire({
@@ -329,7 +342,8 @@
                     Swal.fire({
                         icon: 'warning',
                         title: 'Coche ya usado en otra parada',
-                        text: json.message || 'No puedes usar el mismo coche en paradas distintas del mismo evento.',
+                        text: json.message ||
+                            'No puedes usar el mismo coche en paradas distintas del mismo evento.',
                         timer: 2200,
                         showConfirmButton: false
                     });
@@ -360,14 +374,19 @@
                 // --- Éxito ---
                 if (!DATA.reservas[paradaId]) DATA.reservas[paradaId] = {};
                 DATA.reservas[paradaId].coche_id = +select.value;
-                DATA.reservas[paradaId].hora_inicio = json.hora_inicio ?? DATA.reservas[paradaId].hora_inicio ?? null;
-                DATA.reservas[paradaId].hora_fin = json.hora_fin ?? DATA.reservas[paradaId].hora_fin ?? null;
-                DATA.reservas[paradaId].motivo_fin = json.motivo_fin ?? DATA.reservas[paradaId].motivo_fin ?? null;
+                DATA.reservas[paradaId].hora_inicio = json.hora_inicio ?? DATA.reservas[paradaId]
+                    .hora_inicio ?? null;
+                DATA.reservas[paradaId].hora_fin = json.hora_fin ?? DATA.reservas[paradaId].hora_fin ??
+                    null;
+                DATA.reservas[paradaId].motivo_fin = json.motivo_fin ?? DATA.reservas[paradaId]
+                    .motivo_fin ?? null;
+                DATA.reservas[paradaId].tipo = json.tipo ?? DATA.reservas[paradaId].tipo ?? null;
 
                 const numeroParada = getParadaNumero(paradaId);
 
                 if (json.finalizado) {
-                    const finalMsg = json.final_message || json.message_final || '¡Gracias por participar!';
+                    const finalMsg = json.final_message || json.message_final ||
+                        '¡Gracias por participar!';
                     Swal.fire({
                         icon: 'success',
                         title: finalMsg,
@@ -376,7 +395,8 @@
                         position: 'center'
                     });
                     setTimeout(() => {
-                        const bsModal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                        const bsModal = bootstrap.Modal.getInstance(modalEl) || new bootstrap
+                            .Modal(modalEl);
                         bsModal.hide();
                     }, 1600);
                 } else {

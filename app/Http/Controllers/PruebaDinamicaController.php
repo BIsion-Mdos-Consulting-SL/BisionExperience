@@ -48,7 +48,7 @@ class PruebaDinamicaController extends Controller
 
         $reservasUsuario = Reserva::where('evento_id', $evento->id)
             ->where('user_id', Auth::id())
-            ->get(['id', 'evento_id', 'parada_id', 'coche_id', 'hora_inicio', 'hora_fin'])
+            ->get(['id', 'evento_id', 'parada_id', 'coche_id', 'hora_inicio', 'hora_fin', 'tipo', 'motivo_fin'])
             ->keyBy('parada_id');
 
         return response()->json(compact('evento', 'paradas', 'coches') + ['reservas' => $reservasUsuario]);
@@ -149,6 +149,7 @@ class PruebaDinamicaController extends Controller
                     'motivo_fin'  => $reserva->motivo_fin,
                     'avanzar'     => false,
                     'finalizado'  => false,
+                    'tipo' => $reserva->tipo
                 ];
             }
 
@@ -208,8 +209,8 @@ class PruebaDinamicaController extends Controller
                     }
                 }
 
-                // Creamos o actualizamos la reserva
-                if (!$reserva) {
+                /**Si no hay reserva o la ultima ya tiene fin (reset o fin), creamos una nueva fila para no pisar la anterior. */
+                if (!$reserva || $reserva->hora_fin) {
                     $reserva = new Reserva();
                     $reserva->evento_id = $evento->id;
                     $reserva->parada_id = $parada->id;
@@ -218,14 +219,10 @@ class PruebaDinamicaController extends Controller
 
                 $reserva->coche_id = $coche->id;
                 $reserva->tipo     = $tipo;
-
-                // Si estaba finalizada, limpiamos fin para nuevo flujo
-                if ($reserva->hora_fin) {
-                    $reserva->hora_fin   = null;
-                    $reserva->motivo_fin = null;
-                }
-
                 $reserva->hora_inicio = $now->format('H:i:s');
+                $reserva->hora_fin = null;
+                $reserva->motivo_fin = null;
+
                 $reserva->save();
 
                 return [
@@ -236,6 +233,7 @@ class PruebaDinamicaController extends Controller
                     'hora_fin'    => (string) $reserva->hora_fin,
                     'avanzar'     => false,
                     'finalizado'  => false,
+                    'tipo' => $reserva->tipo
                 ];
             }
 
@@ -292,6 +290,7 @@ class PruebaDinamicaController extends Controller
                     'avanzar'       => true,
                     'finalizado'    => $finalizadoTodo,
                     'final_message' => $finalizadoTodo ? '¡Gracias por participar!' : null,
+                    'tipo' => $reserva->tipo
                 ];
             }
 
