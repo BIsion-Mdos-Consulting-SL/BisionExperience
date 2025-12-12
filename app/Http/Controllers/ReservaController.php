@@ -124,6 +124,7 @@ class ReservaController extends Controller
         $reservadosEnParada = Reserva::where('evento_id', $evento->id)
             ->where('parada_id', $parada->id)
             ->where('user_id', '!=', $userId)
+            ->where('tipo' , 'acompañante')
             ->pluck('coche_id')
             ->toArray();
 
@@ -315,6 +316,7 @@ class ReservaController extends Controller
             $reservadosEnParada = Reserva::where('evento_id', $evento->id)
                 ->where('parada_id', $paradaTarget->id)
                 ->where('user_id', '!=', $userId)
+                ->where('tipo' , 'acompañante')
                 ->pluck('coche_id')
                 ->toArray();
 

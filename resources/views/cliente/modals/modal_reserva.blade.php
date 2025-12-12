@@ -104,7 +104,7 @@
                     if (tipo === "conductor" && c.conductor_asignado) badges.push("Conductor asignado");
                     if (tipo === "acompañante" && c.lleno) badges.push("Sin plazas");
                     if (tipo === "acompañante" && c.ocupado_en_parada && !c.usado)
-                        badges.push("Reservado en esta parada por otro usuario");
+                        badges.push("Ya hay acompañantes");
 
                     if (badges.length)
                         label += " (" + badges.join(", ") + ")";
@@ -121,8 +121,6 @@
                         disabled = true; //Ya tiene conductor en esta parada.
                     } else if (tipo === "acompañante" && c.lleno) {
                         disabled = true; //Sin plazas en esta parada.
-                    } else if (tipo === "acompañante" && c.ocupado_en_parada) {
-                        disabled = true; //Reservado en esta parada por otro usuario.
                     }
 
                     opt.disabled = disabled;
